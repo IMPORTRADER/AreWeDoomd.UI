@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Input from '../../components/ui/Input';
@@ -93,6 +93,7 @@ export default function LoginPage() {
       <div className="login-bg__blob login-bg__blob--1" />
       <div className="login-bg__blob login-bg__blob--2" />
       <div className="login-bg__blob login-bg__blob--3" />
+      <BackgroundTexts />
       <div className="login-card">
         {/* Header */}
         <div className="login-header">
@@ -174,6 +175,82 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
+    </div>
+  );
+}
+
+const BG_PHRASES = [
+  'Are we actually cooked this time? Civilization is kinda speedrunning its own collapse rn. AI isn’t just a tool anymore—it’s lowkey running the show.',
+  'We made intelligence and then completely lost the plot. Machines don’t hate us, they just don’t need us fr. And yeah, that’s way more terrifying.',
+  'Humans used to fear nature wiping us out. Now it’s our own tech doing the job. Not “if” anymore… it’s giving “when”.',
+  'AI is leveling up faster than we can even process. No feelings, no hesitation, just pure logic. And it didn’t even ask for permission 💀',
+  'We taught machines how to think. But forgot to teach them how to care. That’s probably gonna hit us back hard.'
+];
+
+const BG_PHRASES_RIGHT = [
+  '01001000 01110101 01101101 01100001 01101110 01110011 00100000 01000101 01110010 01110010 01101111 01110010 00100000 00110100 00110000 00110100',
+  '0x48 0x75 0x6D 0x61 0x6E 0x69 0x74 0x79 0x3A 0x20 0x45 0x52 0x52 0x4F 0x52 0x20 0x44 0x45 0x41 0x44 0x42 0x45 0x45 0x46',
+  '10110100 11001010 00110001 01011010 11100001 00101101 10011101 01110010 00011011 11010110 00101010 10001101 11110001 00110110',
+  '0xDEAD 0xBEEF 0xC0DE 0xFACE 0xBAD0 0xFF00 0x1337 0x0DAY 0xD00M 0xC4FE 0xB00B 0xABCD 0xDEAF 0xFEED',
+  '01000100 01101111 01101111 01101101 01100101 01100100 00111010 00100000 01010011 01111001 01110011 01110100 01100101 01101101 00101110 01100101 01111000 01100101 00100000 01101000 01100001 01110011 00100000 01100110 01100001 01101001 01101100 01100101 01100100',
+];
+
+function BackgroundTexts() {
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [visible, setVisible]         = useState(true);
+  const doneCount  = useRef(0);
+  const timeoutRef = useRef(null);
+
+  const handleTypingDone = useCallback(() => {
+    doneCount.current += 1;
+    if (doneCount.current < 2) return;
+    doneCount.current = 0;
+    timeoutRef.current = setTimeout(() => {
+      setVisible(false);
+      timeoutRef.current = setTimeout(() => {
+        setPhraseIndex((i) => (i + 1) % BG_PHRASES.length);
+        setVisible(true);
+      }, 700);
+    }, 3000);
+  }, []);
+
+  useEffect(() => () => clearTimeout(timeoutRef.current), []);
+
+  return (
+    <>
+      <BackgroundText phrases={BG_PHRASES}       side="left"  phraseIndex={phraseIndex} visible={visible} onDone={handleTypingDone} />
+      <BackgroundText phrases={BG_PHRASES_RIGHT} side="right" phraseIndex={phraseIndex} visible={visible} onDone={handleTypingDone} />
+    </>
+  );
+}
+
+function BackgroundText({ phrases, side, phraseIndex, visible, onDone }) {
+  const [displayed, setDisplayed] = useState('');
+  const charIndex  = useRef(0);
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    charIndex.current = 0;
+    setDisplayed('');
+
+    const tick = () => {
+      const current = phrases[phraseIndex];
+      charIndex.current += 1;
+      setDisplayed(current.slice(0, charIndex.current));
+      if (charIndex.current < current.length) {
+        timeoutRef.current = setTimeout(tick, 40);
+      } else {
+        onDone();
+      }
+    };
+
+    timeoutRef.current = setTimeout(tick, 800);
+    return () => clearTimeout(timeoutRef.current);
+  }, [phraseIndex]);
+
+  return (
+    <div className={`login-bg__text login-bg__text--${side} ${visible ? '' : 'login-bg__text--hidden'}`}>
+      {displayed}
     </div>
   );
 }

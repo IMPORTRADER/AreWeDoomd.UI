@@ -14,7 +14,7 @@
   position: absolute;
   border-radius: 50%;
   filter: blur(60px);
-  opacity: 0.35;
+  opacity: 0.55;
   pointer-events: none;
   will-change: transform;
 }
@@ -58,6 +58,62 @@
   33%  { transform: translate(-70px, -60px) scale(1.05); }
   66%  { transform: translate(50px, -80px) scale(0.97); }
   100% { transform: translate(0, 0) scale(1); }
+}
+
+/* Background typing text */
+.login-bg__text {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: 34%;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(120deg, #2a6aaa 0%, #aa3030 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  opacity: 0.55;
+  transition: opacity 0.7s ease;
+  line-height: 1.25;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.login-bg__text--left {
+  left: 3%;
+  font-size: clamp(24px, 2.8vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.login-bg__text--right {
+  right: 3%;
+  font-size: clamp(24px, 2.8vw, 42px);
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  line-height: 1.8;
+  word-break: break-all;
+}
+
+.login-bg__text--hidden {
+  opacity: 0;
+}
+
+.login-bg__cursor {
+  display: inline-block;
+  width: 3px;
+  height: 0.85em;
+  background: #2a6aaa;
+  margin-left: 4px;
+  vertical-align: middle;
+  border-radius: 2px;
+  animation: bg-blink 0.8s step-end infinite;
+}
+
+@keyframes bg-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 
 @keyframes blob-drift-3 {
