@@ -90,6 +90,9 @@ export default function LoginPage() {
 
   return (
     <div className="login-bg">
+      <div className="login-bg__blob login-bg__blob--1" />
+      <div className="login-bg__blob login-bg__blob--2" />
+      <div className="login-bg__blob login-bg__blob--3" />
       <div className="login-card">
         {/* Header */}
         <div className="login-header">
