@@ -5,6 +5,16 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import './LoginPage.css';
 
+function AlertIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  );
+}
+
 function UserIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -96,6 +106,12 @@ export default function LoginPage() {
 
         {/* Form */}
         <form className="login-form" onSubmit={handleSubmit} noValidate>
+          {error && (
+            <div className="login-alert">
+              <AlertIcon />
+              <span>{error}</span>
+            </div>
+          )}
           <Input
             label="Username"
             name="username"
@@ -124,8 +140,6 @@ export default function LoginPage() {
               </Link>
             </div>
           </div>
-
-          {error && <p className="login-error">{error}</p>}
 
           <Button type="submit" variant="primary" fullWidth loading={loading} disabled={!canSubmit}>
             Sign In
