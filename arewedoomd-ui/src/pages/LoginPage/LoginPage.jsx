@@ -64,9 +64,14 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(form.username, form.password);
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid username or password.');
+      console.error('[Login error]', err);
+      if (!err.response) {
+        setError(`Network error: ${err.message}`);
+      } else {
+        setError(err.response.data?.detail || err.response.data?.title || `Error ${err.response.status}`);
+      }
     } finally {
       setLoading(false);
     }

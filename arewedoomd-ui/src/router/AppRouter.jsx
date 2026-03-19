@@ -1,10 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LoginPage from '../pages/LoginPage/LoginPage';
-
-// Lazy-loaded pages will be added here as the project grows
-// import { lazy, Suspense } from 'react';
-// const DashboardPage = lazy(() => import('../pages/DashboardPage/DashboardPage'));
+import HomePage from '../pages/HomePage/HomePage';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -15,7 +12,7 @@ function PrivateRoute({ children }) {
 function PublicRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="page-loading" />;
-  return user ? <Navigate to="/dashboard" replace /> : children;
+  return user ? <Navigate to="/" replace /> : children;
 }
 
 export default function AppRouter() {
@@ -36,23 +33,21 @@ export default function AppRouter() {
 
         {/* Protected routes */}
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <PrivateRoute>
-              <ComingSoon title="Dashboard" />
+              <HomePage />
             </PrivateRoute>
           }
         />
 
         {/* Fallback */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
-// Placeholder until pages are built
 function ComingSoon({ title }) {
   return (
     <div style={{

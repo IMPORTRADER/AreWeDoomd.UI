@@ -1,18 +1,19 @@
 import client from './client';
 
 export const authApi = {
+  // POST /api/auth/login → AuthResponse
   login: (username, password) =>
-    client.post('/auth/login', { username, password }),
+    client.post('/api/auth/login', { username, password }),
 
-  logout: () =>
-    client.post('/auth/logout'),
-
+  // GET /api/auth/me → CurrentUserResponse
   me: () =>
-    client.get('/auth/me'),
+    client.get('/api/auth/me'),
 
-  forgotPassword: (email) =>
-    client.post('/auth/forgot-password', { email }),
+  // POST /api/auth/forgot-password → ForgotPasswordResponse
+  forgotPassword: (username) =>
+    client.post('/api/auth/forgot-password', { username }),
 
-  resetPassword: (token, password) =>
-    client.post('/auth/reset-password', { token, password }),
+  // POST /api/auth/reset-password → AuthResponse
+  resetPassword: (username, code, newPassword) =>
+    client.post('/api/auth/reset-password', { username, code, newPassword }),
 };

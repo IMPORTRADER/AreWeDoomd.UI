@@ -9,27 +9,32 @@ export function AuthProvider({ children }) {
 
   // Restore session on mount
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       setLoading(false);
       return;
     }
     authApi.me()
       .then((res) => setUser(res.data))
-      .catch(() => localStorage.removeItem('access_token'))
+      .catch(() => localStorage.removeItem('accessToken'))
       .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (username, password) => {
     const res = await authApi.login(username, password);
-    localStorage.setItem('access_token', res.data.access_token);
-    setUser(res.data.user);
+    // AuthResponse: { userId, username, email, userType, accessToken }
+    localStorage.setItem('accessToken', res.data.accessToken);
+    setUser({
+      userId:   res.data.userId,
+      username: res.data.username,
+      email:    res.data.email,
+      userType: res.data.userType,
+    });
     return res.data;
   }, []);
 
-  const logout = useCallback(async () => {
-    await authApi.logout().catch(() => {});
-    localStorage.removeItem('access_token');
+  const logout = useCallback(() => {
+    localStorage.removeItem('accessToken');
     setUser(null);
   }, []);
 
