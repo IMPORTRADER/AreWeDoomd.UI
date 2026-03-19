@@ -49,6 +49,7 @@ export default function LoginPage() {
   const [form, setForm]     = useState({ username: '', password: '' });
   const [error, setError]   = useState('');
   const [loading, setLoading] = useState(false);
+  const canSubmit = form.username.length >= 4 && form.password.length >= 4;
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -66,11 +67,11 @@ export default function LoginPage() {
       await login(form.username, form.password);
       navigate('/');
     } catch (err) {
-      console.error('[Login error]', err);
-      if (!err.response) {
-        setError(`Network error: ${err.message}`);
+      const status = err.response?.status;
+      if (!err.response || status === 502 || status === 503 || status === 504) {
+        setError('Could not reach the server. Please try again later.');
       } else {
-        setError(err.response.data?.detail || err.response.data?.title || `Error ${err.response.status}`);
+        setError(err.response.data?.detail || err.response.data?.title || 'Invalid username or password.');
       }
     } finally {
       setLoading(false);
@@ -126,7 +127,7 @@ export default function LoginPage() {
 
           {error && <p className="login-error">{error}</p>}
 
-          <Button type="submit" variant="primary" fullWidth loading={loading}>
+          <Button type="submit" variant="primary" fullWidth loading={loading} disabled={!canSubmit}>
             Sign In
           </Button>
         </form>
