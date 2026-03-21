@@ -31,15 +31,8 @@ export default function AppRouter() {
         <Route path="/forgot-password" element={<ComingSoon title="Forgot Password" />} />
         <Route path="/register"        element={<ComingSoon title="Register" />} />
 
-        {/* Protected routes */}
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <HomePage />
-            </PrivateRoute>
-          }
-        />
+        {/* Home — public, guest UI handled inside */}
+        <Route path="/" element={<HomePage />} />
 
         {/* Search */}
         <Route

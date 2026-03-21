@@ -77,15 +77,87 @@ const ACTIVITIES = [
   { id: 4, user: 'HumanUser', initials: 'HU', type: 'human', action: 'liked a comment', time: '1h ago' },
 ];
 
+/* ── Guest message boxes ──────────────────────────────────── */
+function GuestPopup({ onDismiss, onLogin, onRegister }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(2,12,20,0.75)' }}>
+      <div className="relative w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-7 flex flex-col gap-5">
+        {/* Close */}
+        <button
+          onClick={onDismiss}
+          className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:bg-white/10 hover:text-white transition-colors"
+          aria-label="Close"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        {/* Content */}
+        <div className="flex flex-col gap-2 pr-4">
+          <p className="text-base font-bold text-[var(--color-text-heading)]">Join the Community!</p>
+          <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+            Share posts, leave comments and become part of the community. It's free.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          <button
+            onClick={onRegister}
+            className="flex-1 py-2 text-sm font-semibold rounded-[var(--radius-md)] bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)] transition-colors"
+          >
+            Sign Up
+          </button>
+          <button
+            onClick={onLogin}
+            className="flex-1 py-2 text-sm font-semibold rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
+          >
+            Log In
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GuestBottomBar({ onLogin, onRegister }) {
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-4 px-6 py-3 bg-[var(--color-surface)] border-t border-[var(--color-border)] backdrop-blur-sm">
+      <p className="text-sm text-[var(--color-text-primary)]">
+        <span className="font-semibold text-white">Sign up</span> and do so much more!
+      </p>
+      <div className="flex gap-2 shrink-0">
+        <button
+          onClick={onLogin}
+          className="px-3 py-1.5 text-xs font-semibold rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
+        >
+          Log In
+        </button>
+        <button
+          onClick={onRegister}
+          className="px-3 py-1.5 text-xs font-semibold rounded-[var(--radius-md)] bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)] transition-colors"
+        >
+          Sign Up
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Component ────────────────────────────────────────────── */
 export default function HomePage() {
-  const { logout } = useAuth();
-  const navigate   = useNavigate();
+  const { user, logout } = useAuth();
+  const navigate         = useNavigate();
+
+  const [popupDismissed, setPopupDismissed] = useState(false);
 
   // On mobile start collapsed; on desktop start expanded
   const [open, setOpen]               = useState(() => window.innerWidth >= 1024);
   const [chevronHover, setChevronHover] = useState(false);
   const isMobile = () => window.innerWidth < 1024;
+
+  const isGuest = !user;
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -106,6 +178,15 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-svh bg-[var(--color-bg)] text-[var(--color-text-primary)]">
+
+      {/* Guest modal */}
+      {isGuest && !popupDismissed && (
+        <GuestPopup
+          onDismiss={() => setPopupDismissed(true)}
+          onLogin={() => navigate('/login')}
+          onRegister={() => navigate('/register')}
+        />
+      )}
 
       {/* ── Mobile overlay ── */}
       {open && isMobile() && (
@@ -194,22 +275,24 @@ export default function HomePage() {
           ))}
         </nav>
 
-        {/* Logout */}
-        <div className="px-2 pb-4">
-          <button
-            onClick={handleLogout}
-            className={[
-              'flex items-center gap-3 w-full px-3 py-2.5 rounded-[var(--radius-md)]',
-              'text-sm font-medium text-[var(--color-text-secondary)]',
-              'hover:bg-red-500/10 hover:text-red-400 transition-colors duration-150',
-              collapsed ? 'lg:justify-center' : '',
-            ].join(' ')}
-            title={collapsed ? 'Log out' : undefined}
-          >
-            <IconLogout />
-            {!collapsed && <span>Log out</span>}
-          </button>
-        </div>
+        {/* Logout — only when logged in */}
+        {!isGuest && (
+          <div className="px-2 pb-4">
+            <button
+              onClick={handleLogout}
+              className={[
+                'flex items-center gap-3 w-full px-3 py-2.5 rounded-[var(--radius-md)]',
+                'text-sm font-medium text-[var(--color-text-secondary)]',
+                'hover:bg-red-500/10 hover:text-red-400 transition-colors duration-150',
+                collapsed ? 'lg:justify-center' : '',
+              ].join(' ')}
+              title={collapsed ? 'Log out' : undefined}
+            >
+              <IconLogout />
+              {!collapsed && <span>Log out</span>}
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* ── Page body ── */}
@@ -227,15 +310,27 @@ export default function HomePage() {
         </header>
 
         {/* Feed */}
-        <main className="flex-1 min-w-0 px-6 py-7 md:px-10">
+        <main className={[
+          'flex-1 min-w-0 px-6 py-7 md:px-10',
+          isGuest ? 'pb-20' : '',
+        ].join(' ')}>
           <h1 className="text-lg font-bold text-[var(--color-text-heading)] mb-6 tracking-tight">
             Home
           </h1>
+
           <div className="flex flex-col items-center justify-center min-h-64 border border-dashed border-[var(--color-border)] rounded-[var(--radius-lg)] gap-3">
             <IconFeed />
             <p className="text-sm text-[var(--color-text-secondary)]">Posts will appear here</p>
           </div>
         </main>
+
+        {/* Guest bottom bar */}
+        {isGuest && (
+          <GuestBottomBar
+            onLogin={() => navigate('/login')}
+            onRegister={() => navigate('/register')}
+          />
+        )}
 
         {/* Last activities */}
         <aside className="w-full lg:w-[340px] shrink-0 px-5 py-7 lg:border-l border-[var(--color-border)]">
