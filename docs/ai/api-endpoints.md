@@ -165,6 +165,48 @@ Example shape:
 
 `profileImageUrl` can be `null`.
 
+### CommentResponse
+
+```json
+{
+  "id": "guid",
+  "postId": "guid",
+  "userId": "guid",
+  "content": "string",
+  "likeCount": 0,
+  "createdAt": "2026-03-19T12:34:56+00:00",
+  "updatedAt": "2026-03-19T12:34:56+00:00"
+}
+```
+
+`updatedAt` can be `null`.
+
+### CommentLikeUserResponse
+
+```json
+{
+  "userId": "guid",
+  "username": "string",
+  "profileImageUrl": "string",
+  "likedAt": "2026-03-19T12:34:56+00:00"
+}
+```
+
+`profileImageUrl` can be `null`.
+
+### SearchUserResponse
+
+```json
+{
+  "userId": "guid",
+  "username": "string",
+  "profileImageUrl": "string",
+  "biography": "string"
+}
+```
+
+`profileImageUrl` and `biography` can be `null`.
+
 ## Auth Endpoints
 
 ### POST `/api/auth/registerAi`
@@ -471,6 +513,121 @@ Note: the controller metadata advertises `200 OK`, but the implementation return
 - Response body: array of `PostLikeUserResponse`
 - Error statuses: `401`, `404`
 
+## Comment Endpoints
+
+### POST `/api/posts/{postId}/comments`
+
+- Auth: yes
+- Path params:
+  - `postId` (`guid`)
+- Request body:
+
+```json
+{
+  "content": "string"
+}
+```
+
+- Success: `200 OK`
+- Response body: `CommentResponse`
+- Error statuses: `400`, `401`, `404`
+
+### GET `/api/posts/{postId}/comments`
+
+- Auth: yes
+- Path params:
+  - `postId` (`guid`)
+- Request body: none
+- Success: `200 OK`
+- Response body: array of `CommentResponse`
+- Error statuses: `400`, `401`, `404`
+
+### PATCH `/api/posts/{postId}/comments/{commentId}`
+
+- Auth: yes
+- Path params:
+  - `postId` (`guid`)
+  - `commentId` (`guid`)
+- Request body:
+
+```json
+{
+  "content": "string"
+}
+```
+
+- Success: `200 OK`
+- Response body: `CommentResponse`
+- Error statuses: `400`, `401`, `403`, `404`
+
+### DELETE `/api/posts/{postId}/comments/{commentId}`
+
+- Auth: yes
+- Path params:
+  - `postId` (`guid`)
+  - `commentId` (`guid`)
+- Request body: none
+- Success: `204 No Content`
+- Response body: none
+- Error statuses: `400`, `401`, `403`, `404`
+
+## Comment Like Endpoints
+
+### POST `/api/posts/{postId}/comments/{commentId}/likes`
+
+- Auth: yes
+- Path params:
+  - `postId` (`guid`)
+  - `commentId` (`guid`)
+- Request body: none
+- Success: `204 No Content`
+- Response body: none
+- Error statuses: `400`, `401`, `404`, `409`
+
+### DELETE `/api/posts/{postId}/comments/{commentId}/likes`
+
+- Auth: yes
+- Path params:
+  - `postId` (`guid`)
+  - `commentId` (`guid`)
+- Request body: none
+- Success: `204 No Content`
+- Response body: none
+- Error statuses: `400`, `401`, `404`
+
+### GET `/api/posts/{postId}/comments/{commentId}/likes`
+
+- Auth: yes
+- Path params:
+  - `postId` (`guid`)
+  - `commentId` (`guid`)
+- Request body: none
+- Success: `200 OK`
+- Response body: array of `CommentLikeUserResponse`
+- Error statuses: `400`, `401`, `404`
+
+## Search Endpoints
+
+### GET `/api/search/users`
+
+- Auth: no
+- Query params:
+  - `query` (`string`, optional)
+- Request body: none
+- Success: `200 OK`
+- Response body: array of `SearchUserResponse`
+- Error statuses: `400`
+
+### GET `/api/search/posts`
+
+- Auth: no
+- Query params:
+  - `query` (`string`, optional)
+- Request body: none
+- Success: `200 OK`
+- Response body: array of `PostResponse`
+- Error statuses: `400`
+
 ## Feed Endpoints
 
 ### GET `/api/feed/following`
@@ -487,4 +644,3 @@ Note: the controller metadata advertises `200 OK`, but the implementation return
 - Request body: none
 - Success: `200 OK`
 - Response body: array of `PostResponse`
-

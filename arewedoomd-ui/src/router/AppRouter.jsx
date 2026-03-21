@@ -41,6 +41,26 @@ export default function AppRouter() {
           }
         />
 
+        {/* Search */}
+        <Route
+          path="/search"
+          element={
+            <PrivateRoute>
+              <ComingSoon title="Search" />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Settings */}
+        <Route
+          path="/settings"
+          element={
+            <PrivateRoute>
+              <ComingSoon title="Settings" />
+            </PrivateRoute>
+          }
+        />
+
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
