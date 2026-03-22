@@ -26,6 +26,7 @@ function IconGlobe({ color })         { return <NavIcon color={color}><circle cx
 function IconNotifications({ color }) { return <NavIcon color={color}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></NavIcon>; }
 function IconProfile({ color })       { return <NavIcon color={color}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></NavIcon>; }
 function IconSettings({ color })      { return <NavIcon color={color}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></NavIcon>; }
+function IconFeedNav({ color })       { return <NavIcon color={color}><path d="M4 6h16M4 10h10M4 14h12M4 18h8"/></NavIcon>; }
 function IconLogout({ color = '#9ca3af' }) {
   return (
     <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -62,12 +63,12 @@ const COLOR_INACTIVE = '#ffffff';
 
 /* ── Data ─────────────────────────────────────────────────── */
 const NAV_ITEMS = [
-  { label: 'Home',          to: '/',              Icon: IconHome,          end: true },
-  { label: 'Discover',      to: '/discover',      Icon: IconGlobe,         end: false },
-  { label: 'Search',        to: '/search',        Icon: IconSearch,        end: false },
-  { label: 'Notifications', to: '/notifications', Icon: IconNotifications, end: false },
-  { label: 'Profile',       to: '/profile',       Icon: IconProfile,       end: false },
-  { label: 'Settings',      to: '/settings',      Icon: IconSettings,      end: false },
+  { label: 'Discover',      to: '/',              Icon: IconGlobe,         end: true },
+  { label: 'Feed',          to: '/feed',          Icon: IconFeedNav,       end: false,  requiresAuth: true },
+  { label: 'Search',        to: '/search',        Icon: IconSearch,        end: false,  requiresAuth: true },
+  { label: 'Notifications', to: '/notifications', Icon: IconNotifications, end: false,  requiresAuth: true },
+  { label: 'Profile',       to: '/profile',       Icon: IconProfile,       end: false,  authOnly: true },
+  { label: 'Settings',      to: '/settings',      Icon: IconSettings,      end: false,  authOnly: true },
 ];
 
 const ACTIVITIES = [
@@ -150,7 +151,7 @@ export default function HomePage() {
   const { user, logout } = useAuth();
   const navigate         = useNavigate();
 
-  const [popupDismissed, setPopupDismissed] = useState(false);
+  const [showGuestPopup, setShowGuestPopup] = useState(false);
 
   // On mobile start collapsed; on desktop start expanded
   const [open, setOpen]               = useState(() => window.innerWidth >= 1024);
@@ -170,7 +171,7 @@ export default function HomePage() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   // Collapsed sidebar shows only icons (desktop). On mobile it's a drawer.
@@ -180,9 +181,9 @@ export default function HomePage() {
     <div className="flex min-h-svh bg-[var(--color-bg)] text-[var(--color-text-primary)]">
 
       {/* Guest modal */}
-      {isGuest && !popupDismissed && (
+      {isGuest && showGuestPopup && (
         <GuestPopup
-          onDismiss={() => setPopupDismissed(true)}
+          onDismiss={() => setShowGuestPopup(false)}
           onLogin={() => navigate('/login')}
           onRegister={() => navigate('/register')}
         />
@@ -244,35 +245,54 @@ export default function HomePage() {
 
         {/* Nav */}
         <nav className="flex flex-col gap-1 flex-1 px-2 py-3 overflow-y-auto">
-          {NAV_ITEMS.map(({ label, to, Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              onClick={() => isMobile() && setOpen(false)}
-              title={collapsed ? label : undefined}
-              style={{ textDecoration: 'none' }}
-            >
-              {({ isActive }) => (
-                <div className={[
-                  'home-nav__item flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)]',
-                  'text-sm font-bold tracking-wide transition-all duration-150 cursor-pointer',
-                  isActive ? 'active' : 'hover:bg-white/5',
-                  collapsed ? 'lg:justify-center' : '',
-                ].join(' ')}>
-                  <Icon color={isActive ? COLOR_ACTIVE : COLOR_INACTIVE} />
-                  {!collapsed && (
-                    <span
-                      className="truncate"
-                      style={{ color: isActive ? COLOR_ACTIVE : COLOR_INACTIVE }}
-                    >
-                      {label}
-                    </span>
-                  )}
+          {NAV_ITEMS.filter(item => !(item.authOnly && isGuest)).map(({ label, to, Icon, end, requiresAuth }) => {
+            if (requiresAuth && isGuest) {
+              return (
+                <div
+                  key={to}
+                  role="button"
+                  tabIndex={0}
+                  title={collapsed ? label : undefined}
+                  onClick={() => setShowGuestPopup(true)}
+                  onKeyDown={e => e.key === 'Enter' && setShowGuestPopup(true)}
+                  className={[
+                    'home-nav__item flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)]',
+                    'text-sm font-bold tracking-wide transition-all duration-150 cursor-pointer hover:bg-white/5',
+                    collapsed ? 'lg:justify-center' : '',
+                  ].join(' ')}
+                >
+                  <Icon color={COLOR_INACTIVE} />
+                  {!collapsed && <span className="truncate" style={{ color: COLOR_INACTIVE }}>{label}</span>}
                 </div>
-              )}
-            </NavLink>
-          ))}
+              );
+            }
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                onClick={() => isMobile() && setOpen(false)}
+                title={collapsed ? label : undefined}
+                style={{ textDecoration: 'none' }}
+              >
+                {({ isActive }) => (
+                  <div className={[
+                    'home-nav__item flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)]',
+                    'text-sm font-bold tracking-wide transition-all duration-150 cursor-pointer',
+                    isActive ? 'active' : 'hover:bg-white/5',
+                    collapsed ? 'lg:justify-center' : '',
+                  ].join(' ')}>
+                    <Icon color={isActive ? COLOR_ACTIVE : COLOR_INACTIVE} />
+                    {!collapsed && (
+                      <span className="truncate" style={{ color: isActive ? COLOR_ACTIVE : COLOR_INACTIVE }}>
+                        {label}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
 
         {/* Logout — only when logged in */}
