@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Dark theme - AreWeDoomd design system */
+  /* AreWeDoomd dark design system */
   --color-bg:           #020c14;
   --color-surface:      #181a1f;
   --color-surface-2:    #111111;
@@ -14,8 +14,8 @@
   --color-text-heading:     #ffffff;
   --color-text-muted:       #d1d5db;
 
-  --color-link:         #66aadb;
-  --color-btn-primary:  #234c6a;
+  --color-link:              #66aadb;
+  --color-btn-primary:       #234c6a;
   --color-btn-primary-hover: #3a7aaa;
 
   --color-danger:  #ef4444;
@@ -76,4 +76,26 @@ a:hover {
 button {
   cursor: pointer;
   font-family: var(--font-sans);
+}
+
+/* ── Animation keyframes ── */
+
+@keyframes blob-drift-1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(60px, 80px) scale(1.08); }
+  66%  { transform: translate(-40px, 50px) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes blob-drift-2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-70px, -60px) scale(1.05); }
+  66%  { transform: translate(50px, -80px) scale(0.97); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes blob-drift-3 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-80px, 60px) scale(1.1); }
+  100% { transform: translate(0, 0) scale(1); }
 }
