@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { feedApi } from '../services/feedApi';
 
 export default function useGlobalFeed() {
-  const [posts, setPosts]   = useState([]);
+  const [posts, setPosts]     = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState(null);
+  const [error, setError]     = useState(null);
+  const [tick, setTick]       = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -18,7 +19,11 @@ export default function useGlobalFeed() {
       .finally(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
-  }, []);
+  }, [tick]);
 
-  return { posts, loading, error };
+  const refresh = useCallback(() => setTick((t) => t + 1), []);
+
+  const prependPost = useCallback((post) => setPosts((prev) => [post, ...prev]), []);
+
+  return { posts, loading, error, refresh, prependPost };
 }

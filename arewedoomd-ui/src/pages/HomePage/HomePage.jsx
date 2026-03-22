@@ -6,6 +6,7 @@ import GuestPopup from '../../components/GuestPopup';
 import GuestBottomBar from '../../components/GuestBottomBar';
 import useGlobalFeed from '../../features/discover/hooks/useGlobalFeed';
 import PostCard from '../../features/discover/components/PostCard';
+import PostComposer from '../../features/discover/components/PostComposer';
 import {
   IconGlobe, IconFeedNav, IconSearch, IconNotifications,
   IconProfile, IconSettings, IconLogout, IconMenu, IconFeed,
@@ -45,7 +46,7 @@ export default function HomePage() {
   const [mobileNavOpen, setMobileNavOpen]     = useState(false);
 
   const isGuest = !user;
-  const { posts, loading: feedLoading, error: feedError } = useGlobalFeed();
+  const { posts, loading: feedLoading, error: feedError, prependPost } = useGlobalFeed();
 
   const handleLogout = () => { logout(); navigate('/'); };
 
@@ -121,6 +122,13 @@ export default function HomePage() {
               </p>
             </div>
           </div>
+
+          {/* Post composer — only for authenticated users */}
+          {!isGuest && (
+            <div className="mb-5">
+              <PostComposer user={user} onPostCreated={prependPost} />
+            </div>
+          )}
 
           {feedLoading && (
             <div className="flex items-center justify-center min-h-64">
