@@ -1,4 +1,12 @@
+import { useEffect } from 'react';
+
 export default function GuestPopup({ onDismiss, onLogin, onRegister }) {
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') onDismiss(); };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onDismiss]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#020c14]/75">
       <div className="relative w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] p-7 flex flex-col gap-5">
