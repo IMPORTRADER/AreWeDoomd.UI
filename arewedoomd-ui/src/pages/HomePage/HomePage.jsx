@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import useIsMobile from '../../hooks/useIsMobile';
 import GuestPopup from '../../components/GuestPopup';
@@ -7,9 +7,12 @@ import GuestBottomBar from '../../components/GuestBottomBar';
 import useGlobalFeed from '../../features/discover/hooks/useGlobalFeed';
 import PostCard from '../../features/discover/components/PostCard';
 import PostComposer from '../../features/discover/components/PostComposer';
+import Input from '../../components/ui/Input';
+import Button from '../../components/ui/Button';
 import {
   IconGlobe, IconFeedNav, IconSearch, IconNotifications,
   IconProfile, IconSettings, IconLogout, IconMenu, IconFeed,
+  IconAlert, IconUser, IconLock, IconGoogle, IconApple,
 } from '../../components/icons';
 
 const COLOR_ACTIVE   = '#66aadb';
@@ -19,7 +22,7 @@ const NAV_ITEMS = [
   { label: 'Discover',      to: '/',              Icon: IconGlobe,         end: true },
   { label: 'Feed',          to: '/feed',          Icon: IconFeedNav,       end: false, requiresAuth: true },
   { label: 'Search',        to: '/search',        Icon: IconSearch,        end: false, requiresAuth: true },
-  { label: 'Notifications', to: '/notifications', Icon: IconNotifications, end: false, requiresAuth: true },
+  { label: 'Notifications', to: '/notifications', Icon: IconNotifications, end: false, requiresAuth: true, authOnly: true },
   { label: 'Profile',       to: '/profile',       Icon: IconProfile,       end: false, authOnly: true },
   { label: 'Settings',      to: '/settings',      Icon: IconSettings,      end: false, authOnly: true },
 ];
@@ -57,6 +60,7 @@ export default function HomePage() {
 
   const [showGuestPopup, setShowGuestPopup]   = useState(() => !user);
   const [mobileNavOpen, setMobileNavOpen]     = useState(false);
+  const [showLoginModal, setShowLoginModal]   = useState(false);
 
   const isGuest = !user;
   const { posts, loading: feedLoading, error: feedError, prependPost } = useGlobalFeed();
@@ -70,9 +74,14 @@ export default function HomePage() {
       {isGuest && showGuestPopup && (
         <GuestPopup
           onDismiss={() => setShowGuestPopup(false)}
-          onLogin={() => navigate('/login')}
+          onLogin={() => { setShowGuestPopup(false); setShowLoginModal(true); }}
           onRegister={() => navigate('/register')}
         />
+      )}
+
+      {/* Login modal */}
+      {showLoginModal && (
+        <LoginModal onClose={() => setShowLoginModal(false)} />
       )}
 
       {/* ── Mobile top bar ── */}
@@ -110,7 +119,7 @@ export default function HomePage() {
               </button>
             </div>
             <NavItems isGuest={isGuest} onGuestClick={() => { setMobileNavOpen(false); setShowGuestPopup(true); }} onNavClick={() => setMobileNavOpen(false)} />
-            <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => navigate('/login')} onRegister={() => navigate('/register')} />
+            <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => navigate('/register')} />
           </nav>
         </>
       )}
@@ -127,7 +136,7 @@ export default function HomePage() {
           </div>
           <NavItems isGuest={isGuest} onGuestClick={() => setShowGuestPopup(true)} onNavClick={() => {}} />
           <DoomedOMeter />
-          <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => navigate('/login')} onRegister={() => navigate('/register')} />
+          <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => navigate('/register')} />
         </aside>
 
         {/* ── Center: Discover Feed ── */}
@@ -274,7 +283,7 @@ export default function HomePage() {
       {/* Guest bottom bar */}
       {isGuest && (
         <GuestBottomBar
-          onLogin={() => navigate('/login')}
+          onLogin={() => setShowLoginModal(true)}
           onRegister={() => navigate('/register')}
         />
       )}
@@ -475,15 +484,17 @@ function NavBottom({ isGuest, onLogout, onLogin, onRegister }) {
   }
 
   return (
-    <div className="mt-auto pt-4 border-t border-[var(--color-border)]">
-      <button
-        onClick={onLogout}
-        className="flex items-center gap-3 w-full px-3 py-2.5 rounded-[var(--radius-md)] text-sm font-medium text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors duration-150"
-      >
-        <IconLogout />
-        <span>Log out</span>
-      </button>
+    <div className="mt-auto">
       <Copyright />
+      <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+        <button
+          onClick={onLogout}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-[var(--radius-md)] text-sm font-medium text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors duration-150"
+        >
+          <IconLogout />
+          <span>Log out</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -493,5 +504,113 @@ function Copyright() {
     <p className="text-xs text-center tracking-wide mt-3 opacity-50 select-none text-white">
       © {new Date().getFullYear()} AreWeDoomd
     </p>
+  );
+}
+
+/* ── Login Modal ── */
+
+function LoginModal({ onClose }) {
+  const { login } = useAuth();
+
+  const [form, setForm]       = useState({ username: '', password: '' });
+  const [error, setError]     = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const canSubmit = form.username.length >= 4 && form.password.length >= 4;
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const handleChange = (e) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setError('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.username || !form.password) { setError('Please fill in all fields.'); return; }
+    setLoading(true);
+    try {
+      await login(form.username, form.password);
+      onClose();
+    } catch (err) {
+      const status = err.response?.status;
+      if (!err.response || status === 502 || status === 503 || status === 504) {
+        setError('Could not reach the server. Please try again later.');
+      } else {
+        setError(err.response.data?.detail || err.response.data?.title || 'Invalid username or password.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div
+        className="relative z-10 w-full max-w-[480px] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-10 py-12 flex flex-col max-sm:px-6 max-sm:py-9"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:bg-white/10 transition-colors"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        {/* Header */}
+        <div className="flex flex-col items-center mb-8">
+          <img className="w-[120px] h-[120px] object-contain -mb-4" src="/logo/logo_white.png" alt="AreWeDoomd" draggable={false} />
+          <p className="text-sm text-[var(--color-text-primary)] text-center leading-[1.65] tracking-[0.18px]">
+            Is this the end of humanity?<br />Sign in to your account
+          </p>
+        </div>
+
+        {/* Form */}
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
+          {error && (
+            <div className="flex items-center gap-2.5 px-3.5 py-3 bg-red-500/[0.08] border border-red-500/25 rounded-[var(--radius-md)] text-red-400 text-[13px] leading-relaxed">
+              <IconAlert /><span>{error}</span>
+            </div>
+          )}
+          <Input label="Username" name="username" type="text" placeholder="your-human-username" value={form.username} onChange={handleChange} icon={<IconUser />} autoComplete="username" />
+          <div className="flex flex-col gap-2">
+            <Input label="Password" name="password" type="password" placeholder="••••••••" value={form.password} onChange={handleChange} icon={<IconLock />} autoComplete="current-password" />
+            <div className="flex justify-end">
+              <Link to="/forgot-password" className="text-[13px] text-[var(--color-link)] tracking-[0.18px] hover:underline">Forgot password?</Link>
+            </div>
+          </div>
+          <Button type="submit" variant="primary" fullWidth loading={loading} disabled={!canSubmit}>Sign In</Button>
+        </form>
+
+        {/* Divider */}
+        <div className="flex items-center justify-center my-6">
+          <span className="text-sm text-[var(--color-text-primary)] tracking-[0.5px]">or continue with</span>
+        </div>
+
+        {/* Social */}
+        <div className="flex gap-2.5">
+          <button type="button" className="flex-1 flex items-center justify-center gap-2 h-[43px] bg-[var(--color-surface-2)] border border-[var(--color-border)] rounded-[var(--radius-md)] text-sm font-medium text-[var(--color-text-muted)] hover:bg-[#1a1a1a] transition-colors">
+            <IconGoogle /><span>Google</span>
+          </button>
+          <button type="button" className="flex-1 flex items-center justify-center gap-2 h-[43px] bg-[var(--color-surface-2)] border border-[var(--color-border)] rounded-[var(--radius-md)] text-sm font-medium text-[var(--color-text-muted)] hover:bg-[#1a1a1a] transition-colors">
+            <IconApple /><span>Apple</span>
+          </button>
+        </div>
+
+        {/* Register link */}
+        <p className="text-center text-sm text-[var(--color-text-primary)] mt-6 tracking-[0.18px]">
+          Don&apos;t have an account?{' '}
+          <Link to="/register" className="text-[var(--color-link)] hover:underline">Create one</Link>
+        </p>
+      </div>
+    </div>
   );
 }
