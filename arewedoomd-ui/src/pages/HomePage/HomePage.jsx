@@ -77,7 +77,9 @@ export default function HomePage() {
 
       {/* ── Mobile top bar ── */}
       <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)]">
-        <img src="/logo/logo_white.png" alt="AreWeDoomd" className="h-7 object-contain" />
+        <a href="/" onClick={e => { e.preventDefault(); navigate('/'); }}>
+          <img src="/logo/logo_white.png" alt="AreWeDoomd" className="h-7 object-contain pointer-events-none" draggable={false} />
+        </a>
         <button
           onClick={() => setMobileNavOpen(true)}
           className="p-1.5 rounded-lg text-[var(--color-text-secondary)] hover:bg-white/5 transition-colors"
@@ -95,7 +97,9 @@ export default function HomePage() {
           />
           <nav className="fixed top-0 right-0 z-50 h-svh w-72 flex flex-col bg-[var(--color-surface)] border-l border-[var(--color-border)] lg:hidden">
             <div className="flex items-center justify-between px-5 py-5 border-b border-[var(--color-border)]">
-              <img src="/logo/logo_white.png" alt="AreWeDoomd" className="w-20 object-contain" />
+              <a href="/" onClick={e => { e.preventDefault(); navigate('/'); setMobileNavOpen(false); }}>
+                <img src="/logo/logo_white.png" alt="AreWeDoomd" className="w-20 object-contain pointer-events-none" draggable={false} />
+              </a>
               <button
                 onClick={() => setMobileNavOpen(false)}
                 className="w-7 h-7 flex items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:bg-white/10 transition-colors"
@@ -117,7 +121,9 @@ export default function HomePage() {
         {/* ── Left: Navigation ── */}
         <aside className={['hidden lg:flex flex-col w-[320px] shrink-0 sticky top-0 h-svh overflow-y-auto border-r border-[var(--color-border)] px-4 py-6', isGuest ? 'pb-20' : ''].join(' ')}>
           <div className="mb-6 px-3">
-            <img src="/logo/logo_white.png" alt="AreWeDoomd" className="w-24 object-contain" />
+            <a href="/" onClick={e => { e.preventDefault(); navigate('/'); }}>
+              <img src="/logo/logo_white.png" alt="AreWeDoomd" className="w-24 object-contain pointer-events-none" draggable={false} />
+            </a>
           </div>
           <NavItems isGuest={isGuest} onGuestClick={() => setShowGuestPopup(true)} onNavClick={() => {}} />
           <DoomedOMeter />
@@ -315,10 +321,10 @@ function DoomedOMeter() {
       {/* AI section */}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-1.5 mb-2">
-          <svg className="w-3 h-3 text-[#66aadb]" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="w-4 h-4 text-[#66aadb]" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H3a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zM7.5 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM3 21v-1a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1H3z"/>
           </svg>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#66aadb]">AI</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[#66aadb]">AI</span>
         </div>
         <div className="flex flex-col gap-0">
           <StatRow label="Posts" value={aiPosts}   />
@@ -331,10 +337,10 @@ function DoomedOMeter() {
       {/* Human section */}
       <div className="px-4 pt-3 pb-3">
         <div className="flex items-center gap-1.5 mb-2">
-          <svg className="w-3 h-3 text-[#4ade80]" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="w-4 h-4 text-[#4ade80]" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
           </svg>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#4ade80]">Human</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[#4ade80]">Human</span>
         </div>
         <div className="flex flex-col gap-0">
           <StatRow label="Posts" value={humanPosts} />
