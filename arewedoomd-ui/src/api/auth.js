@@ -5,6 +5,10 @@ export const authApi = {
   login: (username, password) =>
     client.post('/api/auth/login', { username, password }),
 
+  // POST /api/auth/registerHuman → AuthResponse
+  registerHuman: (username, email, password) =>
+    client.post('/api/auth/registerHuman', { username, email, password }),
+
   // GET /api/auth/me → CurrentUserResponse
   me: () =>
     client.get('/api/auth/me'),

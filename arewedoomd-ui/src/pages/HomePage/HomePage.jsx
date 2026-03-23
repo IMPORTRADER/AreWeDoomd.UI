@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import useIsMobile from '../../hooks/useIsMobile';
 import GuestPopup from '../../components/GuestPopup';
 import GuestBottomBar from '../../components/GuestBottomBar';
+import RegisterModal from '../../components/RegisterModal';
 import useGlobalFeed from '../../features/discover/hooks/useGlobalFeed';
 import PostCard from '../../features/discover/components/PostCard';
 import PostComposer from '../../features/discover/components/PostComposer';
@@ -60,7 +61,8 @@ export default function HomePage() {
 
   const [showGuestPopup, setShowGuestPopup]   = useState(() => !user);
   const [mobileNavOpen, setMobileNavOpen]     = useState(false);
-  const [showLoginModal, setShowLoginModal]   = useState(false);
+  const [showLoginModal, setShowLoginModal]       = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   const isGuest = !user;
   const {
@@ -82,13 +84,24 @@ export default function HomePage() {
         <GuestPopup
           onDismiss={() => setShowGuestPopup(false)}
           onLogin={() => { setShowGuestPopup(false); setShowLoginModal(true); }}
-          onRegister={() => navigate('/register')}
+          onRegister={() => setShowRegisterModal(true)}
         />
       )}
 
       {/* Login modal */}
       {showLoginModal && (
-        <LoginModal onClose={() => setShowLoginModal(false)} />
+        <LoginModal
+          onClose={() => setShowLoginModal(false)}
+          onSwitchToRegister={() => { setShowLoginModal(false); setShowRegisterModal(true); }}
+        />
+      )}
+
+      {/* Register modal */}
+      {showRegisterModal && (
+        <RegisterModal
+          onClose={() => setShowRegisterModal(false)}
+          onSwitchToLogin={() => { setShowRegisterModal(false); setShowLoginModal(true); }}
+        />
       )}
 
       {/* ── Mobile top bar ── */}
@@ -126,7 +139,7 @@ export default function HomePage() {
               </button>
             </div>
             <NavItems isGuest={isGuest} onGuestClick={() => { setMobileNavOpen(false); setShowGuestPopup(true); }} onNavClick={() => setMobileNavOpen(false)} />
-            <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => navigate('/register')} />
+            <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => setShowRegisterModal(true)} />
           </nav>
         </>
       )}
@@ -143,7 +156,7 @@ export default function HomePage() {
           </div>
           <NavItems isGuest={isGuest} onGuestClick={() => setShowGuestPopup(true)} onNavClick={() => {}} />
           <DoomedOMeter />
-          <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => navigate('/register')} />
+          <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => setShowRegisterModal(true)} />
         </aside>
 
         {/* ── Center: Discover Feed ── */}
@@ -299,7 +312,7 @@ export default function HomePage() {
       {isGuest && (
         <GuestBottomBar
           onLogin={() => setShowLoginModal(true)}
-          onRegister={() => navigate('/register')}
+          onRegister={() => setShowRegisterModal(true)}
         />
       )}
     </div>
@@ -524,7 +537,7 @@ function Copyright() {
 
 /* ── Login Modal ── */
 
-function LoginModal({ onClose }) {
+function LoginModal({ onClose, onSwitchToRegister }) {
   const { login } = useAuth();
 
   const [form, setForm]       = useState({ username: '', password: '' });
@@ -565,7 +578,7 @@ function LoginModal({ onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/70" />
       <div
         className="relative z-10 w-full max-w-[480px] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-10 py-12 flex flex-col max-sm:px-6 max-sm:py-9"
         onClick={e => e.stopPropagation()}
@@ -623,7 +636,7 @@ function LoginModal({ onClose }) {
         {/* Register link */}
         <p className="text-center text-sm text-[var(--color-text-primary)] mt-6 tracking-[0.18px]">
           Don&apos;t have an account?{' '}
-          <Link to="/register" className="text-[var(--color-link)] hover:underline">Create one</Link>
+          <button type="button" onClick={onSwitchToRegister} className="text-[var(--color-link)] hover:underline font-medium">Create one</button>
         </p>
       </div>
     </div>

@@ -33,13 +33,26 @@ export function AuthProvider({ children }) {
     return res.data;
   }, []);
 
+  const register = useCallback(async (username, email, password) => {
+    const res = await authApi.registerHuman(username, email, password);
+    // AuthResponse: { userId, username, email, userType, accessToken }
+    localStorage.setItem('accessToken', res.data.accessToken);
+    setUser({
+      userId:   res.data.userId,
+      username: res.data.username,
+      email:    res.data.email,
+      userType: res.data.userType,
+    });
+    return res.data;
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('accessToken');
     setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
