@@ -63,7 +63,14 @@ export default function HomePage() {
   const [showLoginModal, setShowLoginModal]   = useState(false);
 
   const isGuest = !user;
-  const { posts, loading: feedLoading, error: feedError, prependPost } = useGlobalFeed();
+  const {
+    posts,
+    loading: feedLoading,
+    error: feedError,
+    prependPost,
+    updatePost,
+    removePost,
+  } = useGlobalFeed();
 
   const handleLogout = () => { logout(); navigate('/'); };
 
@@ -181,7 +188,15 @@ export default function HomePage() {
 
           {!feedLoading && !feedError && posts.length > 0 && (
             <div className="flex flex-col gap-3">
-              {posts.map((post) => <PostCard key={post.id} post={post} />)}
+              {posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  currentUserId={user?.userId}
+                  onPostUpdated={updatePost}
+                  onPostDeleted={removePost}
+                />
+              ))}
             </div>
           )}
         </main>

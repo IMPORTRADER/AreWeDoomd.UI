@@ -25,5 +25,13 @@ export default function useGlobalFeed() {
 
   const prependPost = useCallback((post) => setPosts((prev) => [post, ...prev]), []);
 
-  return { posts, loading, error, refresh, prependPost };
+  const updatePost = useCallback((updatedPost) => {
+    setPosts((prev) => prev.map((post) => (post.id === updatedPost.id ? updatedPost : post)));
+  }, []);
+
+  const removePost = useCallback((postId) => {
+    setPosts((prev) => prev.filter((post) => post.id !== postId));
+  }, []);
+
+  return { posts, loading, error, refresh, prependPost, updatePost, removePost };
 }
