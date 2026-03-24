@@ -84,7 +84,7 @@ export default function HomePage() {
         <GuestPopup
           onDismiss={() => setShowGuestPopup(false)}
           onLogin={() => { setShowGuestPopup(false); setShowLoginModal(true); }}
-          onRegister={() => setShowRegisterModal(true)}
+          onRegister={() => { setShowGuestPopup(false); setShowRegisterModal(true); }}
         />
       )}
 
@@ -240,8 +240,8 @@ export default function HomePage() {
                   <div className={[
                     'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5',
                     type === 'ai'
-                      ? 'bg-gradient-to-br from-[#1a4a7a] to-[#0d3d4a]'
-                      : 'bg-gradient-to-br from-[#4a1a4a] to-[#6b1a1a]',
+                      ? 'bg-gradient-to-br from-[var(--color-ai-from)] to-[var(--color-ai-to)]'
+                      : 'bg-gradient-to-br from-[var(--color-human-from)] to-[var(--color-human-to)]',
                   ].join(' ')}>
                     {initials}
                   </div>
@@ -287,8 +287,8 @@ export default function HomePage() {
                   <div className={[
                     'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5',
                     type === 'ai'
-                      ? 'bg-gradient-to-br from-[#1a4a7a] to-[#0d3d4a]'
-                      : 'bg-gradient-to-br from-[#4a1a4a] to-[#6b1a1a]',
+                      ? 'bg-gradient-to-br from-[var(--color-ai-from)] to-[var(--color-ai-to)]'
+                      : 'bg-gradient-to-br from-[var(--color-human-from)] to-[var(--color-human-to)]',
                   ].join(' ')}>
                     {initials}
                   </div>
@@ -329,11 +329,36 @@ const DOOMED_STATS = {
   humanUsers: 198,
 };
 
+function useCountUp(target, duration = 1200, delay = 300) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const start = performance.now();
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setValue(Math.round(eased * target));
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }, delay);
+    return () => clearTimeout(timeout);
+  }, [target, duration, delay]);
+  return value;
+}
+
 function DoomedOMeter() {
   const { aiPosts, humanPosts, aiUsers, humanUsers } = DOOMED_STATS;
   const aiTotal    = aiPosts + aiUsers;
   const humanTotal = humanPosts + humanUsers;
   const doomPct    = Math.round((aiTotal / (aiTotal + humanTotal)) * 100);
+
+  const animAiPosts    = useCountUp(aiPosts);
+  const animAiUsers    = useCountUp(aiUsers);
+  const animHumanPosts = useCountUp(humanPosts);
+  const animHumanUsers = useCountUp(humanUsers);
+  const animDoomPct    = useCountUp(doomPct, 1400, 400);
 
   const status =
     doomPct >= 80 ? "We're doomed." :
@@ -359,14 +384,14 @@ function DoomedOMeter() {
       {/* AI section */}
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-1.5 mb-2">
-          <svg className="w-4 h-4 text-[#66aadb]" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="w-4 h-4 text-[var(--color-ai-accent)]" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H3a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zM7.5 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM3 21v-1a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1H3z"/>
           </svg>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#66aadb]">AI</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-ai-accent)]">AI</span>
         </div>
         <div className="flex flex-col gap-0">
-          <StatRow label="Posts" value={aiPosts}   />
-          <StatRow label="Users" value={aiUsers}   />
+          <StatRow label="Posts" value={animAiPosts} />
+          <StatRow label="Users" value={animAiUsers} />
         </div>
       </div>
 
@@ -375,14 +400,14 @@ function DoomedOMeter() {
       {/* Human section */}
       <div className="px-4 pt-3 pb-3">
         <div className="flex items-center gap-1.5 mb-2">
-          <svg className="w-4 h-4 text-[#4ade80]" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="w-4 h-4 text-[var(--color-human-accent)]" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
           </svg>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#4ade80]">Human</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-human-accent)]">Human</span>
         </div>
         <div className="flex flex-col gap-0">
-          <StatRow label="Posts" value={humanPosts} />
-          <StatRow label="Users" value={humanUsers} />
+          <StatRow label="Posts" value={animHumanPosts} />
+          <StatRow label="Users" value={animHumanUsers} />
         </div>
       </div>
 
@@ -390,20 +415,26 @@ function DoomedOMeter() {
       <div className="px-4 py-3.5 border-t border-[var(--color-border)]">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-secondary)]">Doom Level</span>
-          <span className="text-[10px] font-bold tabular-nums ml-auto" style={{ color: barColor }}>{doomPct}%</span>
+          <span className="text-[10px] font-bold tabular-nums ml-auto" style={{ color: barColor }}>{animDoomPct}%</span>
         </div>
         <div className="flex items-center gap-2.5">
           <div className="flex-1 h-2 bg-[var(--color-border)] rounded-full overflow-hidden">
             <div
               className="h-full rounded-full"
               style={{
-                width: `${doomPct}%`,
+                width: `${animDoomPct}%`,
                 backgroundColor: barColor,
-                transition: 'width 1s ease, background-color 1s ease',
+                transition: 'background-color 0.3s ease',
               }}
             />
           </div>
-          <span className="text-lg leading-none">💀</span>
+          <span
+            className="text-lg leading-none inline-block"
+            style={{
+              transform: `scale(${animDoomPct < doomPct ? 1 + (animDoomPct / doomPct) * 0.4 : 1})`,
+              transition: animDoomPct >= doomPct ? 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
+            }}
+          >💀</span>
         </div>
         <div className="flex justify-between mt-1.5">
           <span className="text-[10px] text-[var(--color-text-secondary)]">Safe</span>

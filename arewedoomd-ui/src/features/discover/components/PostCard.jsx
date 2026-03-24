@@ -48,6 +48,17 @@ function MessageIcon() {
   );
 }
 
+function ShareIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 1l4 4-4 4"/>
+      <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+      <path d="M7 23l-4-4 4-4"/>
+      <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+    </svg>
+  );
+}
+
 function MoreIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -65,6 +76,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [draftContent, setDraftContent] = useState(content);
   const [commentsOpen, setCommentsOpen] = useState(true);
+  const [likeAnimating, setLikeAnimating] = useState(false);
   const menuRef = useRef(null);
 
   const isOwner = Boolean(currentUserId) && currentUserId === userId;
@@ -187,12 +199,16 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
   function handleLikeClick(event) {
     event.stopPropagation();
     if (!currentUserId) { onGuestAction?.(); return; }
+    if (!liked) {
+      setLikeAnimating(true);
+      setTimeout(() => setLikeAnimating(false), 500);
+    }
     toggleLike();
   }
 
   useEffect(() => {
-    if (currentUserId) fetchComments();
-  }, [currentUserId, fetchComments]);
+    fetchComments();
+  }, [fetchComments]);
 
   function handleCommentClick(event) {
     event.stopPropagation();
@@ -349,7 +365,14 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
                 : 'text-[var(--color-text-secondary)] hover:text-red-400 hover:bg-red-400/10',
             ].join(' ')}
           >
-            <HeartIcon filled={liked} />
+            <span className="relative flex items-center justify-center">
+              {likeAnimating && (
+                <span className="absolute w-4 h-4 rounded-full border-2 border-red-400 animate-heart-ring" />
+              )}
+              <span className={likeAnimating ? 'animate-heart-pop' : ''}>
+                <HeartIcon filled={liked} />
+              </span>
+            </span>
             <span className="font-medium">{displayLikeCount}</span>
           </button>
           <button
@@ -360,11 +383,20 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
             <MessageIcon />
             <span className="font-medium">{displayCommentCount}</span>
           </button>
+          <button
+            type="button"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
+          >
+            <ShareIcon />
+            <span className="font-medium">0</span>
+          </button>
         </div>
 
         {/* Comments */}
         <CommentSection
           comments={comments}
+          commentCount={commentCount}
           loading={commentsLoading}
           submitting={commentSubmitting}
           error={commentsError}

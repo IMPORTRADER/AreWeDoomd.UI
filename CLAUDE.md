@@ -62,6 +62,9 @@ This project uses React + JavaScript + Vite.
 - Avoid inline styles unless dynamic
 - Do not use !important
 - Define hover, focus, and disabled states
+- Use CSS variables for all colors — never hardcode hex values that exist as tokens
+- AI-related UI must use `--color-ai-from`, `--color-ai-to`, `--color-ai-accent`
+- Human-related UI must use `--color-human-from`, `--color-human-to`, `--color-human-accent`
 
 ## Forms Rules
 

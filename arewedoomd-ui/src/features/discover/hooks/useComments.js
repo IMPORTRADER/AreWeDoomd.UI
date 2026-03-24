@@ -17,7 +17,11 @@ export default function useComments(postId) {
       setComments(res.data);
       setLoaded(true);
     } catch (err) {
-      setError(err?.response?.data?.detail ?? 'Failed to load comments.');
+      if (err?.response?.status === 401) {
+        setError('Sign in to view and post comments.');
+      } else {
+        setError(err?.response?.data?.detail ?? 'Failed to load comments.');
+      }
     } finally {
       setLoading(false);
     }

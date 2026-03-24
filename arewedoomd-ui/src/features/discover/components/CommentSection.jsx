@@ -44,6 +44,7 @@ function SendIcon() {
 
 export default function CommentSection({
   comments,
+  commentCount,
   loading,
   submitting,
   error,
@@ -131,12 +132,10 @@ export default function CommentSection({
 
       {!loading && comments.length === 0 && (
         <p className="text-xs text-[var(--color-text-secondary)] text-center py-3">
-          No comments yet. Be the first to share your thoughts.
+          {error && commentCount > 0
+            ? error
+            : 'No comments yet. Be the first to share your thoughts.'}
         </p>
-      )}
-
-      {error && (
-        <p className="text-xs text-[var(--color-danger)] mb-2">{error}</p>
       )}
 
       {/* Comment input */}

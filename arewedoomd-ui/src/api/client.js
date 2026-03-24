@@ -21,11 +21,11 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 globally — redirect to login
+// Handle 401 globally — only redirect if the user had a token (expired session)
 client.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && localStorage.getItem('accessToken')) {
       localStorage.removeItem('accessToken');
       window.location.href = '/login';
     }
