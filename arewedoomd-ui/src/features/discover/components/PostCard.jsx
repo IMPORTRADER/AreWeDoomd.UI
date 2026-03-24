@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import useManagePost from '../hooks/useManagePost';
+import useLikePost from '../hooks/useLikePost';
+import useComments from '../hooks/useComments';
 import DeletePostDialog from './DeletePostDialog';
+import CommentSection from './CommentSection';
 
 const AVATAR_GRADIENTS = [
   'from-[#1a4a7a] to-[#0d3d4a]',
@@ -29,9 +32,9 @@ function timeAgo(dateString) {
   return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function HeartIcon() {
+function HeartIcon({ filled }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
   );
@@ -39,7 +42,7 @@ function HeartIcon() {
 
 function MessageIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
     </svg>
   );
@@ -55,12 +58,13 @@ function MoreIcon() {
   );
 }
 
-export default function PostCard({ post, currentUserId, onPostUpdated, onPostDeleted }) {
+export default function PostCard({ post, currentUserId, onPostUpdated, onPostDeleted, onGuestAction }) {
   const { userId, content, likeCount, commentCount, createdAt, updatedAt } = post;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [draftContent, setDraftContent] = useState(content);
+  const [commentsOpen, setCommentsOpen] = useState(true);
   const menuRef = useRef(null);
 
   const isOwner = Boolean(currentUserId) && currentUserId === userId;
@@ -88,6 +92,25 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
       setIsMenuOpen(false);
     },
   });
+
+  const {
+    liked,
+    likeCount: displayLikeCount,
+    toggle: toggleLike,
+  } = useLikePost({ postId: post.id, initialLikeCount: likeCount });
+
+  const {
+    comments,
+    loading: commentsLoading,
+    submitting: commentSubmitting,
+    error: commentsError,
+    loaded: commentsLoaded,
+    fetchComments,
+    addComment,
+    removeComment,
+  } = useComments(post.id);
+
+  const displayCommentCount = commentsLoaded ? comments.length : commentCount;
 
   const canSave = !isDraftEmpty && !isOverLimit && !isUnchanged && !isUpdating;
   const radius = 10;
@@ -161,9 +184,24 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
     setIsDeleteDialogOpen(false);
   }
 
+  function handleLikeClick(event) {
+    event.stopPropagation();
+    if (!currentUserId) { onGuestAction?.(); return; }
+    toggleLike();
+  }
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
+
+  function handleCommentClick(event) {
+    event.stopPropagation();
+    if (!currentUserId) { onGuestAction?.(); return; }
+  }
+
   return (
     <>
-      <article className="group bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-5 hover:border-[#3a3a3a] hover:bg-[#1c1e24] transition-all duration-150 cursor-pointer">
+      <article className="group bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-5 hover:border-[#3a3a3a] hover:bg-[var(--color-surface)] transition-all duration-150 cursor-pointer">
         {/* Header */}
         <div className="flex items-start gap-3 mb-3.5">
           <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${avatarGradient(userId)}`}>
@@ -300,16 +338,40 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
         )}
 
         {/* Footer */}
-        <div className="flex items-center gap-4 mt-4 pt-3.5 border-t border-[var(--color-border)]">
-          <button className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-red-400 transition-colors duration-150">
-            <HeartIcon />
-            <span>{likeCount}</span>
+        <div className="flex items-center gap-1 mt-4 pt-3.5 border-t border-[var(--color-border)]">
+          <button
+            type="button"
+            onClick={handleLikeClick}
+            className={[
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all duration-200',
+              liked
+                ? 'text-red-400 bg-red-400/10 hover:bg-red-400/20'
+                : 'text-[var(--color-text-secondary)] hover:text-red-400 hover:bg-red-400/10',
+            ].join(' ')}
+          >
+            <HeartIcon filled={liked} />
+            <span className="font-medium">{displayLikeCount}</span>
           </button>
-          <button className="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-link)] transition-colors duration-150">
+          <button
+            type="button"
+            onClick={handleCommentClick}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
+          >
             <MessageIcon />
-            <span>{commentCount}</span>
+            <span className="font-medium">{displayCommentCount}</span>
           </button>
         </div>
+
+        {/* Comments */}
+        <CommentSection
+          comments={comments}
+          loading={commentsLoading}
+          submitting={commentSubmitting}
+          error={commentsError}
+          currentUserId={currentUserId}
+          onAddComment={addComment}
+          onDeleteComment={removeComment}
+        />
       </article>
 
       <DeletePostDialog

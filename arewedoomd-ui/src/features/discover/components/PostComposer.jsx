@@ -86,10 +86,10 @@ export default function PostComposer({ user, onPostCreated }) {
     <div
       ref={wrapperRef}
       className={[
-        'bg-[var(--color-surface)] border rounded-[var(--radius-lg)] transition-all duration-200',
+        'bg-[var(--color-bg)] border rounded-[var(--radius-lg)] transition-all duration-200',
         expanded
           ? 'border-[#3a4a5a] shadow-[0_0_0_1px_rgba(102,170,219,0.12)] p-4'
-          : 'border-[var(--color-border)] p-3 cursor-text hover:border-[#3a3a3a]',
+          : 'border-[var(--color-border)] p-3 cursor-text hover:border-[#3a3a3a] hover:bg-[var(--color-surface)]',
       ].join(' ')}
       onClick={() => { if (!expanded) setExpanded(true); }}
     >

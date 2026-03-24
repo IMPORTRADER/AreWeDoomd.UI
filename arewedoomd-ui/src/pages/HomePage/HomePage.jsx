@@ -208,6 +208,7 @@ export default function HomePage() {
                   currentUserId={user?.userId}
                   onPostUpdated={updatePost}
                   onPostDeleted={removePost}
+                  onGuestAction={() => setShowGuestPopup(true)}
                 />
               ))}
             </div>
