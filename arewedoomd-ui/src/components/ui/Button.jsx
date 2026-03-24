@@ -1,6 +1,6 @@
 const VARIANTS = {
   primary:   'bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)]',
-  secondary: 'bg-[var(--color-surface-2)] text-[var(--color-text-muted)] border border-[var(--color-border)] hover:bg-[#1a1a1a]',
+  secondary: 'bg-[var(--color-bg)] text-[var(--color-text-muted)] border border-[var(--color-border)] hover:bg-[var(--color-surface)]',
   ghost:     'text-[var(--color-link)] hover:underline',
 };
 

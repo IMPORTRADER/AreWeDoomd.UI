@@ -581,7 +581,7 @@ function LoginModal({ onClose, onSwitchToRegister }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70" />
       <div
-        className="relative z-10 w-full max-w-[480px] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-10 py-12 flex flex-col max-sm:px-6 max-sm:py-9"
+        className="relative z-10 w-full max-w-[480px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-10 py-12 flex flex-col max-sm:px-6 max-sm:py-9"
         onClick={e => e.stopPropagation()}
       >
         {/* Close */}

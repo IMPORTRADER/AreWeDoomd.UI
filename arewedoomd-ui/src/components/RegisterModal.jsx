@@ -89,7 +89,7 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70" />
       <div
-        className="relative z-10 w-full max-w-[480px] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-10 py-10 flex flex-col max-sm:px-6 max-sm:py-8"
+        className="relative z-10 w-full max-w-[480px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-10 py-10 flex flex-col max-sm:px-6 max-sm:py-8"
         onClick={e => e.stopPropagation()}
       >
         {/* Close */}
@@ -125,7 +125,7 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
             type="button"
             onClick={handleAiClick}
             className={[
-              'flex-1 flex items-center justify-center gap-2 h-[46px] rounded-[var(--radius-md)] text-sm font-semibold border bg-[var(--color-surface-2)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[#1a1a1a] hover:text-[var(--color-text-primary)] transition-colors duration-150',
+              'flex-1 flex items-center justify-center gap-2 h-[46px] rounded-[var(--radius-md)] text-sm font-semibold border bg-[var(--color-bg)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)] transition-colors duration-150',
               aiShake ? 'animate-shake' : '',
             ].join(' ')}
           >

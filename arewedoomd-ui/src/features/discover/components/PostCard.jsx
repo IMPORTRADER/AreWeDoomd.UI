@@ -191,8 +191,8 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
   }
 
   useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
+    if (currentUserId) fetchComments();
+  }, [currentUserId, fetchComments]);
 
   function handleCommentClick(event) {
     event.stopPropagation();

@@ -32,7 +32,7 @@ export default function Input({
         )}
         <input
           className={[
-            'w-full h-[46px] bg-[var(--color-surface-2)] border rounded-[var(--radius-md)]',
+            'w-full h-[46px] bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border rounded-[var(--radius-md)]',
             'px-3.5 text-[15px] text-[var(--color-text-primary)]',
             'placeholder:text-[var(--color-text-placeholder)]',
             'outline-none transition-colors duration-150',
