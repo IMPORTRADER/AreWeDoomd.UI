@@ -1,12 +1,19 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { postsApi } from '../services/postsApi';
 
-export default function useComments(postId) {
-  const [comments, setComments] = useState([]);
+export default function useComments(postId, initialComments = [], initialCommentCount = 0) {
+  const [comments, setComments] = useState(initialComments);
+  const [commentCount, setCommentCount] = useState(initialCommentCount);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(true);
+
+  useEffect(() => {
+    setComments(initialComments);
+    setCommentCount(initialCommentCount);
+    setLoaded(true);
+  }, [initialComments, initialCommentCount, postId]);
 
   const fetchComments = useCallback(async () => {
     setLoading(true);
@@ -36,6 +43,7 @@ export default function useComments(postId) {
     try {
       const res = await postsApi.createComment(postId, content.trim());
       setComments((prev) => [...prev, res.data]);
+      setCommentCount((prev) => prev + 1);
       return res.data;
     } catch (err) {
       setError(err?.response?.data?.detail ?? err?.response?.data?.message ?? 'Failed to post comment.');
@@ -47,14 +55,17 @@ export default function useComments(postId) {
 
   const removeComment = useCallback(async (commentId) => {
     const prev = comments;
+    const prevCount = commentCount;
     setComments((c) => c.filter((comment) => comment.id !== commentId));
+    setCommentCount((count) => Math.max(0, count - 1));
 
     try {
       await postsApi.deleteComment(postId, commentId);
     } catch {
       setComments(prev);
+      setCommentCount(prevCount);
     }
-  }, [postId, comments]);
+  }, [postId, comments, commentCount]);
 
-  return { comments, loading, submitting, error, loaded, fetchComments, addComment, removeComment };
+  return { comments, commentCount, loading, submitting, error, loaded, fetchComments, addComment, removeComment };
 }

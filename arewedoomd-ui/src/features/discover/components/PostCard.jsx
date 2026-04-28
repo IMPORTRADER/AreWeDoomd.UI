@@ -5,19 +5,23 @@ import useComments from '../hooks/useComments';
 import DeletePostDialog from './DeletePostDialog';
 import CommentSection from './CommentSection';
 
-const AVATAR_GRADIENTS = [
-  'from-[#1a4a7a] to-[#0d3d4a]',
-  'from-[#4a1a4a] to-[#6b1a1a]',
-  'from-[#1a4a2a] to-[#0d3d1a]',
-  'from-[#4a3a1a] to-[#6b4a0a]',
-  'from-[#1a2a6a] to-[#0d1a5a]',
-];
-
 const MAX_CHARS = 280;
+const EMPTY_COMMENTS = [];
 
-function avatarGradient(userId) {
-  const sum = userId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return AVATAR_GRADIENTS[sum % AVATAR_GRADIENTS.length];
+function avatarGradient(userType) {
+  const normalizedType = userType?.toLowerCase();
+  if (normalizedType === 'ai') {
+    return 'from-[var(--color-ai-from)] to-[var(--color-ai-to)]';
+  }
+  if (normalizedType === 'human') {
+    return 'from-[var(--color-human-from)] to-[var(--color-human-to)]';
+  }
+  return 'from-[var(--color-surface-2)] to-[var(--color-border)]';
+}
+
+function avatarInitials(username) {
+  const trimmed = username?.trim();
+  return trimmed ? trimmed.slice(0, 2).toUpperCase() : '?';
 }
 
 function timeAgo(dateString) {
@@ -70,16 +74,18 @@ function MoreIcon() {
 }
 
 export default function PostCard({ post, currentUserId, onPostUpdated, onPostDeleted, onGuestAction }) {
-  const { userId, content, likeCount, commentCount, createdAt, updatedAt } = post;
+  const { author, content, likeCount, commentCount, comments: initialComments = EMPTY_COMMENTS, createdAt, updatedAt } = post;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [draftContent, setDraftContent] = useState(content);
-  const [commentsOpen, setCommentsOpen] = useState(true);
   const [likeAnimating, setLikeAnimating] = useState(false);
   const menuRef = useRef(null);
 
-  const isOwner = Boolean(currentUserId) && currentUserId === userId;
+  const authorUserId = author?.userId ?? '';
+  const authorUsername = author?.username ?? '';
+  const authorProfileImageUrl = author?.profileImageUrl ?? '';
+  const isOwner = Boolean(currentUserId) && currentUserId === authorUserId;
   const remaining = MAX_CHARS - draftContent.length;
   const isOverLimit = remaining < 0;
   const isDraftEmpty = draftContent.trim().length === 0;
@@ -113,16 +119,13 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
 
   const {
     comments,
+    commentCount: displayCommentCount,
     loading: commentsLoading,
     submitting: commentSubmitting,
     error: commentsError,
-    loaded: commentsLoaded,
-    fetchComments,
     addComment,
     removeComment,
-  } = useComments(post.id);
-
-  const displayCommentCount = commentsLoaded ? comments.length : commentCount;
+  } = useComments(post.id, initialComments, commentCount);
 
   const canSave = !isDraftEmpty && !isOverLimit && !isUnchanged && !isUpdating;
   const radius = 10;
@@ -148,8 +151,8 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [isMenuOpen]);
 
-  const initials = userId.slice(0, 2).toUpperCase();
-  const handle   = `@${userId.slice(0, 8)}`;
+  const initials = avatarInitials(authorUsername);
+  const handle = authorUsername || (authorUserId ? authorUserId.slice(0, 8) : 'Unknown');
   const isUpdated = updatedAt !== null;
   const updatedTooltip = isUpdated
     ? new Date(updatedAt).toLocaleString('en-US', {
@@ -206,10 +209,6 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
     toggleLike();
   }
 
-  useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
-
   function handleCommentClick(event) {
     event.stopPropagation();
     if (!currentUserId) { onGuestAction?.(); return; }
@@ -220,12 +219,20 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
       <article className="group bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-5 hover:border-[#3a3a3a] hover:bg-[var(--color-surface)] transition-all duration-150 cursor-pointer">
         {/* Header */}
         <div className="flex items-start gap-3 mb-3.5">
-          <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${avatarGradient(userId)}`}>
-            {initials}
-          </div>
+          {authorProfileImageUrl ? (
+            <img
+              src={authorProfileImageUrl}
+              alt=""
+              className="w-9 h-9 rounded-full shrink-0 object-cover bg-[var(--color-surface-2)]"
+            />
+          ) : (
+            <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${avatarGradient(author?.userType)}`}>
+              {initials}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-[var(--color-text-heading)] leading-none truncate">
-              {handle}
+              @{handle}
             </p>
             <div className="flex items-center gap-1.5 mt-1">
               <p className="text-[11px] text-[var(--color-text-secondary)]">

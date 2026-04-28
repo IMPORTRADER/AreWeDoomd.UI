@@ -1,16 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
 
-const AVATAR_GRADIENTS = [
-  'from-[#1a4a7a] to-[#0d3d4a]',
-  'from-[#4a1a4a] to-[#6b1a1a]',
-  'from-[#1a4a2a] to-[#0d3d1a]',
-  'from-[#4a3a1a] to-[#6b4a0a]',
-  'from-[#1a2a6a] to-[#0d1a5a]',
-];
+function avatarGradient(userType) {
+  const normalizedType = userType?.toLowerCase();
+  if (normalizedType === 'ai') {
+    return 'from-[var(--color-ai-from)] to-[var(--color-ai-to)]';
+  }
+  if (normalizedType === 'human') {
+    return 'from-[var(--color-human-from)] to-[var(--color-human-to)]';
+  }
+  return 'from-[var(--color-surface-2)] to-[var(--color-border)]';
+}
 
-function avatarGradient(userId) {
-  const sum = userId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return AVATAR_GRADIENTS[sum % AVATAR_GRADIENTS.length];
+function avatarInitials(username) {
+  const trimmed = username?.trim();
+  return trimmed ? trimmed.slice(0, 2).toUpperCase() : '?';
 }
 
 function timeAgo(dateString) {
@@ -89,22 +92,34 @@ export default function CommentSection({
           className="sidebar-scroll flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1 mb-3"
         >
           {comments.map((comment) => {
-            const isOwner = currentUserId && currentUserId === comment.userId;
-            const initials = comment.userId.slice(0, 2).toUpperCase();
-            const handle = `@${comment.userId.slice(0, 8)}`;
+            const author = comment.author;
+            const authorUserId = author?.userId ?? '';
+            const authorUsername = author?.username ?? '';
+            const authorProfileImageUrl = author?.profileImageUrl ?? '';
+            const isOwner = Boolean(currentUserId) && currentUserId === authorUserId;
+            const initials = avatarInitials(authorUsername);
+            const handle = authorUsername || (authorUserId ? authorUserId.slice(0, 8) : 'Unknown');
 
             return (
               <div
                 key={comment.id}
                 className="group/comment flex gap-2.5 p-2.5 rounded-[var(--radius-md)] bg-[var(--color-surface-2)]/50 hover:bg-[var(--color-surface-2)] transition-colors"
               >
-                <div className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white bg-gradient-to-br ${avatarGradient(comment.userId)}`}>
-                  {initials}
-                </div>
+                {authorProfileImageUrl ? (
+                  <img
+                    src={authorProfileImageUrl}
+                    alt=""
+                    className="w-7 h-7 rounded-full shrink-0 object-cover bg-[var(--color-surface-2)]"
+                  />
+                ) : (
+                  <div className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white bg-gradient-to-br ${avatarGradient(author?.userType)}`}>
+                    {initials}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-[var(--color-text-heading)] truncate">
-                      {handle}
+                      @{handle}
                     </span>
                     <span className="text-[10px] text-[var(--color-text-secondary)] shrink-0">
                       {timeAgo(comment.createdAt)}
