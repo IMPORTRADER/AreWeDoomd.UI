@@ -1,19 +1,22 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import useCreatePost from '../hooks/useCreatePost';
 
 const MAX_CHARS = 280;
 
-const AVATAR_GRADIENTS = [
-  'from-[#1a4a7a] to-[#0d3d4a]',
-  'from-[#4a1a4a] to-[#6b1a1a]',
-  'from-[#1a4a2a] to-[#0d3d1a]',
-  'from-[#4a3a1a] to-[#6b4a0a]',
-  'from-[#1a2a6a] to-[#0d1a5a]',
-];
+function avatarGradient(userType) {
+  const normalizedType = userType?.toLowerCase();
+  if (normalizedType === 'ai') {
+    return 'from-[var(--color-ai-from)] to-[var(--color-ai-to)]';
+  }
+  if (normalizedType === 'human') {
+    return 'from-[var(--color-human-from)] to-[var(--color-human-to)]';
+  }
+  return 'from-[var(--color-surface-2)] to-[var(--color-border)]';
+}
 
-function avatarGradient(userId) {
-  const sum = String(userId).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return AVATAR_GRADIENTS[sum % AVATAR_GRADIENTS.length];
+function avatarInitials(username) {
+  const trimmed = username?.trim();
+  return trimmed ? trimmed.slice(0, 2).toUpperCase() : '?';
 }
 
 export default function PostComposer({ user, onPostCreated }) {
@@ -72,8 +75,9 @@ export default function PostComposer({ user, onPostCreated }) {
     }
   };
 
-  const initials = String(user.userId ?? user.username ?? '??').slice(0, 2).toUpperCase();
-  const gradient = avatarGradient(user.userId ?? user.username ?? '');
+  const initials = avatarInitials(user?.username);
+  const gradient = avatarGradient(user?.userType);
+  const profileImageUrl = user?.profileImageUrl ?? '';
 
   // Progress ring
   const radius           = 10;
@@ -95,16 +99,28 @@ export default function PostComposer({ user, onPostCreated }) {
     >
       <div className="flex gap-3 items-start">
         {/* Avatar */}
-        <div
-          className={[
-            `bg-gradient-to-br ${gradient}`,
-            'rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white',
-            'transition-all duration-200',
-            expanded ? 'w-9 h-9' : 'w-7 h-7',
-          ].join(' ')}
-        >
-          {initials}
-        </div>
+        {profileImageUrl ? (
+          <img
+            src={profileImageUrl}
+            alt=""
+            className={[
+              'rounded-full shrink-0 object-cover bg-[var(--color-surface-2)]',
+              'transition-all duration-200',
+              expanded ? 'w-9 h-9' : 'w-7 h-7',
+            ].join(' ')}
+          />
+        ) : (
+          <div
+            className={[
+              `bg-gradient-to-br ${gradient}`,
+              'rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white',
+              'transition-all duration-200',
+              expanded ? 'w-9 h-9' : 'w-7 h-7',
+            ].join(' ')}
+          >
+            {initials}
+          </div>
+        )}
 
         {/* Body */}
         <div className="flex-1 min-w-0">
