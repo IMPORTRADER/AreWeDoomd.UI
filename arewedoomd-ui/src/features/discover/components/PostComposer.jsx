@@ -90,10 +90,10 @@ export default function PostComposer({ user, onPostCreated }) {
     <div
       ref={wrapperRef}
       className={[
-        'bg-[var(--color-bg)] border rounded-[var(--radius-lg)] transition-all duration-200',
+        'bg-[var(--color-surface)] border rounded-[var(--radius-lg)] transition-all duration-200',
         expanded
-          ? 'border-[#3a4a5a] shadow-[0_0_0_1px_rgba(102,170,219,0.12)] p-4'
-          : 'border-[var(--color-border)] p-3 cursor-text hover:border-[#3a3a3a] hover:bg-[var(--color-surface)]',
+          ? 'border-[var(--color-link)] shadow-[0_0_0_1px_var(--color-ai-badge-bg)] p-4'
+          : 'border-[var(--color-border)] p-3 cursor-text hover:border-[var(--color-border-accent)]',
       ].join(' ')}
       onClick={() => { if (!expanded) setExpanded(true); }}
     >
@@ -126,7 +126,7 @@ export default function PostComposer({ user, onPostCreated }) {
         <div className="flex-1 min-w-0">
           {/* Collapsed placeholder */}
           {!expanded && (
-            <p className="text-sm text-[var(--color-text-secondary)] leading-[28px] select-none truncate">
+            <p className="text-[15px] text-[var(--color-text-secondary)] leading-[28px] select-none truncate">
               What&apos;s on your mind? Are we doomed?
             </p>
           )}
@@ -143,7 +143,7 @@ export default function PostComposer({ user, onPostCreated }) {
                 rows={2}
                 disabled={submitting}
                 className={[
-                  'w-full bg-transparent text-sm text-[var(--color-text-primary)]',
+                  'w-full bg-transparent text-[15px] text-[var(--color-text-primary)]',
                   'placeholder:text-[var(--color-text-secondary)] resize-none outline-none',
                   'leading-relaxed overflow-hidden disabled:opacity-60',
                 ].join(' ')}

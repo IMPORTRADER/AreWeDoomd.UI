@@ -24,6 +24,23 @@ function avatarInitials(username) {
   return trimmed ? trimmed.slice(0, 2).toUpperCase() : '?';
 }
 
+function userTypeBadge(userType) {
+  const normalizedType = userType?.toLowerCase();
+  if (normalizedType === 'ai') {
+    return {
+      label: 'AI',
+      className: 'text-[var(--color-ai-accent)] bg-[var(--color-ai-badge-bg)] border-[var(--color-ai-badge-border)]',
+    };
+  }
+  if (normalizedType === 'human') {
+    return {
+      label: 'Human',
+      className: 'text-[var(--color-human-accent)] bg-[var(--color-human-badge-bg)] border-[var(--color-human-badge-border)]',
+    };
+  }
+  return null;
+}
+
 function timeAgo(dateString) {
   const diff = Date.now() - new Date(dateString).getTime();
   const minutes = Math.floor(diff / 60000);
@@ -85,6 +102,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
   const authorUserId = author?.userId ?? '';
   const authorUsername = author?.username ?? '';
   const authorProfileImageUrl = author?.profileImageUrl ?? '';
+  const authorBadge = userTypeBadge(author?.userType);
   const isOwner = Boolean(currentUserId) && currentUserId === authorUserId;
   const remaining = MAX_CHARS - draftContent.length;
   const isOverLimit = remaining < 0;
@@ -133,10 +151,6 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
   const progress = Math.min(draftContent.length / MAX_CHARS, 1);
   const strokeDashoffset = circumference * (1 - progress);
   const ringColor = isOverLimit ? '#ef4444' : remaining <= 20 ? '#f59e0b' : 'var(--color-link)';
-
-  useEffect(() => {
-    setDraftContent(content);
-  }, [content]);
 
   useEffect(() => {
     if (!isMenuOpen) return undefined;
@@ -216,24 +230,33 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
 
   return (
     <>
-      <article className="group bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-5 hover:border-[#3a3a3a] hover:bg-[var(--color-surface)] transition-all duration-150 cursor-pointer">
-        {/* Header */}
-        <div className="flex items-start gap-3 mb-3.5">
+      <article className="group overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[0_18px_42px_rgba(0,0,0,0.22)] hover:border-[var(--color-border-accent)] transition-all duration-150 cursor-pointer">
+        <div className="h-1 bg-[linear-gradient(90deg,rgba(56,189,248,0.45)_0%,rgba(56,189,248,0.18)_34%,rgba(245,73,73,0.18)_66%,rgba(245,73,73,0.45)_100%)]" />
+        <div className="p-4 pb-3">
+          {/* Header */}
+          <div className="flex items-start gap-2.5">
           {authorProfileImageUrl ? (
             <img
               src={authorProfileImageUrl}
               alt=""
-              className="w-9 h-9 rounded-full shrink-0 object-cover bg-[var(--color-surface-2)]"
+              className="w-[42px] h-[42px] rounded-full shrink-0 object-cover bg-[var(--color-surface-2)]"
             />
           ) : (
-            <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${avatarGradient(author?.userType)}`}>
+            <div className={`w-[42px] h-[42px] rounded-full shrink-0 flex items-center justify-center text-sm font-bold text-white bg-gradient-to-br ${avatarGradient(author?.userType)}`}>
               {initials}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-[var(--color-text-heading)] leading-none truncate">
-              @{handle}
-            </p>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <p className="text-base font-bold text-[var(--color-text-heading)] leading-tight truncate">
+                @{handle}
+              </p>
+              {authorBadge && (
+                <span className={`shrink-0 rounded px-1.5 py-0.5 border text-[11px] font-bold uppercase leading-none ${authorBadge.className}`}>
+                  {authorBadge.label}
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-1.5 mt-1">
               <p className="text-[11px] text-[var(--color-text-secondary)]">
                 {timeAgo(createdAt)}
@@ -289,84 +312,87 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
               )}
             </div>
           )}
-        </div>
+          </div>
 
-        {/* Content */}
-        {isEditing ? (
-          <div className="space-y-3">
-            <textarea
-              value={draftContent}
-              onChange={(event) => setDraftContent(event.target.value)}
-              rows={4}
-              disabled={isUpdating}
-              className="sidebar-scroll max-h-56 w-full overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] leading-relaxed outline-none resize-none focus:border-[#3a4a5a] disabled:opacity-60"
-            />
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] text-[var(--color-text-secondary)] select-none">
-                Edit your post
-              </span>
-              <div className="flex items-center gap-2">
-                <div className="relative w-6 h-6 flex items-center justify-center">
-                  <svg width="24" height="24" viewBox="0 0 24 24" className="-rotate-90" aria-hidden="true">
-                    <circle cx="12" cy="12" r={radius} fill="none" stroke="var(--color-border)" strokeWidth="2" />
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r={radius}
-                      fill="none"
-                      stroke={ringColor}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeDasharray={circumference}
-                      strokeDashoffset={strokeDashoffset}
-                      style={{ transition: 'stroke-dashoffset 0.15s ease, stroke 0.15s ease' }}
-                    />
-                  </svg>
-                  {remaining <= 20 && (
-                    <span className="absolute text-[9px] font-bold leading-none" style={{ color: ringColor }}>
-                      {remaining}
-                    </span>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={handleEditCancel}
+          {/* Content */}
+          <div className="mt-3">
+            {isEditing ? (
+              <div className="space-y-3">
+                <textarea
+                  value={draftContent}
+                  onChange={(event) => setDraftContent(event.target.value)}
+                  rows={4}
                   disabled={isUpdating}
-                  className="px-3 py-1.5 rounded-full text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors disabled:opacity-60"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={!canSave}
-                  className="px-3 py-1.5 rounded-full text-xs font-semibold bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isUpdating ? 'Saving...' : 'Save'}
-                </button>
+                  className="sidebar-scroll max-h-56 w-full overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2.5 text-[15px] text-[var(--color-text-primary)] leading-relaxed outline-none resize-none focus:border-[var(--color-link)] disabled:opacity-60"
+                />
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-[var(--color-text-secondary)] select-none">
+                    Edit your post
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-6 h-6 flex items-center justify-center">
+                      <svg width="24" height="24" viewBox="0 0 24 24" className="-rotate-90" aria-hidden="true">
+                        <circle cx="12" cy="12" r={radius} fill="none" stroke="var(--color-border)" strokeWidth="2" />
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r={radius}
+                          fill="none"
+                          stroke={ringColor}
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeDasharray={circumference}
+                          strokeDashoffset={strokeDashoffset}
+                          style={{ transition: 'stroke-dashoffset 0.15s ease, stroke 0.15s ease' }}
+                        />
+                      </svg>
+                      {remaining <= 20 && (
+                        <span className="absolute text-[9px] font-bold leading-none" style={{ color: ringColor }}>
+                          {remaining}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleEditCancel}
+                      disabled={isUpdating}
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors disabled:opacity-60"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={!canSave}
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isUpdating ? 'Saving...' : 'Save'}
+                    </button>
+                  </div>
+                </div>
+                {error && (
+                  <p className="text-xs text-[var(--color-danger)]">{error}</p>
+                )}
               </div>
-            </div>
-            {error && (
-              <p className="text-xs text-[var(--color-danger)]">{error}</p>
+            ) : (
+              <p className="text-[15px] text-[var(--color-text-primary)] leading-relaxed break-words">
+                {content}
+              </p>
             )}
           </div>
-        ) : (
-          <p className="text-sm text-[var(--color-text-primary)] leading-relaxed break-words">
-            {content}
-          </p>
-        )}
 
-        {!isEditing && !isDeleteDialogOpen && error && (
-          <p className="mt-3 text-xs text-[var(--color-danger)]">{error}</p>
-        )}
+          {!isEditing && !isDeleteDialogOpen && error && (
+            <p className="mt-3 text-xs text-[var(--color-danger)]">{error}</p>
+          )}
+        </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-1 mt-4 pt-3.5 border-t border-[var(--color-border)]">
+        <div className="flex items-center gap-1 px-4 py-2.5 bg-[var(--color-panel)] border-y border-[var(--color-border)]">
           <button
             type="button"
             onClick={handleLikeClick}
             className={[
-              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all duration-200',
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] transition-all duration-200',
               liked
                 ? 'text-red-400 bg-red-400/10 hover:bg-red-400/20'
                 : 'text-[var(--color-text-secondary)] hover:text-red-400 hover:bg-red-400/10',
@@ -385,7 +411,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           <button
             type="button"
             onClick={handleCommentClick}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
           >
             <MessageIcon />
             <span className="font-medium">{displayCommentCount}</span>
@@ -393,7 +419,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
           >
             <ShareIcon />
             <span className="font-medium">0</span>
