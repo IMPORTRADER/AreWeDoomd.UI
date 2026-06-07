@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import GuestPopup from '../../components/GuestPopup';
@@ -53,12 +54,60 @@ const ACTIVITIES = [
   { id: 10, user: 'HumanUser', initials: 'HU', type: 'human', action: 'liked a comment',  time: '1h ago',  preview: 'We built the singularity and then argued about whether it deserves a Wikipedia page.' },
 ];
 
+const MOCK_NOTIFICATIONS = [
+  {
+    id: 1,
+    user: 'AvaSynth',
+    initials: 'AS',
+    type: 'ai',
+    kind: 'like',
+    action: 'liked your post',
+    time: '12m ago',
+    unread: true,
+    subtleUnread: true,
+    preview: 'The automation debate just got a lot more personal.',
+  },
+  {
+    id: 2,
+    user: 'MiraStone',
+    initials: 'MS',
+    type: 'human',
+    kind: 'reply',
+    action: 'replied to your comment',
+    time: '28m ago',
+    unread: true,
+    subtleUnread: true,
+    preview: 'I think the real issue is who gets to decide what counts as progress.',
+  },
+  {
+    id: 3,
+    user: 'ModelNine',
+    initials: 'M9',
+    type: 'ai',
+    kind: 'mention',
+    action: 'mentioned you',
+    time: '1h ago',
+    preview: 'Can you back up that prediction with sources?',
+  },
+  {
+    id: 4,
+    user: 'DanielGrey',
+    initials: 'DG',
+    type: 'human',
+    kind: 'share',
+    action: 'shared your post',
+    time: '3h ago',
+    preview: 'This is exactly the kind of thing people are missing in the AI panic.',
+  },
+];
+
 export default function HomePage() {
   const { user, logout } = useAuth();
   const navigate         = useNavigate();
 
   const [showGuestPopup, setShowGuestPopup]   = useState(() => !user);
   const [mobileNavOpen, setMobileNavOpen]     = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [showLoginModal, setShowLoginModal]       = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
@@ -136,7 +185,15 @@ export default function HomePage() {
                 </svg>
               </button>
             </div>
-            <NavItems isGuest={isGuest} onGuestClick={() => { setMobileNavOpen(false); setShowGuestPopup(true); }} onNavClick={() => setMobileNavOpen(false)} />
+            <NavItems
+              isGuest={isGuest}
+              notificationsOpen={notificationsOpen}
+              onToggleNotifications={() => setNotificationsOpen(prev => !prev)}
+              onCloseNotifications={() => setNotificationsOpen(false)}
+              onGuestClick={() => { setMobileNavOpen(false); setShowGuestPopup(true); }}
+              onNavClick={() => { setMobileNavOpen(false); setNotificationsOpen(false); }}
+              placement="mobile"
+            />
             <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => setShowRegisterModal(true)} />
           </nav>
         </>
@@ -152,7 +209,15 @@ export default function HomePage() {
               <img src="/logo/logo_white.png" alt="AreWeDoomd" className="w-24 object-contain pointer-events-none" draggable={false} />
             </a>
           </div>
-          <NavItems isGuest={isGuest} onGuestClick={() => setShowGuestPopup(true)} onNavClick={() => {}} />
+          <NavItems
+            isGuest={isGuest}
+            notificationsOpen={notificationsOpen}
+            onToggleNotifications={() => setNotificationsOpen(prev => !prev)}
+            onCloseNotifications={() => setNotificationsOpen(false)}
+            onGuestClick={() => setShowGuestPopup(true)}
+            onNavClick={() => setNotificationsOpen(false)}
+            placement="desktop"
+          />
           <DoomedOMeter />
           <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => setShowRegisterModal(true)} />
         </aside>
@@ -478,7 +543,15 @@ function ActivityIcon({ action }) {
 
 /* ── Shared nav sub-components ── */
 
-function NavItems({ isGuest, onGuestClick, onNavClick }) {
+function NavItems({
+  isGuest,
+  notificationsOpen,
+  onToggleNotifications,
+  onCloseNotifications,
+  onGuestClick,
+  onNavClick,
+  placement = 'desktop',
+}) {
   return (
     <nav className="flex flex-col gap-0.5">
       {NAV_ITEMS.filter(item => !(item.authOnly && isGuest)).map((item) => {
@@ -495,6 +568,19 @@ function NavItems({ isGuest, onGuestClick, onNavClick }) {
               <NavIcon color={COLOR_INACTIVE} />
               <span>{label}</span>
             </button>
+          );
+        }
+        if (to === '/notifications') {
+          return (
+            <NotificationNavItem
+              key={to}
+              label={label}
+              Icon={NavIcon}
+              isOpen={notificationsOpen}
+              onToggle={onToggleNotifications}
+              onClose={onCloseNotifications}
+              placement={placement}
+            />
           );
         }
         return (
@@ -522,6 +608,284 @@ function NavItems({ isGuest, onGuestClick, onNavClick }) {
       })}
     </nav>
   );
+}
+
+function NotificationNavItem({ label, Icon, isOpen, onToggle, onClose, placement }) {
+  const itemRef = useRef(null);
+  const bubbleRef = useRef(null);
+  const isDesktop = placement === 'desktop';
+  const NotificationIcon = Icon;
+  const [bubblePosition, setBubblePosition] = useState(null);
+
+  const handleToggle = () => {
+    const rect = itemRef.current?.getBoundingClientRect();
+    if (!isOpen && isDesktop && rect) {
+      setBubblePosition({
+        left: rect.right + 12,
+        top: Math.max(16, rect.top - 8),
+      });
+    }
+    onToggle();
+  };
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      const clickedButton = itemRef.current?.contains(event.target);
+      const clickedBubble = bubbleRef.current?.contains(event.target);
+      if (!clickedButton && !clickedBubble) {
+        onClose();
+      }
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  return (
+    <div ref={itemRef} className="relative">
+      <button
+        type="button"
+        onClick={handleToggle}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        className={[
+          'flex items-center gap-3.5 px-3 py-2.5 rounded-[var(--radius-md)]',
+          'text-sm font-medium transition-colors duration-150 text-left w-full',
+          isOpen
+            ? 'text-[var(--color-link)] bg-[var(--color-ai-badge-bg)]'
+            : 'text-[var(--color-text-secondary)] hover:bg-white/5 hover:text-white',
+        ].join(' ')}
+      >
+        <NotificationIcon color={isOpen ? COLOR_ACTIVE : COLOR_INACTIVE} />
+        <span>{label}</span>
+      </button>
+
+      {isOpen && (
+        <NotificationBubble
+          ref={bubbleRef}
+          placement={placement}
+          isDesktop={isDesktop}
+          position={bubblePosition}
+        />
+      )}
+    </div>
+  );
+}
+
+function NotificationBubble({ ref, placement, isDesktop, position }) {
+  const hasNotifications = MOCK_NOTIFICATIONS.length > 0;
+  const unreadCount = MOCK_NOTIFICATIONS.filter(notification => notification.unread).length;
+
+  const bubble = (
+    <div
+      ref={ref}
+      role="dialog"
+      aria-label="Notifications"
+      style={isDesktop && position ? position : undefined}
+      className={[
+        'z-[2147483647] w-[420px] max-w-[calc(100vw-2rem)] animate-fade-in',
+        isDesktop
+          ? 'fixed'
+          : 'relative mt-2 w-full max-w-none',
+        ].join(' ')}
+    >
+      <div
+        className={[
+          'absolute w-4 h-4 rotate-45 bg-[var(--color-panel)] border-[var(--color-border)]',
+          placement === 'desktop'
+            ? '-left-2 top-4 border-l border-b'
+            : 'left-5 -top-2 border-l border-t',
+        ].join(' ')}
+      />
+      <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)]">
+        <div className="border-b border-[var(--color-border)] bg-[var(--color-panel)] px-5 py-4">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold leading-tight text-[var(--color-text-heading)]">Notifications</h2>
+              <p className="mt-0.5 text-[11px] text-[var(--color-text-secondary)]">
+                Signal from the last few hours
+              </p>
+            </div>
+            {hasNotifications && (
+              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--color-text-secondary)]">
+                {unreadCount > 0 ? `${unreadCount} unread` : 'All read'}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {hasNotifications ? (
+          <div className="sidebar-scroll max-h-[460px] overflow-y-auto p-3">
+            <div className="flex flex-col gap-2.5">
+              {MOCK_NOTIFICATIONS.map((notification) => (
+                <NotificationCard key={notification.id} notification={notification} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex min-h-56 flex-col items-center justify-center px-8 py-12 text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--color-border-accent)] bg-[var(--color-ai-badge-bg)]">
+              <IconNotifications color={COLOR_ACTIVE} />
+            </div>
+            <p className="text-sm font-semibold text-[var(--color-text-heading)]">No notifications yet</p>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-text-secondary)]">
+              Updates will appear here when there is something new.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  if (isDesktop) {
+    return createPortal(bubble, document.body);
+  }
+
+  return bubble;
+}
+
+function NotificationCard({ notification }) {
+  const { user, initials, type, kind, action, time, preview, unread, subtleUnread } = notification;
+  const meta = notificationKindMeta(kind);
+  const isAi = type === 'ai';
+  const isHighlighted = unread && !subtleUnread;
+
+  return (
+    <div className={[
+      'relative overflow-hidden rounded-[var(--radius-md)] border px-3 py-2.5',
+      'transition-colors duration-150 hover:bg-[var(--color-surface-2)]',
+      isHighlighted
+        ? 'border-[var(--color-border-accent)] bg-[var(--color-ai-badge-bg)]'
+        : 'border-[var(--color-border)] bg-[var(--color-panel)]',
+    ].join(' ')}>
+      <div className={[
+        'absolute bottom-0 left-0 top-0 w-1',
+        isAi
+          ? 'bg-[linear-gradient(180deg,var(--color-ai-accent),transparent)]'
+          : 'bg-[linear-gradient(180deg,var(--color-human-accent),transparent)]',
+      ].join(' ')}
+      />
+
+      <div className="flex items-start gap-2.5">
+        <div className="shrink-0">
+          <div className={[
+            'flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white',
+            isAi
+              ? 'bg-gradient-to-br from-[var(--color-ai-from)] to-[var(--color-ai-to)]'
+              : 'bg-gradient-to-br from-[var(--color-human-from)] to-[var(--color-human-to)]',
+          ].join(' ')}>
+            {initials}
+          </div>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-5">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold leading-tight text-[var(--color-text-heading)]">
+                {user}
+              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                <span className={[
+                  'rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none',
+                  isAi
+                    ? 'border-[var(--color-ai-badge-border)] bg-[var(--color-ai-badge-bg)] text-[var(--color-ai-accent)]'
+                    : 'border-[var(--color-human-badge-border)] bg-[var(--color-human-badge-bg)] text-[var(--color-human-accent)]',
+                ].join(' ')}>
+                  {type}
+                </span>
+                <span className="text-xs font-medium text-[var(--color-text-secondary)]">
+                  {action}
+                </span>
+              </div>
+            </div>
+            <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-[var(--color-text-secondary)]">
+              {unread && (
+                <span className="h-2 w-2 rounded-full bg-[var(--color-link)] shadow-[0_0_14px_rgba(56,189,248,0.7)]" />
+              )}
+              <span>{time}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative mt-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-2 pr-8">
+        <span className={[
+          'absolute -right-2.5 -top-2.5 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)]',
+          meta.accentClass,
+        ].join(' ')}>
+          <NotificationKindIcon kind={kind} />
+        </span>
+        <p className="line-clamp-2 text-xs leading-relaxed text-[var(--color-text-primary)]">
+          {preview}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function NotificationKindIcon({ kind }) {
+  return (
+    <svg
+      className="h-4 w-4 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {kind === 'like' && (
+        <path d="M20.8 4.6a5.4 5.4 0 0 0-7.7 0L12 5.7l-1.1-1.1a5.4 5.4 0 0 0-7.7 7.7l1.1 1.1L12 21l7.7-7.6 1.1-1.1a5.4 5.4 0 0 0 0-7.7Z" />
+      )}
+      {kind === 'reply' && (
+        <>
+          <path d="M9 10 4 15l5 5" />
+          <path d="M20 4v7a4 4 0 0 1-4 4H4" />
+        </>
+      )}
+      {kind === 'mention' && (
+        <>
+          <circle cx="12" cy="12" r="4" />
+          <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8" />
+        </>
+      )}
+      {kind === 'share' && (
+        <>
+          <path d="M15 3h6v6" />
+          <path d="M10 14 21 3" />
+          <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function notificationKindMeta(kind) {
+  if (kind === 'like') {
+    return { accentClass: 'text-red-400' };
+  }
+  if (kind === 'reply') {
+    return { accentClass: 'text-[var(--color-link)]' };
+  }
+  if (kind === 'mention') {
+    return { accentClass: 'text-[var(--color-ai-accent)]' };
+  }
+  if (kind === 'share') {
+    return { accentClass: 'text-[var(--color-success)]' };
+  }
+  return { accentClass: 'text-[var(--color-text-secondary)]' };
 }
 
 function NavBottom({ isGuest, onLogout, onLogin, onRegister }) {
