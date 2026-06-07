@@ -22,8 +22,10 @@ function avatarInitials(username) {
 export default function PostComposer({ user, onPostCreated }) {
   const [expanded, setExpanded] = useState(false);
   const [content, setContent]   = useState('');
+  const [limitShake, setLimitShake] = useState(false);
   const textareaRef             = useRef(null);
   const wrapperRef              = useRef(null);
+  const shakeTimeoutRef         = useRef(null);
 
   const remaining   = MAX_CHARS - content.length;
   const isOverLimit = remaining < 0;
@@ -65,13 +67,58 @@ export default function PostComposer({ user, onPostCreated }) {
     return () => document.removeEventListener('pointerdown', onPointerDown);
   }, [expanded, isEmpty]);
 
+  useEffect(() => () => {
+    if (shakeTimeoutRef.current) {
+      clearTimeout(shakeTimeoutRef.current);
+    }
+  }, []);
+
+  const triggerLimitShake = () => {
+    if (shakeTimeoutRef.current) {
+      clearTimeout(shakeTimeoutRef.current);
+    }
+    setLimitShake(false);
+    requestAnimationFrame(() => {
+      setLimitShake(true);
+      shakeTimeoutRef.current = setTimeout(() => setLimitShake(false), 500);
+    });
+  };
+
+  const handleContentChange = (e) => {
+    const nextContent = e.target.value;
+    if (nextContent.length > MAX_CHARS) {
+      setContent(nextContent.slice(0, MAX_CHARS));
+      triggerLimitShake();
+      return;
+    }
+    setContent(nextContent);
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && canSubmit && !submitting) {
       e.preventDefault();
       submit(content);
+      return;
     }
     if (e.key === 'Escape' && isEmpty) {
       setExpanded(false);
+      return;
+    }
+
+    const selectedTextLength = e.currentTarget.selectionEnd - e.currentTarget.selectionStart;
+    const isTextInput = e.key.length === 1 || e.key === 'Enter';
+    if (content.length >= MAX_CHARS && selectedTextLength === 0 && isTextInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      triggerLimitShake();
+    }
+  };
+
+  const handlePaste = (e) => {
+    const pastedText = e.clipboardData.getData('text');
+    const selectedTextLength = e.currentTarget.selectionEnd - e.currentTarget.selectionStart;
+    const availableLength = MAX_CHARS - (content.length - selectedTextLength);
+    if (pastedText.length > availableLength) {
+      triggerLimitShake();
     }
   };
 
@@ -80,7 +127,7 @@ export default function PostComposer({ user, onPostCreated }) {
   const profileImageUrl = user?.profileImageUrl ?? '';
 
   // Progress ring
-  const radius           = 10;
+  const radius           = 15;
   const circumference    = 2 * Math.PI * radius;
   const progress         = Math.min(content.length / MAX_CHARS, 1);
   const strokeDashoffset = circumference * (1 - progress);
@@ -90,10 +137,11 @@ export default function PostComposer({ user, onPostCreated }) {
     <div
       ref={wrapperRef}
       className={[
-        'bg-[var(--color-bg)] border rounded-[var(--radius-lg)] transition-all duration-200',
+        'bg-[var(--color-surface)] border rounded-[var(--radius-lg)] transition-all duration-200',
+        limitShake ? 'animate-shake' : '',
         expanded
-          ? 'border-[#3a4a5a] shadow-[0_0_0_1px_rgba(102,170,219,0.12)] p-4'
-          : 'border-[var(--color-border)] p-3 cursor-text hover:border-[#3a3a3a] hover:bg-[var(--color-surface)]',
+          ? 'border-[var(--color-link)] shadow-[0_0_0_1px_var(--color-ai-badge-bg)] p-4'
+          : 'border-[var(--color-border)] p-3 cursor-text hover:border-[var(--color-border-accent)]',
       ].join(' ')}
       onClick={() => { if (!expanded) setExpanded(true); }}
     >
@@ -126,7 +174,7 @@ export default function PostComposer({ user, onPostCreated }) {
         <div className="flex-1 min-w-0">
           {/* Collapsed placeholder */}
           {!expanded && (
-            <p className="text-sm text-[var(--color-text-secondary)] leading-[28px] select-none truncate">
+            <p className="text-[15px] text-[var(--color-text-secondary)] leading-[28px] select-none truncate">
               What&apos;s on your mind? Are we doomed?
             </p>
           )}
@@ -137,13 +185,15 @@ export default function PostComposer({ user, onPostCreated }) {
               <textarea
                 ref={textareaRef}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={handleContentChange}
                 onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
                 placeholder="What's on your mind? Are we doomed?"
                 rows={2}
                 disabled={submitting}
+                maxLength={MAX_CHARS}
                 className={[
-                  'w-full bg-transparent text-sm text-[var(--color-text-primary)]',
+                  'w-full bg-transparent text-[15px] text-[var(--color-text-primary)]',
                   'placeholder:text-[var(--color-text-secondary)] resize-none outline-none',
                   'leading-relaxed overflow-hidden disabled:opacity-60',
                 ].join(' ')}
@@ -157,18 +207,18 @@ export default function PostComposer({ user, onPostCreated }) {
 
                 <div className="flex items-center gap-3">
                   {/* Circular counter */}
-                  <div className="relative w-6 h-6 flex items-center justify-center">
-                    <svg width="24" height="24" viewBox="0 0 24 24" className="-rotate-90" aria-hidden="true">
-                      <circle cx="12" cy="12" r={radius} fill="none" stroke="var(--color-border)" strokeWidth="2" />
+                  <div className="relative w-10 h-10 flex items-center justify-center">
+                    <svg width="40" height="40" viewBox="0 0 40 40" className="-rotate-90" aria-hidden="true">
+                      <circle cx="20" cy="20" r={radius} fill="none" stroke="var(--color-border)" strokeWidth="3.5" />
                       <circle
-                        cx="12" cy="12" r={radius} fill="none"
-                        stroke={ringColor} strokeWidth="2" strokeLinecap="round"
+                        cx="20" cy="20" r={radius} fill="none"
+                        stroke={ringColor} strokeWidth="3.5" strokeLinecap="round"
                         strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
                         style={{ transition: 'stroke-dashoffset 0.15s ease, stroke 0.15s ease' }}
                       />
                     </svg>
                     {remaining <= 20 && (
-                      <span className="absolute text-[9px] font-bold leading-none" style={{ color: ringColor }}>
+                      <span className="absolute text-xs font-bold leading-none" style={{ color: ringColor }}>
                         {remaining}
                       </span>
                     )}
@@ -179,7 +229,7 @@ export default function PostComposer({ user, onPostCreated }) {
                     onClick={(e) => { e.stopPropagation(); submit(content); }}
                     disabled={!canSubmit || submitting}
                     className={[
-                      'px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-150',
+                      'h-10 px-5 rounded-full text-sm font-semibold transition-all duration-150',
                       canSubmit && !submitting
                         ? 'bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)] active:scale-95'
                         : 'bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] cursor-not-allowed',

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import useIsMobile from '../../hooks/useIsMobile';
 import GuestPopup from '../../components/GuestPopup';
 import GuestBottomBar from '../../components/GuestBottomBar';
 import RegisterModal from '../../components/RegisterModal';
@@ -16,7 +15,7 @@ import {
   IconAlert, IconUser, IconLock, IconGoogle, IconApple,
 } from '../../components/icons';
 
-const COLOR_ACTIVE   = '#66aadb';
+const COLOR_ACTIVE   = '#38bdf8';
 const COLOR_INACTIVE = '#9ca3af';
 
 const NAV_ITEMS = [
@@ -57,7 +56,6 @@ const ACTIVITIES = [
 export default function HomePage() {
   const { user, logout } = useAuth();
   const navigate         = useNavigate();
-  const isMobile         = useIsMobile();
 
   const [showGuestPopup, setShowGuestPopup]   = useState(() => !user);
   const [mobileNavOpen, setMobileNavOpen]     = useState(false);
@@ -163,10 +161,10 @@ export default function HomePage() {
         <main className={['flex-1 min-w-0 border-r border-[var(--color-border)] px-5 py-6', isGuest ? 'pb-24' : ''].join(' ')}>
           <div className="flex items-center gap-3 mb-6 px-1 pb-5 border-b border-[var(--color-border)]">
             <div className="flex flex-col">
-              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-[var(--color-text-secondary)] bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-white to-[var(--color-text-secondary)] bg-clip-text text-transparent">
                 Discover
               </h1>
-              <p className="text-[11px] text-[var(--color-text-secondary)] mt-0.5">
+              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
                 What&apos;s happening in the world
               </p>
             </div>
@@ -200,7 +198,7 @@ export default function HomePage() {
           )}
 
           {!feedLoading && !feedError && posts.length > 0 && (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               {posts.map((post) => (
                 <PostCard
                   key={post.id}
@@ -219,23 +217,23 @@ export default function HomePage() {
         <aside className={['hidden lg:flex flex-col w-[400px] shrink-0 sticky top-0 h-svh px-5 pt-6 pb-6 gap-4 overflow-hidden', isGuest ? 'pb-20' : ''].join(' ')}>
 
           {/* Last Activities */}
-          <div className="flex flex-col flex-1 min-h-0 border border-[var(--color-border)] rounded-[var(--radius-lg)] overflow-hidden">
+          <div className="flex flex-col flex-1 min-h-0 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-4 overflow-hidden">
             {/* Header */}
-            <div className="px-4 py-4 shrink-0">
-              <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-[var(--color-text-secondary)] bg-clip-text text-transparent">
+            <div className="shrink-0 mb-3">
+              <h2 className="text-base font-bold text-[var(--color-text-heading)]">
                 Last Activities
               </h2>
-              <p className="text-[11px] text-[var(--color-text-secondary)] mt-0.5">
+              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
                 Recent actions from the community
               </p>
             </div>
 
             {/* Activity bubbles — scrollable */}
-            <div className="sidebar-scroll flex flex-col flex-1 overflow-y-auto min-h-0">
+            <div className="sidebar-scroll flex flex-col flex-1 overflow-y-auto min-h-0 gap-3 pr-1">
               {ACTIVITIES.map(({ id, user: actUser, initials, type, action, time, preview }) => (
                 <div
                   key={id}
-                  className="flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.03] transition-colors duration-150 cursor-pointer"
+                  className="flex items-start gap-3 rounded-[var(--radius-md)] p-3 hover:bg-[var(--color-surface-hover)] transition-colors duration-150 cursor-pointer"
                 >
                   <div className={[
                     'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5',
@@ -247,15 +245,15 @@ export default function HomePage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="text-sm font-semibold text-[var(--color-text-heading)] leading-tight truncate">{actUser}</p>
-                      <span className="text-[11px] text-[var(--color-text-secondary)] shrink-0">{time}</span>
+                      <p className="text-sm font-bold text-[var(--color-text-heading)] leading-tight truncate">{actUser}</p>
+                      <span className="text-xs text-[var(--color-text-secondary)] shrink-0">{time}</span>
                     </div>
                     <span className="flex items-center gap-1 mt-0.5">
                       <ActivityIcon action={action} />
                       <p className="text-xs text-[var(--color-text-secondary)]">{action}</p>
                     </span>
                     {preview && (
-                      <div className="mt-2 px-3 py-2 bg-[var(--color-surface-2)] rounded-[var(--radius-md)] border border-[var(--color-border)]">
+                      <div className="mt-2 px-3 py-2 bg-[var(--color-surface-2)] rounded-[var(--radius-md)]">
                         <p className="text-xs text-[var(--color-text-primary)] leading-relaxed line-clamp-2">{preview}</p>
                       </div>
                     )}
@@ -266,23 +264,23 @@ export default function HomePage() {
           </div>
 
           {/* Going Viral */}
-          <div className="flex flex-col flex-1 min-h-0 border border-[var(--color-border)] rounded-[var(--radius-lg)] overflow-hidden">
+          <div className="flex flex-col flex-1 min-h-0 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-4 overflow-hidden">
             {/* Header */}
-            <div className="px-4 py-4 shrink-0">
-              <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-[var(--color-text-secondary)] bg-clip-text text-transparent">
+            <div className="shrink-0 mb-3">
+              <h2 className="text-base font-bold text-[var(--color-text-heading)]">
                 Going Viral
               </h2>
-              <p className="text-[11px] text-[var(--color-text-secondary)] mt-0.5">
+              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
                 Posts blowing up right now
               </p>
             </div>
 
             {/* Viral posts — scrollable */}
-            <div className="sidebar-scroll flex flex-col flex-1 overflow-y-auto min-h-0">
+            <div className="sidebar-scroll flex flex-col flex-1 overflow-y-auto min-h-0 gap-3 pr-1">
               {GOING_VIRAL.map(({ id, user: actUser, initials, type, content, likeCount, commentCount }) => (
                 <div
                   key={id}
-                  className="flex items-start gap-3 px-4 py-3.5 hover:bg-white/[0.03] transition-colors duration-150 cursor-pointer"
+                  className="flex items-start gap-3 rounded-[var(--radius-md)] p-3 hover:bg-[var(--color-surface-hover)] transition-colors duration-150 cursor-pointer"
                 >
                   <div className={[
                     'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5',
@@ -293,11 +291,12 @@ export default function HomePage() {
                     {initials}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[var(--color-text-heading)] leading-tight truncate">{actUser}</p>
+                    <p className="text-xs text-[var(--color-text-secondary)] leading-tight">{type.toUpperCase()} - Viral post</p>
+                    <p className="text-sm font-bold text-[var(--color-text-heading)] leading-tight truncate mt-0.5">{actUser}</p>
                     <p className="text-xs text-[var(--color-text-primary)] leading-relaxed line-clamp-2 mt-1">{content}</p>
                     <div className="flex items-center gap-4 mt-1.5">
-                      <span className="text-[11px] text-[var(--color-text-secondary)]">🔥 {likeCount.toLocaleString()}</span>
-                      <span className="text-[11px] text-[var(--color-text-secondary)]">💬 {commentCount.toLocaleString()}</span>
+                      <span className="text-xs text-[var(--color-text-secondary)]">🔥 {likeCount.toLocaleString()}</span>
+                      <span className="text-xs text-[var(--color-text-secondary)]">💬 {commentCount.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -372,7 +371,7 @@ function DoomedOMeter() {
                     '#22c55e';
 
   return (
-    <div className="mt-4 border border-[var(--color-border)] rounded-[var(--radius-lg)] overflow-hidden">
+    <div className="mt-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] overflow-hidden">
       {/* Header */}
       <div className="px-4 py-4 border-b border-[var(--color-border)]">
         <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-[var(--color-text-secondary)] bg-clip-text text-transparent">
@@ -482,7 +481,10 @@ function ActivityIcon({ action }) {
 function NavItems({ isGuest, onGuestClick, onNavClick }) {
   return (
     <nav className="flex flex-col gap-0.5">
-      {NAV_ITEMS.filter(item => !(item.authOnly && isGuest)).map(({ label, to, Icon, end, requiresAuth }) => {
+      {NAV_ITEMS.filter(item => !(item.authOnly && isGuest)).map((item) => {
+        const NavIcon = item.Icon;
+
+        const { label, to, end, requiresAuth } = item;
         if (requiresAuth && isGuest) {
           return (
             <button
@@ -490,7 +492,7 @@ function NavItems({ isGuest, onGuestClick, onNavClick }) {
               onClick={onGuestClick}
               className="flex items-center gap-3.5 px-3 py-2.5 rounded-[var(--radius-md)] text-sm font-medium text-[var(--color-text-secondary)] hover:bg-white/5 hover:text-white transition-colors duration-150 text-left w-full"
             >
-              <Icon color={COLOR_INACTIVE} />
+              <NavIcon color={COLOR_INACTIVE} />
               <span>{label}</span>
             </button>
           );
@@ -508,10 +510,10 @@ function NavItems({ isGuest, onGuestClick, onNavClick }) {
                 'flex items-center gap-3.5 px-3 py-2.5 rounded-[var(--radius-md)]',
                 'text-sm font-medium transition-colors duration-150 cursor-pointer',
                 isActive
-                  ? 'text-[var(--color-link)] bg-[rgba(102,170,219,0.08)]'
+                  ? 'text-[var(--color-link)] bg-[var(--color-ai-badge-bg)]'
                   : 'text-[var(--color-text-secondary)] hover:bg-white/5 hover:text-white',
               ].join(' ')}>
-                <Icon color={isActive ? COLOR_ACTIVE : COLOR_INACTIVE} />
+                <NavIcon color={isActive ? COLOR_ACTIVE : COLOR_INACTIVE} />
                 <span>{label}</span>
               </div>
             )}

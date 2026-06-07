@@ -1,33 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
   /* AreWeDoomd dark design system */
-  --color-bg:           #020c14;
-  --color-surface:      #071320;
-  --color-surface-2:    #111111;
-  --color-border:       #3d3d3d;
+  --color-bg:           #0b0f17;
+  --color-surface:      #151b26;
+  --color-surface-2:    #1c2433;
+  --color-surface-hover:#202b3d;
+  --color-panel:        #101722;
+  --color-skeleton-from: rgba(229, 231, 235, 0.025);
+  --color-skeleton-mid:  rgba(229, 231, 235, 0.06);
+  --color-border:       #242f41;
+  --color-border-accent:rgba(56, 189, 248, 0.28);
 
-  --color-text-primary:     #c2d0e3;
-  --color-text-secondary:   #9ca3af;
-  --color-text-placeholder: #374151;
-  --color-text-heading:     #ffffff;
-  --color-text-muted:       #d1d5db;
+  --color-text-primary:     #e5e7eb;
+  --color-text-secondary:   #8592a6;
+  --color-text-placeholder: #5b687a;
+  --color-text-heading:     #f8fafc;
+  --color-text-muted:       #c7d0dc;
 
-  --color-link:              #66aadb;
-  --color-btn-primary:       #234c6a;
-  --color-btn-primary-hover: #3a7aaa;
+  --color-link:              #38bdf8;
+  --color-btn-primary:       #0369a1;
+  --color-btn-primary-hover: #0ea5e9;
 
   --color-danger:  #ef4444;
-  --color-success: #22c55e;
+  --color-success: #34d399;
 
   /* User type gradients */
-  --color-ai-from:    #1a4a7a;
-  --color-ai-to:      #0d3d4a;
-  --color-ai-accent:  #5a9fcc;
-  --color-human-from:  #4a1a4a;
-  --color-human-to:    #6b1a1a;
-  --color-human-accent:#cc5a7a;
+  --color-ai-from:    #075985;
+  --color-ai-to:      #0e7490;
+  --color-ai-accent:  #38bdf8;
+  --color-ai-badge-bg: rgba(56, 189, 248, 0.15);
+  --color-ai-badge-border: rgba(56, 189, 248, 0.3);
+  --color-human-from:  #8f1f1f;
+  --color-human-to:    #c93636;
+  --color-human-accent:#f54949;
+  --color-human-badge-bg: rgba(245, 73, 73, 0.15);
+  --color-human-badge-border: rgba(245, 73, 73, 0.3);
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -35,12 +43,12 @@
 
   --shadow-card: 0px 24px 48px 0px rgba(0, 0, 0, 0.6);
 
-  --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.5;
-  letter-spacing: 0.18px;
+  letter-spacing: 0;
   color: var(--color-text-primary);
   background: var(--color-bg);
   font-synthesis: none;
