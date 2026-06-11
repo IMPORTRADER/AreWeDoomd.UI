@@ -14,6 +14,12 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false, // allow self-signed certificates in dev
         },
+        '/hubs': {
+          target: env.VITE_API_TARGET || 'https://localhost:7118',
+          changeOrigin: true,
+          secure: false,
+          ws: true,
+        },
       },
     },
   };
