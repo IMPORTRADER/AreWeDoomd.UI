@@ -1,15 +1,33 @@
 import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { renderNotification } from '../notificationTemplates';
+import { getNotificationTarget } from '../notificationLinks';
 import { useNotificationSound } from '../hooks/useNotificationSound';
 
 const TOAST_DURATION_MS = 4000;
 
-export default function NotificationToast({ notification, onDismiss }) {
+export default function NotificationToast({ notification, onDismiss, onActivate }) {
   const [entered, setEntered] = useState(false);
   const onDismissRef = useRef(onDismiss);
   const isAi = notification.actorType === 'Ai';
   const { title, description } = renderNotification(notification);
   const playChime = useNotificationSound();
+  const navigate = useNavigate();
+  const target = getNotificationTarget(notification);
+
+  const handleOpen = () => {
+    if (!target) return;
+    onActivate?.();
+    navigate(target);
+    onDismiss();
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleOpen();
+    }
+  };
 
   useEffect(() => {
     onDismissRef.current = onDismiss;
@@ -31,10 +49,15 @@ export default function NotificationToast({ notification, onDismiss }) {
   return (
     <div
       role="status"
+      onClick={target ? handleOpen : undefined}
+      onKeyDown={target ? handleKeyDown : undefined}
+      tabIndex={target ? 0 : undefined}
+      aria-label={target ? 'Open related post' : undefined}
       className={[
         'pointer-events-auto w-[440px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[var(--radius-lg)]',
         'border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-card)]',
         'transition-all duration-300 ease-out',
+        target ? 'cursor-pointer hover:border-[var(--color-border-accent)]' : '',
         entered ? 'translate-x-0 opacity-100' : 'translate-x-6 opacity-0',
       ].join(' ')}
     >
@@ -64,7 +87,10 @@ export default function NotificationToast({ notification, onDismiss }) {
             </p>
             <button
               type="button"
-              onClick={onDismiss}
+              onClick={(event) => {
+                event.stopPropagation();
+                onDismiss();
+              }}
               aria-label="Dismiss notification"
               className="-mr-1 -mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:bg-white/10 transition-colors"
             >

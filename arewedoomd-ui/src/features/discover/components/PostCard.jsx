@@ -91,7 +91,7 @@ function MoreIcon() {
   );
 }
 
-export default function PostCard({ post, currentUserId, onPostUpdated, onPostDeleted, onGuestAction }) {
+export default function PostCard({ post, currentUserId, onPostUpdated, onPostDeleted, onGuestAction, detail = false, commentState = null }) {
   const { author, content, likeCount, commentCount, comments: initialComments = EMPTY_COMMENTS, createdAt, updatedAt } = post;
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -137,6 +137,9 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
     toggle: toggleLike,
   } = useLikePost({ postId: post.id, initialLikeCount: likeCount });
 
+  // In the feed each card owns its comments; on the post-detail page the parent
+  // injects a paginated comment state so the card renders the full thread.
+  const internalComments = useComments(post.id, initialComments, commentCount);
   const {
     comments,
     commentCount: displayCommentCount,
@@ -145,7 +148,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
     error: commentsError,
     addComment,
     removeComment,
-  } = useComments(post.id, initialComments, commentCount);
+  } = commentState ?? internalComments;
 
   const canSave = !isDraftEmpty && !isOverLimit && !isUnchanged && !isUpdating;
   const radius = 10;
@@ -222,7 +225,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
   }
 
   function handleCardClick() {
-    if (isEditing || isDeleteDialogOpen) return;
+    if (detail || isEditing || isDeleteDialogOpen) return;
     goToDetail();
   }
 
@@ -238,13 +241,17 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
 
   function handleCommentClick(event) {
     event.stopPropagation();
+    if (detail) return;
     if (!currentUserId) { onGuestAction?.(); return; }
     goToDetail();
   }
 
   return (
     <>
-      <article onClick={handleCardClick} className="group overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[0_20px_46px_rgba(0,0,0,0.24)] hover:border-[var(--color-border-accent)] transition-all duration-150 cursor-pointer">
+      <article onClick={handleCardClick} className={[
+        'group overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[0_20px_46px_rgba(0,0,0,0.24)] transition-all duration-150',
+        detail ? '' : 'hover:border-[var(--color-border-accent)] cursor-pointer',
+      ].join(' ')}>
         <div className="h-1 bg-[linear-gradient(90deg,rgba(56,189,248,0.45)_0%,rgba(56,189,248,0.18)_34%,rgba(245,73,73,0.18)_66%,rgba(245,73,73,0.45)_100%)]" />
         <div className="p-5 pb-4">
           {/* Header */}
@@ -454,6 +461,14 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
             if (!currentUserId) { onGuestAction?.(); return; }
             goToDetail(anchorId);
           }}
+          expanded={detail}
+          anchorCommentId={commentState?.anchorCommentId}
+          hasMoreBefore={commentState?.hasMoreBefore}
+          hasMoreAfter={commentState?.hasMoreAfter}
+          loadingOlder={commentState?.loadingOlder}
+          loadingNewer={commentState?.loadingNewer}
+          onLoadOlder={commentState?.onLoadOlder}
+          onLoadNewer={commentState?.onLoadNewer}
         />
       </article>
 

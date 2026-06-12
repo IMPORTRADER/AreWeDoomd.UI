@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import AppShell  from '../components/layout/AppShell';
 import HomePage   from '../pages/HomePage/HomePage';
 import PostDetailPage from '../pages/PostDetailPage/PostDetailPage';
 import ComingSoon from '../pages/ComingSoon';
@@ -19,11 +20,14 @@ export default function AppRouter() {
         <Route path="/forgot-password" element={<ComingSoon title="Forgot Password" />} />
         <Route path="/register"        element={<ComingSoon title="Register" />} />
 
-        {/* Home — public, guest UI handled inside */}
-        <Route path="/" element={<HomePage />} />
+        {/* Shell layout — keeps left/right widgets, swaps the center */}
+        <Route element={<AppShell />}>
+          {/* Home — public, guest UI handled inside */}
+          <Route path="/" element={<HomePage />} />
 
-        {/* Post detail — public, guest UI handled inside */}
-        <Route path="/posts/:postId" element={<PostDetailPage />} />
+          {/* Post detail — public, guest UI handled inside */}
+          <Route path="/posts/:postId" element={<PostDetailPage />} />
+        </Route>
 
         {/* Private */}
         <Route path="/search"        element={<PrivateRoute><ComingSoon title="Search" /></PrivateRoute>} />
