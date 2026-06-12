@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import usePostDetail from '../../features/discover/hooks/usePostDetail';
@@ -81,6 +81,12 @@ export default function PostDetailPage() {
 
   const [draft, setDraft] = useState('');
   const anchorAppliedRef = useRef(false);
+
+  // Reset the anchor-applied guard whenever the anchor param changes so a new
+  // navigation to the same page with a different ?anchor= fires the scroll.
+  useEffect(() => {
+    anchorAppliedRef.current = false;
+  }, [anchorCommentId]);
 
   // FR-12: scroll anchor comment to top of viewport (instant, one time)
   useLayoutEffect(() => {
