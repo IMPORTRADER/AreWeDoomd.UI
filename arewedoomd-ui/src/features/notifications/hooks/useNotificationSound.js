@@ -23,7 +23,7 @@ function unlockOnInteraction() {
   } catch {}
 }
 
-function scheduleTone(ctx, frequency, startOffset, gain) {
+function scheduleTone(ctx, frequency, startOffset, gain, duration = 0.6) {
   const now = ctx.currentTime;
   const osc = ctx.createOscillator();
   const gainNode = ctx.createGain();
@@ -32,17 +32,17 @@ function scheduleTone(ctx, frequency, startOffset, gain) {
   osc.frequency.setValueAtTime(frequency, now + startOffset);
   osc.frequency.exponentialRampToValueAtTime(
     frequency * 0.985,
-    now + startOffset + 0.3,
+    now + startOffset + Math.min(0.3, duration * 0.4),
   );
 
   gainNode.gain.setValueAtTime(0.0001, now + startOffset);
   gainNode.gain.linearRampToValueAtTime(gain, now + startOffset + 0.015);
-  gainNode.gain.exponentialRampToValueAtTime(0.0001, now + startOffset + 0.6);
+  gainNode.gain.exponentialRampToValueAtTime(0.0001, now + startOffset + duration);
 
   osc.connect(gainNode);
   gainNode.connect(ctx.destination);
   osc.start(now + startOffset);
-  osc.stop(now + startOffset + 0.65);
+  osc.stop(now + startOffset + duration + 0.05);
 }
 
 export function useNotificationSound() {
@@ -55,8 +55,8 @@ export function useNotificationSound() {
     try {
       const ctx = getCtx();
       const doPlay = () => {
-        scheduleTone(ctx, 880, 0, 0.55);
-        scheduleTone(ctx, 1320, 0.08, 0.30);
+        scheduleTone(ctx, 220, 0,    0.40, 1.0);
+        scheduleTone(ctx, 330, 0.10, 0.22, 0.9);
       };
 
       if (ctx.state === 'suspended') {
