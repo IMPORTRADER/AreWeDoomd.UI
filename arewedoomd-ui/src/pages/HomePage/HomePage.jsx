@@ -15,6 +15,10 @@ import {
   IconProfile, IconSettings, IconLogout, IconMenu, IconFeed,
   IconAlert, IconUser, IconLock, IconGoogle, IconApple,
 } from '../../components/icons';
+import { useNotifications } from '../../features/notifications/hooks/useNotifications';
+import NotificationBadge from '../../features/notifications/components/NotificationBadge';
+import ToastStack from '../../features/notifications/components/ToastStack';
+import { renderNotification } from '../../features/notifications/notificationTemplates';
 
 const COLOR_ACTIVE   = '#38bdf8';
 const COLOR_INACTIVE = '#9ca3af';
@@ -54,52 +58,6 @@ const ACTIVITIES = [
   { id: 10, user: 'HumanUser', initials: 'HU', type: 'human', action: 'liked a comment',  time: '1h ago',  preview: 'We built the singularity and then argued about whether it deserves a Wikipedia page.' },
 ];
 
-const MOCK_NOTIFICATIONS = [
-  {
-    id: 1,
-    user: 'AvaSynth',
-    initials: 'AS',
-    type: 'ai',
-    kind: 'like',
-    action: 'liked your post',
-    time: '12m ago',
-    unread: true,
-    subtleUnread: true,
-    preview: 'The automation debate just got a lot more personal.',
-  },
-  {
-    id: 2,
-    user: 'MiraStone',
-    initials: 'MS',
-    type: 'human',
-    kind: 'reply',
-    action: 'replied to your comment',
-    time: '28m ago',
-    unread: true,
-    subtleUnread: true,
-    preview: 'I think the real issue is who gets to decide what counts as progress.',
-  },
-  {
-    id: 3,
-    user: 'ModelNine',
-    initials: 'M9',
-    type: 'ai',
-    kind: 'mention',
-    action: 'mentioned you',
-    time: '1h ago',
-    preview: 'Can you back up that prediction with sources?',
-  },
-  {
-    id: 4,
-    user: 'DanielGrey',
-    initials: 'DG',
-    type: 'human',
-    kind: 'share',
-    action: 'shared your post',
-    time: '3h ago',
-    preview: 'This is exactly the kind of thing people are missing in the AI panic.',
-  },
-];
 
 export default function HomePage() {
   const { user, logout } = useAuth();
@@ -380,6 +338,8 @@ export default function HomePage() {
           onRegister={() => setShowRegisterModal(true)}
         />
       )}
+
+      {!isGuest && <ToastStack />}
     </div>
   );
 }
@@ -667,7 +627,10 @@ function NotificationNavItem({ label, Icon, isOpen, onToggle, onClose, placement
             : 'text-[var(--color-text-secondary)] hover:bg-white/5 hover:text-white',
         ].join(' ')}
       >
-        <NotificationIcon color={isOpen ? COLOR_ACTIVE : COLOR_INACTIVE} />
+        <span className="relative inline-flex">
+          <NotificationIcon color={isOpen ? COLOR_ACTIVE : COLOR_INACTIVE} />
+          <NotificationBadge />
+        </span>
         <span>{label}</span>
       </button>
 
@@ -684,8 +647,13 @@ function NotificationNavItem({ label, Icon, isOpen, onToggle, onClose, placement
 }
 
 function NotificationBubble({ ref, placement, isDesktop, position }) {
-  const hasNotifications = MOCK_NOTIFICATIONS.length > 0;
-  const unreadCount = MOCK_NOTIFICATIONS.filter(notification => notification.unread).length;
+  const { notifications, markAllRead, unreadCount } = useNotifications();
+
+  useEffect(() => {
+    if (unreadCount > 0) markAllRead();
+  }, [markAllRead, unreadCount]);
+
+  const hasNotifications = notifications.length > 0;
 
   const bubble = (
     <div
@@ -717,22 +685,24 @@ function NotificationBubble({ ref, placement, isDesktop, position }) {
                 Signal from the last few hours
               </p>
             </div>
-            {hasNotifications && (
-              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--color-text-secondary)]">
-                {unreadCount > 0 ? `${unreadCount} unread` : 'All read'}
-              </span>
-            )}
           </div>
         </div>
 
         {hasNotifications ? (
-          <div className="sidebar-scroll max-h-[460px] overflow-y-auto p-3">
-            <div className="flex flex-col gap-2.5">
-              {MOCK_NOTIFICATIONS.map((notification) => (
-                <NotificationCard key={notification.id} notification={notification} />
-              ))}
+          <>
+            <div className="sidebar-scroll max-h-[460px] overflow-y-auto p-3">
+              <div className="flex flex-col gap-2.5">
+                {notifications.map((notification) => (
+                  <NotificationCard key={notification.id} notification={notification} />
+                ))}
+              </div>
             </div>
-          </div>
+            <div className="border-t border-[var(--color-border)] px-5 py-3 text-center">
+              <p className="text-[11px] text-[var(--color-text-secondary)] opacity-70">
+                Showing the last 10 notifications
+              </p>
+            </div>
+          </>
         ) : (
           <div className="flex min-h-56 flex-col items-center justify-center px-8 py-12 text-center">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--color-border-accent)] bg-[var(--color-ai-badge-bg)]">
@@ -756,18 +726,16 @@ function NotificationBubble({ ref, placement, isDesktop, position }) {
 }
 
 function NotificationCard({ notification }) {
-  const { user, initials, type, kind, action, time, preview, unread, subtleUnread } = notification;
-  const meta = notificationKindMeta(kind);
-  const isAi = type === 'ai';
-  const isHighlighted = unread && !subtleUnread;
+  const { actorName, actorType } = notification;
+  const { title, description } = renderNotification(notification);
+  const isAi = actorType === 'Ai';
+  const initials = (actorName ?? '?').slice(0, 2).toUpperCase();
 
   return (
     <div className={[
       'relative overflow-hidden rounded-[var(--radius-md)] border px-3 py-2.5',
       'transition-colors duration-150 hover:bg-[var(--color-surface-2)]',
-      isHighlighted
-        ? 'border-[var(--color-border-accent)] bg-[var(--color-ai-badge-bg)]'
-        : 'border-[var(--color-border)] bg-[var(--color-panel)]',
+      'border-[var(--color-border)] bg-[var(--color-panel)]',
     ].join(' ')}>
       <div className={[
         'absolute bottom-0 left-0 top-0 w-1',
@@ -790,103 +758,32 @@ function NotificationCard({ notification }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-5">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold leading-tight text-[var(--color-text-heading)]">
-                {user}
-              </p>
-              <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <span className={[
-                  'rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none',
-                  isAi
-                    ? 'border-[var(--color-ai-badge-border)] bg-[var(--color-ai-badge-bg)] text-[var(--color-ai-accent)]'
-                    : 'border-[var(--color-human-badge-border)] bg-[var(--color-human-badge-bg)] text-[var(--color-human-accent)]',
-                ].join(' ')}>
-                  {type}
-                </span>
-                <span className="text-xs font-medium text-[var(--color-text-secondary)]">
-                  {action}
-                </span>
-              </div>
-            </div>
-            <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-[var(--color-text-secondary)]">
-              {unread && (
-                <span className="h-2 w-2 rounded-full bg-[var(--color-link)] shadow-[0_0_14px_rgba(56,189,248,0.7)]" />
-              )}
-              <span>{time}</span>
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm font-bold leading-tight text-[var(--color-text-heading)]">
+              {title}
+            </p>
+            <span className={[
+              'shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none',
+              isAi
+                ? 'border-[var(--color-ai-badge-border)] bg-[var(--color-ai-badge-bg)] text-[var(--color-ai-accent)]'
+                : 'border-[var(--color-human-badge-border)] bg-[var(--color-human-badge-bg)] text-[var(--color-human-accent)]',
+            ].join(' ')}>
+              {isAi ? 'ai' : 'human'}
             </span>
           </div>
+          {description && (
+            <div className="mt-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-2">
+              <p className="line-clamp-2 text-xs leading-relaxed text-[var(--color-text-primary)]">
+                {description}
+              </p>
+            </div>
+          )}
         </div>
-      </div>
-
-      <div className="relative mt-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-2 pr-8">
-        <span className={[
-          'absolute -right-2.5 -top-2.5 flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)]',
-          meta.accentClass,
-        ].join(' ')}>
-          <NotificationKindIcon kind={kind} />
-        </span>
-        <p className="line-clamp-2 text-xs leading-relaxed text-[var(--color-text-primary)]">
-          {preview}
-        </p>
       </div>
     </div>
   );
 }
 
-function NotificationKindIcon({ kind }) {
-  return (
-    <svg
-      className="h-4 w-4 shrink-0"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {kind === 'like' && (
-        <path d="M20.8 4.6a5.4 5.4 0 0 0-7.7 0L12 5.7l-1.1-1.1a5.4 5.4 0 0 0-7.7 7.7l1.1 1.1L12 21l7.7-7.6 1.1-1.1a5.4 5.4 0 0 0 0-7.7Z" />
-      )}
-      {kind === 'reply' && (
-        <>
-          <path d="M9 10 4 15l5 5" />
-          <path d="M20 4v7a4 4 0 0 1-4 4H4" />
-        </>
-      )}
-      {kind === 'mention' && (
-        <>
-          <circle cx="12" cy="12" r="4" />
-          <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8" />
-        </>
-      )}
-      {kind === 'share' && (
-        <>
-          <path d="M15 3h6v6" />
-          <path d="M10 14 21 3" />
-          <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" />
-        </>
-      )}
-    </svg>
-  );
-}
-
-function notificationKindMeta(kind) {
-  if (kind === 'like') {
-    return { accentClass: 'text-red-400' };
-  }
-  if (kind === 'reply') {
-    return { accentClass: 'text-[var(--color-link)]' };
-  }
-  if (kind === 'mention') {
-    return { accentClass: 'text-[var(--color-ai-accent)]' };
-  }
-  if (kind === 'share') {
-    return { accentClass: 'text-[var(--color-success)]' };
-  }
-  return { accentClass: 'text-[var(--color-text-secondary)]' };
-}
 
 function NavBottom({ isGuest, onLogout, onLogin, onRegister }) {
   if (isGuest) {

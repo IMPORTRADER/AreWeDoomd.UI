@@ -174,3 +174,11 @@ button {
 
 .animate-heart-pop { animation: heart-pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .animate-heart-ring { animation: heart-ring 0.5s ease-out forwards; }
+
+@keyframes badge-morph {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { opacity: 1; transform: scale(1.15); }
+  80%  { transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-badge-morph { animation: badge-morph 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
