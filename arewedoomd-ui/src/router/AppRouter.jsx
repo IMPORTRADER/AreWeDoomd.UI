@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import HomePage   from '../pages/HomePage/HomePage';
+import PostDetailPage from '../pages/PostDetailPage/PostDetailPage';
 import ComingSoon from '../pages/ComingSoon';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -20,6 +21,9 @@ export default function AppRouter() {
 
         {/* Home — public, guest UI handled inside */}
         <Route path="/" element={<HomePage />} />
+
+        {/* Post detail — public, guest UI handled inside */}
+        <Route path="/posts/:postId" element={<PostDetailPage />} />
 
         {/* Private */}
         <Route path="/search"        element={<PrivateRoute><ComingSoon title="Search" /></PrivateRoute>} />
