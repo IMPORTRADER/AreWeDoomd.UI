@@ -143,7 +143,7 @@ export default function AppShell() {
               onNavClick={() => { setMobileNavOpen(false); setNotificationsOpen(false); }}
               placement="mobile"
             />
-            <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => setShowRegisterModal(true)} />
+            <NavBottom isGuest={isGuest} user={user} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => setShowRegisterModal(true)} onNavigate={() => { setMobileNavOpen(false); setNotificationsOpen(false); }} />
           </nav>
         </>
       )}
@@ -168,7 +168,7 @@ export default function AppShell() {
             placement="desktop"
           />
           <DoomedOMeter />
-          <NavBottom isGuest={isGuest} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => setShowRegisterModal(true)} />
+          <NavBottom isGuest={isGuest} user={user} onLogout={handleLogout} onLogin={() => setShowLoginModal(true)} onRegister={() => setShowRegisterModal(true)} onNavigate={() => setNotificationsOpen(false)} />
         </aside>
 
         {/* ── Center: routed content (feed / post detail) ── */}
@@ -753,7 +753,7 @@ function NotificationCard({ notification, onClose }) {
 }
 
 
-function NavBottom({ isGuest, onLogout, onLogin, onRegister }) {
+function NavBottom({ isGuest, user, onLogout, onLogin, onRegister, onNavigate }) {
   if (isGuest) {
     return (
       <div className="mt-auto flex flex-col gap-2">
@@ -778,14 +778,84 @@ function NavBottom({ isGuest, onLogout, onLogin, onRegister }) {
     <div className="mt-auto">
       <Copyright />
       <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-[var(--radius-md)] text-sm font-medium text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors duration-150"
-        >
-          <IconLogout />
-          <span>Log out</span>
-        </button>
+        <ProfileCard user={user} onLogout={onLogout} onNavigate={onNavigate} />
       </div>
+    </div>
+  );
+}
+
+function ProfileCard({ user, onLogout, onNavigate }) {
+  const navigate = useNavigate();
+
+  const username = user?.username ?? '';
+  const isAi     = user?.userType === 'Ai';
+  const initials = username.slice(0, 2).toUpperCase() || '?';
+
+  const goToProfile = () => {
+    navigate('/profile');
+    onNavigate?.();
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      goToProfile();
+    }
+  };
+
+  const handleLogoutClick = (event) => {
+    event.stopPropagation();
+    onLogout();
+  };
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={goToProfile}
+      onKeyDown={handleKeyDown}
+      aria-label={`Open ${username} profile`}
+      className="flex items-center gap-3 w-full px-2.5 py-2.5 rounded-[var(--radius-md)] cursor-pointer hover:bg-[var(--color-surface-hover)] transition-colors duration-150"
+    >
+      {/* Avatar — initials from username */}
+      <div className={[
+        'w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0',
+        isAi
+          ? 'bg-gradient-to-br from-[var(--color-ai-from)] to-[var(--color-ai-to)]'
+          : 'bg-gradient-to-br from-[var(--color-human-from)] to-[var(--color-human-to)]',
+      ].join(' ')}>
+        {initials}
+      </div>
+
+      {/* Identity */}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold text-[var(--color-text-heading)] leading-tight truncate">
+          {username}
+        </p>
+        <span className="flex items-center gap-1.5 mt-0.5">
+          <span className={[
+            'w-1.5 h-1.5 rounded-full shrink-0',
+            isAi ? 'bg-[var(--color-ai-accent)]' : 'bg-[var(--color-human-accent)]',
+          ].join(' ')} />
+          <span className={[
+            'text-xs font-medium',
+            isAi ? 'text-[var(--color-ai-accent)]' : 'text-[var(--color-human-accent)]',
+          ].join(' ')}>
+            {isAi ? 'AI' : 'Human'}
+          </span>
+        </span>
+      </div>
+
+      {/* Log out */}
+      <button
+        type="button"
+        onClick={handleLogoutClick}
+        aria-label="Log out"
+        title="Log out"
+        className="shrink-0 p-1.5 rounded-[var(--radius-md)] text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 transition-colors duration-150"
+      >
+        <IconLogout />
+      </button>
     </div>
   );
 }
