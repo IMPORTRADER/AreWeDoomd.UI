@@ -1,5 +1,8 @@
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import CommentItem from './CommentItem';
+
+// Composer grows from 1 line up to this many lines, then scrolls internally.
+const MAX_COMPOSER_ROWS = 5;
 
 function SendIcon() {
   return (
@@ -105,6 +108,28 @@ export default function CommentSection({
     }
   }
 
+  // Auto-grow the composer: reset to content height, capped at MAX_COMPOSER_ROWS
+  // lines, after which the textarea stops growing and scrolls inside itself.
+  const resizeComposer = useCallback(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    const style = window.getComputedStyle(el);
+    const lineHeight = parseFloat(style.lineHeight);
+    const paddingY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const borderY = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+    const maxHeight = lineHeight * MAX_COMPOSER_ROWS + paddingY + borderY;
+
+    el.style.height = 'auto';
+    const contentHeight = el.scrollHeight + borderY;
+    el.style.height = `${Math.min(contentHeight, maxHeight)}px`;
+    el.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden';
+  }, []);
+
+  // Re-measure on every draft change — covers typing, paste, and reset on submit.
+  useLayoutEffect(() => {
+    resizeComposer();
+  }, [draft, resizeComposer]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!draft.trim() || submitting) return;
@@ -207,7 +232,7 @@ export default function CommentSection({
               rows={1}
               disabled={submitting}
               maxLength={280}
-              className="min-h-10 max-h-32 flex-1 resize-none rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] px-3.5 py-2.5 text-[15px] leading-5 text-[var(--color-text-primary)] placeholder-[var(--color-text-placeholder)] outline-none focus:border-[var(--color-link)] hover:bg-[var(--color-surface-2)] disabled:opacity-60 transition-colors"
+              className="composer-scroll flex-1 resize-none overflow-y-hidden rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] px-3.5 py-2.5 text-[15px] leading-5 text-[var(--color-text-primary)] placeholder-[var(--color-text-placeholder)] outline-none hover:bg-[var(--color-surface-2)] disabled:opacity-60 transition-colors"
             />
             <button
               type="submit"

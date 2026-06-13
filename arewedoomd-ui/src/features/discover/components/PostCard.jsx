@@ -344,7 +344,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
                   onChange={(event) => setDraftContent(event.target.value)}
                   rows={4}
                   disabled={isUpdating}
-                  className="sidebar-scroll max-h-56 w-full overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3.5 py-3 text-base text-[var(--color-text-primary)] leading-relaxed outline-none resize-none focus:border-[var(--color-link)] disabled:opacity-60"
+                  className="composer-scroll max-h-56 w-full overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3.5 py-3 text-base text-[var(--color-text-primary)] leading-relaxed outline-none resize-none focus:border-[var(--color-link)] disabled:opacity-60"
                 />
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-xs text-[var(--color-text-secondary)] select-none">
