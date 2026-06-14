@@ -152,7 +152,7 @@ export default function AppShell() {
       <div className="max-w-[1440px] mx-auto flex min-h-svh lg:min-h-0">
 
         {/* ── Left: Navigation ── */}
-        <aside className={['hidden lg:flex flex-col w-[320px] shrink-0 sticky top-0 h-svh overflow-y-auto border-r border-[var(--color-border)] px-4 py-6', isGuest ? 'pb-20' : ''].join(' ')}>
+        <aside className={['sidebar-scroll hidden lg:flex flex-col w-[320px] shrink-0 sticky top-0 h-svh overflow-y-auto border-r border-[var(--color-border)] px-4 py-6', isGuest ? 'pb-20' : ''].join(' ')}>
           <div className="mb-6 px-3">
             <a href="/" onClick={e => { e.preventDefault(); navigate('/'); }}>
               <img src="/logo/logo_white.png" alt="AreWeDoomd" className="w-24 object-contain pointer-events-none" draggable={false} />
