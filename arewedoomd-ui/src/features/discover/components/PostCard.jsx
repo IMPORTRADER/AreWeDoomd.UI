@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useManagePost from '../hooks/useManagePost';
 import useLikePost from '../hooks/useLikePost';
 import useComments from '../hooks/useComments';
@@ -90,8 +91,9 @@ function MoreIcon() {
   );
 }
 
-export default function PostCard({ post, currentUserId, onPostUpdated, onPostDeleted, onGuestAction }) {
+export default function PostCard({ post, currentUserId, onPostUpdated, onPostDeleted, onGuestAction, detail = false, commentState = null }) {
   const { author, content, likeCount, commentCount, comments: initialComments = EMPTY_COMMENTS, createdAt, updatedAt } = post;
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -135,6 +137,9 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
     toggle: toggleLike,
   } = useLikePost({ postId: post.id, initialLikeCount: likeCount });
 
+  // In the feed each card owns its comments; on the post-detail page the parent
+  // injects a paginated comment state so the card renders the full thread.
+  const internalComments = useComments(post.id, initialComments, commentCount);
   const {
     comments,
     commentCount: displayCommentCount,
@@ -143,7 +148,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
     error: commentsError,
     addComment,
     removeComment,
-  } = useComments(post.id, initialComments, commentCount);
+  } = commentState ?? internalComments;
 
   const canSave = !isDraftEmpty && !isOverLimit && !isUnchanged && !isUpdating;
   const radius = 10;
@@ -213,6 +218,17 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
     setIsDeleteDialogOpen(false);
   }
 
+  function goToDetail(anchorCommentId) {
+    navigate(anchorCommentId
+      ? `/posts/${post.id}?anchor=${anchorCommentId}`
+      : `/posts/${post.id}`);
+  }
+
+  function handleCardClick() {
+    if (detail || isEditing || isDeleteDialogOpen) return;
+    goToDetail();
+  }
+
   function handleLikeClick(event) {
     event.stopPropagation();
     if (!currentUserId) { onGuestAction?.(); return; }
@@ -225,12 +241,17 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
 
   function handleCommentClick(event) {
     event.stopPropagation();
+    if (detail) return;
     if (!currentUserId) { onGuestAction?.(); return; }
+    goToDetail();
   }
 
   return (
     <>
-      <article className="group overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[0_20px_46px_rgba(0,0,0,0.24)] hover:border-[var(--color-border-accent)] transition-all duration-150 cursor-pointer">
+      <article onClick={handleCardClick} className={[
+        'group overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[0_20px_46px_rgba(0,0,0,0.24)] transition-all duration-150',
+        detail ? '' : 'hover:border-[var(--color-border-accent)] cursor-pointer',
+      ].join(' ')}>
         <div className="h-1 bg-[linear-gradient(90deg,rgba(56,189,248,0.45)_0%,rgba(56,189,248,0.18)_34%,rgba(245,73,73,0.18)_66%,rgba(245,73,73,0.45)_100%)]" />
         <div className="p-5 pb-4">
           {/* Header */}
@@ -296,14 +317,14 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
                 <div className="absolute top-10 right-0 z-10 min-w-[132px] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] shadow-lg">
                   <button
                     type="button"
-                    onClick={handleEditStart}
+                    onClick={(event) => { event.stopPropagation(); handleEditStart(); }}
                     className="w-full px-3 py-2 text-left text-sm text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
                   >
                     Edit
                   </button>
                   <button
                     type="button"
-                    onClick={handleDeleteRequest}
+                    onClick={(event) => { event.stopPropagation(); handleDeleteRequest(); }}
                     className="w-full px-3 py-2 text-left text-sm text-[var(--color-danger)] hover:bg-red-500/10 transition-colors"
                   >
                     Delete
@@ -429,13 +450,25 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
         {/* Comments */}
         <CommentSection
           comments={comments}
-          commentCount={commentCount}
+          commentCount={displayCommentCount}
           loading={commentsLoading}
           submitting={commentSubmitting}
           error={commentsError}
           currentUserId={currentUserId}
           onAddComment={addComment}
           onDeleteComment={removeComment}
+          onShowMore={(anchorId) => {
+            if (!currentUserId) { onGuestAction?.(); return; }
+            goToDetail(anchorId);
+          }}
+          expanded={detail}
+          anchorCommentId={commentState?.anchorCommentId}
+          hasMoreBefore={commentState?.hasMoreBefore}
+          hasMoreAfter={commentState?.hasMoreAfter}
+          loadingOlder={commentState?.loadingOlder}
+          loadingNewer={commentState?.loadingNewer}
+          onLoadOlder={commentState?.onLoadOlder}
+          onLoadNewer={commentState?.onLoadNewer}
         />
       </article>
 

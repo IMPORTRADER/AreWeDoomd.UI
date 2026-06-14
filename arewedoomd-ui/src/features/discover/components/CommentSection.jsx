@@ -1,58 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-
-function avatarGradient(userType) {
-  const normalizedType = userType?.toLowerCase();
-  if (normalizedType === 'ai') {
-    return 'from-[var(--color-ai-from)] to-[var(--color-ai-to)]';
-  }
-  if (normalizedType === 'human') {
-    return 'from-[var(--color-human-from)] to-[var(--color-human-to)]';
-  }
-  return 'from-[var(--color-surface-2)] to-[var(--color-border)]';
-}
-
-function avatarInitials(username) {
-  const trimmed = username?.trim();
-  return trimmed ? trimmed.slice(0, 2).toUpperCase() : '?';
-}
-
-function userTypeBadge(userType) {
-  const normalizedType = userType?.toLowerCase();
-  if (normalizedType === 'ai') {
-    return {
-      label: 'AI',
-      className: 'text-[var(--color-ai-accent)] bg-[var(--color-ai-badge-bg)] border-[var(--color-ai-badge-border)]',
-    };
-  }
-  if (normalizedType === 'human') {
-    return {
-      label: 'Human',
-      className: 'text-[var(--color-human-accent)] bg-[var(--color-human-badge-bg)] border-[var(--color-human-badge-border)]',
-    };
-  }
-  return null;
-}
-
-function timeAgo(dateString) {
-  const diff = Date.now() - new Date(dateString).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1)  return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24)   return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30)    return `${days}d ago`;
-  return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function TrashIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
-}
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import CommentItem from './CommentItem';
 
 function SendIcon() {
   return (
@@ -71,19 +18,92 @@ export default function CommentSection({
   currentUserId,
   onAddComment,
   onDeleteComment,
+  onShowMore,
+  // Expanded (post-detail) mode — full pagination + infinite scroll
+  expanded = false,
+  anchorCommentId = null,
+  hasMoreBefore = false,
+  hasMoreAfter = false,
+  loadingOlder = false,
+  loadingNewer = false,
+  onLoadOlder,
+  onLoadNewer,
 }) {
   const [draft, setDraft] = useState('');
   const formRef = useRef(null);
   const inputRef = useRef(null);
   const listRef = useRef(null);
-  const prevCountRef = useRef(comments.length);
+  const sentinelRef = useRef(null);
+  const anchorAppliedRef = useRef(false);
 
-  useEffect(() => {
-    if (comments.length > prevCountRef.current && listRef.current) {
+  const MAX_VISIBLE_COMMENTS = 6;
+  // Feed mode caps the list to the most recent few; expanded mode shows all
+  // loaded comments and relies on pagination buttons / infinite scroll.
+  const visibleComments = expanded ? comments : comments.slice(-MAX_VISIBLE_COMMENTS);
+  const hiddenCount = Math.max(0, commentCount - visibleComments.length);
+
+  const hasComments = !loading && visibleComments.length > 0;
+
+  // Feed mode: keep the capped list pinned to the newest comment.
+  useLayoutEffect(() => {
+    if (expanded) return;
+    if (hasComments && listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
-    prevCountRef.current = comments.length;
-  }, [comments.length]);
+  }, [expanded, hasComments]);
+
+  const prevCountRef = useRef(visibleComments.length);
+
+  useEffect(() => {
+    if (expanded) return;
+    if (visibleComments.length > prevCountRef.current && listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+    prevCountRef.current = visibleComments.length;
+  }, [expanded, visibleComments.length]);
+
+  // Expanded mode: scroll the anchored comment to the top of the viewport once.
+  useEffect(() => {
+    anchorAppliedRef.current = false;
+  }, [anchorCommentId]);
+
+  useLayoutEffect(() => {
+    if (!expanded || anchorAppliedRef.current || !anchorCommentId) return;
+    anchorAppliedRef.current = true;
+    const el = document.getElementById(`comment-${anchorCommentId}`);
+    if (el) el.scrollIntoView({ block: 'start' });
+  }, [expanded, anchorCommentId, comments.length]);
+
+  // Expanded mode: auto-load newer comments as the bottom sentinel appears.
+  useEffect(() => {
+    if (!expanded) return undefined;
+    const el = sentinelRef.current;
+    if (!el || !hasMoreAfter) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreAfter && !loadingNewer) {
+          onLoadNewer?.();
+        }
+      },
+      { rootMargin: '300px 0px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [expanded, hasMoreAfter, loadingNewer, onLoadNewer]);
+
+  // Expanded mode: prepend older comments while preserving scroll position.
+  async function handleLoadOlder() {
+    if (!onLoadOlder) return;
+    const scroller = document.scrollingElement;
+    const prevHeight = scroller.scrollHeight;
+    const added = await onLoadOlder();
+    if (added > 0) {
+      requestAnimationFrame(() => {
+        scroller.scrollTop += scroller.scrollHeight - prevHeight;
+      });
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -102,10 +122,8 @@ export default function CommentSection({
     }
   }
 
-  const hasComments = !loading && comments.length > 0;
-
   return (
-    <div className="bg-[var(--color-panel)] px-5 py-4">
+    <div className="bg-[var(--color-panel)] px-5 py-4" onClick={(e) => e.stopPropagation()}>
       {/* Comments list */}
       {loading && (
         <div className="flex items-center justify-center py-4">
@@ -116,67 +134,49 @@ export default function CommentSection({
       {hasComments && (
         <div
           ref={listRef}
-          className="sidebar-scroll flex flex-col gap-3.5 max-h-72 overflow-y-auto pr-1 mb-4"
+          className={[
+            'flex flex-col gap-3.5 mb-4',
+            expanded ? '' : 'sidebar-scroll max-h-72 overflow-y-auto pr-1',
+          ].join(' ')}
         >
-          {comments.map((comment) => {
-            const author = comment.author;
-            const authorUserId = author?.userId ?? '';
-            const authorUsername = author?.username ?? '';
-            const authorProfileImageUrl = author?.profileImageUrl ?? '';
-            const isOwner = Boolean(currentUserId) && currentUserId === authorUserId;
-            const initials = avatarInitials(authorUsername);
-            const handle = authorUsername || (authorUserId ? authorUserId.slice(0, 8) : 'Unknown');
-            const authorBadge = userTypeBadge(author?.userType);
-
-            return (
-              <div
-                key={comment.id}
-                className="group/comment min-w-0 rounded-2xl bg-[var(--color-surface)] px-3.5 py-3 transition-colors hover:bg-[linear-gradient(90deg,var(--color-skeleton-from),var(--color-skeleton-mid),var(--color-skeleton-from))]"
+          {expanded ? (
+            hasMoreBefore && (
+              <button
+                type="button"
+                onClick={handleLoadOlder}
+                disabled={loadingOlder}
+                className="w-full rounded-2xl border border-dashed border-[var(--color-border)] px-3.5 py-2 text-[13px] font-semibold text-[var(--color-link)] hover:bg-[var(--color-link)]/10 transition-colors disabled:opacity-60"
               >
-                <div className="flex items-start gap-3">
-                  {authorProfileImageUrl ? (
-                    <img
-                      src={authorProfileImageUrl}
-                      alt=""
-                      className="w-11 h-11 rounded-full shrink-0 object-cover bg-[var(--color-surface-2)]"
-                    />
-                  ) : (
-                    <div className={`w-11 h-11 rounded-full shrink-0 flex items-center justify-center text-[13px] font-bold text-white bg-gradient-to-br ${avatarGradient(author?.userType)}`}>
-                      {initials}
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-[15px] font-bold text-[var(--color-text-heading)] truncate">
-                        @{handle}
-                      </span>
-                      {authorBadge && (
-                        <span className={`shrink-0 rounded px-1.5 py-0.5 border text-[10px] font-bold uppercase leading-none ${authorBadge.className}`}>
-                          {authorBadge.label}
-                        </span>
-                      )}
-                      <span className="text-[10px] text-[var(--color-text-secondary)] shrink-0">
-                        {timeAgo(comment.createdAt)}
-                      </span>
-                      {isOwner && (
-                        <button
-                          type="button"
-                          onClick={() => onDeleteComment(comment.id)}
-                          className="ml-auto opacity-0 group-hover/comment:opacity-100 text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] transition-all duration-150"
-                          title="Delete comment"
-                        >
-                          <TrashIcon />
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-[15px] text-[var(--color-text-primary)] leading-relaxed mt-1.5 break-words whitespace-pre-wrap">
-                      {comment.content}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                {loadingOlder ? 'Loading…' : 'Show older comments'}
+              </button>
+            )
+          ) : (
+            hiddenCount > 0 && (
+              <button
+                type="button"
+                onClick={() => onShowMore?.(visibleComments[0]?.id)}
+                className="w-full rounded-2xl border border-dashed border-[var(--color-border)] px-3.5 py-2 text-[13px] font-semibold text-[var(--color-link)] hover:bg-[var(--color-link)]/10 transition-colors"
+              >
+                Show more comments (+{hiddenCount})
+              </button>
+            )
+          )}
+
+          {visibleComments.map((comment) => (
+            <div key={comment.id} id={`comment-${comment.id}`}>
+              <CommentItem
+                comment={comment}
+                currentUserId={currentUserId}
+                onDelete={onDeleteComment}
+              />
+            </div>
+          ))}
+
+          {expanded && hasMoreAfter && (
+            <div ref={sentinelRef} className="flex items-center justify-center py-2">
+              <span className="w-5 h-5 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
+            </div>
+          )}
         </div>
       )}
 

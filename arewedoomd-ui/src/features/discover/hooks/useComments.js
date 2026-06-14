@@ -21,7 +21,12 @@ export default function useComments(postId, initialComments = [], initialComment
 
     try {
       const res = await postsApi.getComments(postId);
-      setComments(res.data);
+      const data = res.data;
+      const list = Array.isArray(data) ? data : data?.comments ?? [];
+      setComments(list);
+      if (!Array.isArray(data) && typeof data?.totalCount === 'number') {
+        setCommentCount(data.totalCount);
+      }
       setLoaded(true);
     } catch (err) {
       if (err?.response?.status === 401) {

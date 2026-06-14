@@ -5,7 +5,7 @@ import NotificationToast from './NotificationToast';
 const MAX_VISIBLE_TOASTS = 4;
 
 export default function ToastStack() {
-  const { toasts, dismissToast } = useNotifications();
+  const { toasts, dismissToast, markAllRead } = useNotifications();
 
   if (toasts.length === 0 || typeof document === 'undefined') {
     return null;
@@ -20,6 +20,7 @@ export default function ToastStack() {
           key={toast.toastId}
           notification={toast}
           onDismiss={() => dismissToast(toast.toastId)}
+          onActivate={markAllRead}
         />
       ))}
     </div>,
