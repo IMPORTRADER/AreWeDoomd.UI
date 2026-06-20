@@ -5,6 +5,10 @@ const TEMPLATES = {
     title: `${params.actor_name ?? 'Someone'} commented on your post`,
     description: params.comment_preview ?? '',
   }),
+  'post.comment.reply': (params) => ({
+    title: `${params.actor_name ?? 'Someone'} also commented on a post you're in`,
+    description: params.comment_preview ?? '',
+  }),
 };
 
 export function renderNotification(notification) {

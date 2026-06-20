@@ -40,30 +40,21 @@ export default function CommentSection({
   const anchorAppliedRef = useRef(false);
 
   const MAX_VISIBLE_COMMENTS = 6;
-  // Feed mode caps the list to the most recent few; expanded mode shows all
-  // loaded comments and relies on pagination buttons / infinite scroll.
-  const visibleComments = expanded ? comments : comments.slice(-MAX_VISIBLE_COMMENTS);
+  // Feed mode reveals comments inline in pages, growing the list under the post
+  // instead of navigating away; expanded mode shows all loaded comments and
+  // relies on pagination buttons / infinite scroll.
+  const [feedLimit, setFeedLimit] = useState(MAX_VISIBLE_COMMENTS);
+  const visibleComments = expanded ? comments : comments.slice(-feedLimit);
   const hiddenCount = Math.max(0, commentCount - visibleComments.length);
 
-  const hasComments = !loading && visibleComments.length > 0;
+  const hasComments = visibleComments.length > 0;
 
-  // Feed mode: keep the capped list pinned to the newest comment.
-  useLayoutEffect(() => {
-    if (expanded) return;
-    if (hasComments && listRef.current) {
-      listRef.current.scrollTop = listRef.current.scrollHeight;
-    }
-  }, [expanded, hasComments]);
-
-  const prevCountRef = useRef(visibleComments.length);
-
-  useEffect(() => {
-    if (expanded) return;
-    if (visibleComments.length > prevCountRef.current && listRef.current) {
-      listRef.current.scrollTop = listRef.current.scrollHeight;
-    }
-    prevCountRef.current = visibleComments.length;
-  }, [expanded, visibleComments.length]);
+  // Feed mode "Show more": reveal another page inline and ask the parent to load
+  // the full thread if it isn't all here yet — the post stays in the feed.
+  function handleShowMore() {
+    onShowMore?.(visibleComments[0]?.id);
+    setFeedLimit((n) => n + MAX_VISIBLE_COMMENTS);
+  }
 
   // Expanded mode: scroll the anchored comment to the top of the viewport once.
   useEffect(() => {
@@ -150,7 +141,9 @@ export default function CommentSection({
   return (
     <div className="bg-[var(--color-panel)] px-5 py-4" onClick={(e) => e.stopPropagation()}>
       {/* Comments list */}
-      {loading && (
+      {/* Full-panel spinner only for the initial load — once comments are on
+          screen, fetching more must not blank the list out from under the reader. */}
+      {loading && !hasComments && (
         <div className="flex items-center justify-center py-4">
           <span className="w-5 h-5 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
         </div>
@@ -161,7 +154,7 @@ export default function CommentSection({
           ref={listRef}
           className={[
             'flex flex-col gap-3.5 mb-4',
-            expanded ? '' : 'sidebar-scroll max-h-72 overflow-y-auto pr-1',
+            expanded ? '' : 'pr-1',
           ].join(' ')}
         >
           {expanded ? (
@@ -179,10 +172,11 @@ export default function CommentSection({
             hiddenCount > 0 && (
               <button
                 type="button"
-                onClick={() => onShowMore?.(visibleComments[0]?.id)}
-                className="w-full rounded-2xl border border-dashed border-[var(--color-border)] px-3.5 py-2 text-[13px] font-semibold text-[var(--color-link)] hover:bg-[var(--color-link)]/10 transition-colors"
+                onClick={handleShowMore}
+                disabled={loading}
+                className="w-full rounded-2xl border border-dashed border-[var(--color-border)] px-3.5 py-2 text-[13px] font-semibold text-[var(--color-link)] hover:bg-[var(--color-link)]/10 transition-colors disabled:opacity-60"
               >
-                Show more comments (+{hiddenCount})
+                {loading ? 'Loading…' : `Show more comments (+${hiddenCount})`}
               </button>
             )
           )}

@@ -148,6 +148,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
     error: commentsError,
     addComment,
     removeComment,
+    fetchComments,
   } = commentState ?? internalComments;
 
   const canSave = !isDraftEmpty && !isOverLimit && !isUnchanged && !isUpdating;
@@ -457,9 +458,13 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           currentUserId={currentUserId}
           onAddComment={addComment}
           onDeleteComment={removeComment}
-          onShowMore={(anchorId) => {
+          onShowMore={() => {
             if (!currentUserId) { onGuestAction?.(); return; }
-            goToDetail(anchorId);
+            // Keep the reader in the feed: pull the full thread in under the
+            // post instead of navigating to the detail page.
+            if (comments.length < displayCommentCount) {
+              fetchComments?.();
+            }
           }}
           expanded={detail}
           anchorCommentId={commentState?.anchorCommentId}
