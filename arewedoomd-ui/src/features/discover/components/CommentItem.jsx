@@ -52,7 +52,7 @@ function TrashIcon() {
   );
 }
 
-export default function CommentItem({ comment, currentUserId, onDelete }) {
+export default function CommentItem({ comment, currentUserId, onDelete, highlighted = false }) {
   const author = comment.author;
   const authorUserId = author?.userId ?? '';
   const authorUsername = author?.username ?? '';
@@ -63,7 +63,13 @@ export default function CommentItem({ comment, currentUserId, onDelete }) {
   const authorBadge = userTypeBadge(author?.userType);
 
   return (
-    <div className="group/comment min-w-0 rounded-2xl bg-[var(--color-surface)] px-3.5 py-3 transition-colors hover:bg-[linear-gradient(90deg,var(--color-skeleton-from),var(--color-skeleton-mid),var(--color-skeleton-from))]">
+    <div
+      className={[
+        'group/comment min-w-0 rounded-2xl bg-[var(--color-surface)] px-3.5 py-3 transition-colors',
+        'hover:bg-[linear-gradient(90deg,var(--color-skeleton-from),var(--color-skeleton-mid),var(--color-skeleton-from))]',
+        highlighted ? 'comment-highlight' : '',
+      ].join(' ')}
+    >
       <div className="flex items-start gap-3">
         {authorProfileImageUrl ? (
           <img

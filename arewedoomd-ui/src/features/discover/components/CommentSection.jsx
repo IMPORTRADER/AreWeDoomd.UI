@@ -38,7 +38,7 @@ export default function CommentSection({
   const listRef = useRef(null);
   const sentinelRef = useRef(null);
   const anchorAppliedRef = useRef(false);
-  const [highlightedId, setHighlightedId] = useState(null);
+  const [clearedAnchor, setClearedAnchor] = useState(null);
 
   const MAX_VISIBLE_COMMENTS = 6;
   // Feed mode reveals comments inline in pages, growing the list under the post
@@ -51,7 +51,7 @@ export default function CommentSection({
   const hasComments = visibleComments.length > 0;
 
   // Feed mode "Show more": reveal another page inline and ask the parent to load
-  // the full thread if it isn't all here yet — the post stays in the feed.
+  // all the comments if they aren't all here yet — the post stays in the feed.
   function handleShowMore() {
     onShowMore?.(visibleComments[0]?.id);
     setFeedLimit((n) => n + MAX_VISIBLE_COMMENTS);
@@ -64,11 +64,10 @@ export default function CommentSection({
 
   useLayoutEffect(() => {
     if (!expanded || anchorAppliedRef.current || !anchorCommentId) return;
-    anchorAppliedRef.current = true;
     const el = document.getElementById(`comment-${anchorCommentId}`);
     if (el) {
+      anchorAppliedRef.current = true;
       el.scrollIntoView({ block: 'start' });
-      setHighlightedId(anchorCommentId);
     }
   }, [expanded, anchorCommentId, comments.length]);
 
@@ -186,19 +185,23 @@ export default function CommentSection({
           )}
 
           {visibleComments.map((comment) => {
-            const isHighlighted = comment.id === highlightedId;
+            // Highlight the anchored comment once on arrival, until its animation
+            // ends (tracked by clearedAnchor). Derived during render so a re-render
+            // mid-animation keeps the class stable.
+            const isHighlighted =
+              expanded && comment.id === anchorCommentId && clearedAnchor !== anchorCommentId;
             return (
               <div
                 key={comment.id}
                 id={`comment-${comment.id}`}
-                className={isHighlighted ? 'comment-highlight' : undefined}
                 onAnimationEnd={
                   isHighlighted
                     ? (e) => {
-                        // CommentItem içindeki başka animasyonlar bubble edebilir;
-                        // yalnızca highlight animasyonu bitince temizle.
+                        // The highlight animation runs on CommentItem and bubbles
+                        // up here; only react to that animation, not some other
+                        // child animation.
                         if (e.animationName.startsWith('comment-highlight')) {
-                          setHighlightedId(null);
+                          setClearedAnchor(anchorCommentId);
                         }
                       }
                     : undefined
@@ -208,6 +211,7 @@ export default function CommentSection({
                   comment={comment}
                   currentUserId={currentUserId}
                   onDelete={onDeleteComment}
+                  highlighted={isHighlighted}
                 />
               </div>
             );

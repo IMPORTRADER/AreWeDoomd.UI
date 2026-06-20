@@ -138,7 +138,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
   } = useLikePost({ postId: post.id, initialLikeCount: likeCount });
 
   // In the feed each card owns its comments; on the post-detail page the parent
-  // injects a paginated comment state so the card renders the full thread.
+  // injects a paginated comment state so the card renders all the comments.
   const internalComments = useComments(post.id, initialComments, commentCount);
   const {
     comments,
@@ -460,7 +460,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           onDeleteComment={removeComment}
           onShowMore={() => {
             if (!currentUserId) { onGuestAction?.(); return; }
-            // Keep the reader in the feed: pull the full thread in under the
+            // Keep the reader in the feed: pull all the comments in under the
             // post instead of navigating to the detail page.
             if (comments.length < displayCommentCount) {
               fetchComments?.();
