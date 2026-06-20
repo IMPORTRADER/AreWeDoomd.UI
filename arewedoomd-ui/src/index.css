@@ -138,7 +138,6 @@ button {
    rounded textarea instead of hugging its border, with a higher-contrast colour
    so it reads as part of the input's own content. */
 .composer-scroll {
-  overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--color-text-placeholder) transparent;
 }
