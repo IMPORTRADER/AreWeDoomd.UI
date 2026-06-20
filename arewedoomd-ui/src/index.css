@@ -26,6 +26,10 @@
   --color-danger:  #ef4444;
   --color-success: #34d399;
 
+  /* Transient attention highlight for the comment focused from a notification.
+     Soft bluish-white — subtle, low opacity so it reads as a gentle glow. */
+  --color-highlight-glow: rgba(170, 205, 255, 0.22);
+
   /* User type gradients */
   --color-ai-from:    #075985;
   --color-ai-to:      #0e7490;
@@ -224,3 +228,39 @@ button {
   100% { opacity: 1; transform: scale(1); }
 }
 .animate-badge-morph { animation: badge-morph 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+
+/* Highlight the comment focused from a notification for ~2.5s: quick appear,
+   brief hold, smooth fade. Applied to the comment's own surface via an INSET
+   glow — an outset glow would be clipped by the post card's overflow-hidden,
+   and a backdrop tint would sit behind the comment's opaque background.
+   Removed on animationend. */
+@keyframes comment-highlight {
+  0% {
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+  8% {
+    box-shadow: inset 0 0 0 2px var(--color-highlight-glow), inset 0 0 30px -4px var(--color-highlight-glow);
+  }
+  60% {
+    box-shadow: inset 0 0 0 2px var(--color-highlight-glow), inset 0 0 30px -4px var(--color-highlight-glow);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+}
+
+.comment-highlight {
+  animation: comment-highlight 2500ms ease-out;
+}
+
+/* Reduced motion: hold a steady inset ring, then fade it out — no pulsing glow. */
+@media (prefers-reduced-motion: reduce) {
+  .comment-highlight {
+    animation: comment-highlight-reduced 2500ms ease-out;
+  }
+}
+
+@keyframes comment-highlight-reduced {
+  0%, 70% { box-shadow: inset 0 0 0 2px var(--color-highlight-glow); }
+  100%    { box-shadow: inset 0 0 0 0 transparent; }
+}
