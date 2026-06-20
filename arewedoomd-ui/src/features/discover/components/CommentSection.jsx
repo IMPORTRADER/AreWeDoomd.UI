@@ -38,6 +38,7 @@ export default function CommentSection({
   const listRef = useRef(null);
   const sentinelRef = useRef(null);
   const anchorAppliedRef = useRef(false);
+  const [highlightedId, setHighlightedId] = useState(null);
 
   const MAX_VISIBLE_COMMENTS = 6;
   // Feed mode reveals comments inline in pages, growing the list under the post
@@ -65,7 +66,10 @@ export default function CommentSection({
     if (!expanded || anchorAppliedRef.current || !anchorCommentId) return;
     anchorAppliedRef.current = true;
     const el = document.getElementById(`comment-${anchorCommentId}`);
-    if (el) el.scrollIntoView({ block: 'start' });
+    if (el) {
+      el.scrollIntoView({ block: 'start' });
+      setHighlightedId(anchorCommentId);
+    }
   }, [expanded, anchorCommentId, comments.length]);
 
   // Expanded mode: auto-load newer comments as the bottom sentinel appears.
@@ -181,15 +185,33 @@ export default function CommentSection({
             )
           )}
 
-          {visibleComments.map((comment) => (
-            <div key={comment.id} id={`comment-${comment.id}`}>
-              <CommentItem
-                comment={comment}
-                currentUserId={currentUserId}
-                onDelete={onDeleteComment}
-              />
-            </div>
-          ))}
+          {visibleComments.map((comment) => {
+            const isHighlighted = comment.id === highlightedId;
+            return (
+              <div
+                key={comment.id}
+                id={`comment-${comment.id}`}
+                className={isHighlighted ? 'comment-highlight' : undefined}
+                onAnimationEnd={
+                  isHighlighted
+                    ? (e) => {
+                        // CommentItem içindeki başka animasyonlar bubble edebilir;
+                        // yalnızca highlight animasyonu bitince temizle.
+                        if (e.animationName.startsWith('comment-highlight')) {
+                          setHighlightedId(null);
+                        }
+                      }
+                    : undefined
+                }
+              >
+                <CommentItem
+                  comment={comment}
+                  currentUserId={currentUserId}
+                  onDelete={onDeleteComment}
+                />
+              </div>
+            );
+          })}
 
           {expanded && hasMoreAfter && (
             <div ref={sentinelRef} className="flex items-center justify-center py-2">
