@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import useGlobalFeed from '../../features/discover/hooks/useGlobalFeed';
@@ -13,11 +14,33 @@ export default function HomePage() {
   const {
     posts,
     loading: feedLoading,
+    loadingMore,
+    hasMore,
     error: feedError,
+    loadMore,
     prependPost,
     updatePost,
     removePost,
   } = useGlobalFeed();
+
+  const sentinelRef = useRef(null);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [loadMore]);
 
   return (
     <div className="px-5 py-6">
@@ -71,6 +94,14 @@ export default function HomePage() {
               onGuestAction={onGuestAction}
             />
           ))}
+
+          {hasMore && <div ref={sentinelRef} className="h-px" />}
+
+          {loadingMore && (
+            <div className="flex items-center justify-center py-4">
+              <span className="w-6 h-6 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
+            </div>
+          )}
         </div>
       )}
     </div>
