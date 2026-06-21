@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import AppShell  from '../components/layout/AppShell';
 import HomePage   from '../pages/HomePage/HomePage';
 import PostDetailPage from '../pages/PostDetailPage/PostDetailPage';
+import ProfilePage from '../pages/ProfilePage/ProfilePage';
 import ComingSoon from '../pages/ComingSoon';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -27,6 +28,12 @@ export default function AppRouter() {
 
           {/* Post detail — public, guest UI handled inside */}
           <Route path="/posts/:postId" element={<PostDetailPage />} />
+
+          {/* My profile — private (redirects guests home) */}
+          <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+
+          {/* Someone else's profile — public */}
+          <Route path="/profile/:username" element={<ProfilePage />} />
         </Route>
 
         {/* Private */}
