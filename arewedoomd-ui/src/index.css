@@ -229,6 +229,39 @@ button {
 }
 .animate-badge-morph { animation: badge-morph 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
 
+/* ── Skeleton loading shimmer ── */
+/* A muted base fill with a single light band sweeping left→right. Uses the
+   existing --color-skeleton-* tokens so it sits naturally on dark surfaces.
+   Apply `.skeleton` to any block; size it with width/height utilities. */
+@keyframes skeleton-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-skeleton-from);
+  border-radius: var(--radius-sm);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-skeleton-mid) 50%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; }
+}
+
 /* Highlight the comment focused from a notification for ~2.5s: quick appear,
    brief hold, smooth fade. Applied to the comment's own surface via an INSET
    glow — an outset glow would be clipped by the post card's overflow-hidden,

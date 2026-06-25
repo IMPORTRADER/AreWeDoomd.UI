@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import useGlobalFeed from '../../features/discover/hooks/useGlobalFeed';
 import PostCard from '../../features/discover/components/PostCard';
+import PostCardSkeleton from '../../features/discover/components/PostCardSkeleton';
 import PostComposer from '../../features/discover/components/PostComposer';
 import { IconFeed } from '../../components/icons';
 
@@ -63,8 +64,10 @@ export default function HomePage() {
       )}
 
       {feedLoading && (
-        <div className="flex items-center justify-center min-h-64">
-          <span className="w-7 h-7 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
+        <div className="flex flex-col gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <PostCardSkeleton key={i} />
+          ))}
         </div>
       )}
 
@@ -97,11 +100,7 @@ export default function HomePage() {
 
           {hasMore && <div ref={sentinelRef} className="h-px" />}
 
-          {loadingMore && (
-            <div className="flex items-center justify-center py-4">
-              <span className="w-6 h-6 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
-            </div>
-          )}
+          {loadingMore && <PostCardSkeleton />}
         </div>
       )}
     </div>
