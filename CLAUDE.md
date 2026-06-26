@@ -53,6 +53,7 @@ This project uses React + JavaScript + Vite.
 - Prefer composition over prop drilling
 - Avoid large, deeply nested JSX
 - Separate page, feature, and shared components clearly
+- All panel/sidebar cards must use the central `<Widget>` (`src/components/ui/Widget.jsx`); never hand-roll card chrome. See `docs/ai/component-architecture.md` → Widget Kuralı.
 
 ## Styling Rules
 

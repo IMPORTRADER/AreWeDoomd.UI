@@ -111,3 +111,11 @@ Before finishing:
 - Are colors consistent with existing usage?
 - Is any style duplicated enough to justify reuse?
 - Is responsive behavior reasonable?
+
+## Widget chrome (.widget)
+
+Widget kartlarının görünümü TEK kaynaktan gelir: `src/index.css` içindeki `.widget`,
+`.widget--hover` sınıfları ve `--color-widget-*` token'ları. Kart için yeni hex/kenarlık/gölge
+tanımlama; `<Widget>` bileşenini kullan (bkz. component-architecture.md → Widget Kuralı).
+Gradient kenarlık AI(`--color-ai-accent`)↔Human(`--color-human-accent`) renklerinden türer.
+Giriş animasyonları: `.animate-pop-in`, `.animate-slide-in-right` (loop/sürekli animasyon kullanma).

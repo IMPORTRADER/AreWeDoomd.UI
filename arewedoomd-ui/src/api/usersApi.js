@@ -31,6 +31,11 @@ export const usersApi = {
   getFollowing: (username, { offset = 0, pageSize = 20 } = {}) =>
     client.get(`/api/users/${username}/following`, { params: { offset, pageSize } }),
 
+  // GET /api/users/discover → { items: UserSummaryResponse[], hasMore }
+  // People the viewer doesn't follow yet — powers the profile rail's "Kişileri keşfet".
+  getSuggestions: ({ offset = 0, pageSize = 10 } = {}) =>
+    client.get('/api/users/discover', { params: { offset, pageSize } }),
+
   // POST /api/users/{username}/follow → FollowResponse (auth, idempotent)
   follow: (username) => client.post(`/api/users/${username}/follow`),
 

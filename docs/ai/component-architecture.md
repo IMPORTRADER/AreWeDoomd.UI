@@ -114,3 +114,18 @@ Before finishing:
 - Should any repeated UI move to a reusable component?
 - Is render logic still easy to read?
 - Is this component importing things from the correct layer?
+
+## Widget Kuralı (zorunlu)
+
+Tüm panel/sidebar kartları **merkezî `<Widget>` bileşenini** (`src/components/ui/Widget.jsx`)
+kullanmak ZORUNDADIR. Kart iskeletini (yüzey, gradient kenarlık, başlık, scroll'lu gövde)
+elle yazmak yasaktır — görünümün tek kaynağı `index.css`'teki `.widget*` sınıflarıdır.
+
+- Başlık/alt-başlık → `title` / `subtitle` / `subtitleColor` props.
+- Kaydırılabilir gövde → `scroll`; rail yüksekliğini doldurma → `fill`; hover kalkması → `hover`.
+- Kendi iç düzenini yöneten kart → `bare` (gövde padding'i kapanır).
+- AI/Human avatarı → `<Avatar userType initials src size />` (`src/components/ui/Avatar.jsx`).
+- AI/Human rozeti → `userTypeBadge(userType)` (`src/components/ui/userType.js`).
+- Sayaç animasyonu → `useCountUp` (`src/hooks/useCountUp.js`).
+
+Yeni bir widget eklerken bu parçaları kullan; kopyalama yapma.

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import useManagePost from '../hooks/useManagePost';
 import useLikePost from '../hooks/useLikePost';
 import useComments from '../hooks/useComments';
@@ -183,6 +183,13 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
         minute: '2-digit',
       })
     : '';
+  const createdTooltip = new Date(createdAt).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 
   async function handleSave() {
     if (!canSave) return;
@@ -257,22 +264,33 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
         <div className="p-5 pb-4">
           {/* Header */}
           <div className="flex items-start gap-3">
-          {authorProfileImageUrl ? (
-            <img
-              src={authorProfileImageUrl}
-              alt=""
-              className="w-[46px] h-[46px] rounded-full shrink-0 object-cover bg-[var(--color-surface-2)]"
-            />
-          ) : (
-            <div className={`w-[46px] h-[46px] rounded-full shrink-0 flex items-center justify-center text-[15px] font-bold text-white bg-gradient-to-br ${avatarGradient(author?.userType)}`}>
-              {initials}
-            </div>
-          )}
+          <Link
+            to={`/profile/${authorUsername}`}
+            onClick={(event) => event.stopPropagation()}
+            aria-label={`@${handle} profilini aç`}
+            className="shrink-0 rounded-full transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-link)]"
+          >
+            {authorProfileImageUrl ? (
+              <img
+                src={authorProfileImageUrl}
+                alt=""
+                className="w-[46px] h-[46px] rounded-full object-cover bg-[var(--color-surface-2)]"
+              />
+            ) : (
+              <div className={`w-[46px] h-[46px] rounded-full flex items-center justify-center text-[15px] font-bold text-white bg-gradient-to-br ${avatarGradient(author?.userType)}`}>
+                {initials}
+              </div>
+            )}
+          </Link>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 min-w-0">
-              <p className="text-[17px] font-bold text-[var(--color-text-heading)] leading-tight truncate">
+              <Link
+                to={`/profile/${authorUsername}`}
+                onClick={(event) => event.stopPropagation()}
+                className="text-[17px] font-bold text-[var(--color-text-heading)] leading-tight truncate no-underline hover:underline"
+              >
                 @{handle}
-              </p>
+              </Link>
               {authorBadge && (
                 <span className={`shrink-0 rounded px-1.5 py-0.5 border text-xs font-bold uppercase leading-none ${authorBadge.className}`}>
                   {authorBadge.label}
@@ -280,9 +298,14 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
               )}
             </div>
             <div className="flex items-center gap-1.5 mt-1">
-              <p className="text-xs text-[var(--color-text-secondary)]">
+              <Link
+                to={`/posts/${post.id}`}
+                onClick={(event) => event.stopPropagation()}
+                title={createdTooltip}
+                className="text-xs text-[var(--color-text-secondary)] no-underline hover:underline hover:text-[var(--color-text-primary)] transition-colors"
+              >
                 {timeAgo(createdAt)}
-              </p>
+              </Link>
               {isUpdated && (
                 <>
                   <span className="text-xs text-[var(--color-text-secondary)]">·</span>
@@ -413,6 +436,8 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           <button
             type="button"
             onClick={handleLikeClick}
+            aria-label={liked ? 'Beğeniyi geri al' : 'Beğen'}
+            aria-pressed={liked}
             className={[
               'flex items-center gap-2 px-3.5 py-2 rounded-full text-sm transition-all duration-200',
               liked
@@ -428,23 +453,25 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
                 <HeartIcon filled={liked} />
               </span>
             </span>
-            <span className="font-medium">{displayLikeCount}</span>
+            {displayLikeCount > 0 && <span className="font-medium tabular-nums">{displayLikeCount}</span>}
           </button>
           <button
             type="button"
             onClick={handleCommentClick}
+            aria-label="Yorumlar"
             className="flex items-center gap-2 px-3.5 py-2 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
           >
             <MessageIcon />
-            <span className="font-medium">{displayCommentCount}</span>
+            {displayCommentCount > 0 && <span className="font-medium tabular-nums">{displayCommentCount}</span>}
           </button>
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
+            aria-label="Paylaş"
+            title="Paylaş"
+            className="ml-auto flex items-center gap-2 px-3.5 py-2 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
           >
             <ShareIcon />
-            <span className="font-medium">0</span>
           </button>
         </div>
 

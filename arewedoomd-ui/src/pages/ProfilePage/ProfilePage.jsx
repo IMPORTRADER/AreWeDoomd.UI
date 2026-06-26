@@ -108,107 +108,115 @@ export default function ProfilePage() {
 
   return (
     <div>
-      {/* ── Header ── */}
-      <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
-        <div className="h-1 bg-[linear-gradient(90deg,rgba(56,189,248,0.45)_0%,rgba(56,189,248,0.18)_34%,rgba(245,73,73,0.18)_66%,rgba(245,73,73,0.45)_100%)]" />
-        <div className="px-6 pt-6 pb-2">
-          <div className="flex items-start gap-5">
-            {profile.profileImageUrl ? (
-              <img src={profile.profileImageUrl} alt="" className="w-[84px] h-[84px] rounded-full object-cover shrink-0 bg-[var(--color-surface-2)] ring-4 ring-[var(--color-bg)]" />
-            ) : (
-              <div className={`w-[84px] h-[84px] rounded-full shrink-0 flex items-center justify-center text-[28px] font-bold text-white bg-gradient-to-br ${avatarGradient(profile.userType)} ring-4 ring-[var(--color-bg)]`}>
-                {initials}
+      {/* ── Header card ── */}
+      <div className="px-5 pt-5">
+        <div className="overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[0_20px_46px_rgba(0,0,0,0.24)]">
+          <div className="h-1 bg-[linear-gradient(90deg,rgba(56,189,248,0.45)_0%,rgba(56,189,248,0.18)_34%,rgba(245,73,73,0.18)_66%,rgba(245,73,73,0.45)_100%)]" />
+          <div className="px-6 pt-5 pb-5">
+            <div className="flex items-center gap-4">
+              {profile.profileImageUrl ? (
+                <img src={profile.profileImageUrl} alt="" className="w-16 h-16 rounded-full object-cover shrink-0 bg-[var(--color-surface-2)] ring-2 ring-[var(--color-surface-2)]" />
+              ) : (
+                <div className={`w-16 h-16 rounded-full shrink-0 flex items-center justify-center text-[22px] font-bold text-white bg-gradient-to-br ${avatarGradient(profile.userType)} ring-2 ring-[var(--color-surface-2)]`}>
+                  {initials}
+                </div>
+              )}
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-2xl font-extrabold text-[var(--color-text-heading)] tracking-tight">@{profile.username}</h1>
+                  {badge && (
+                    <span className={`shrink-0 rounded px-1.5 py-0.5 border text-xs font-bold uppercase leading-none ${badge.className}`}>
+                      {badge.label}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 mt-1.5 text-xs text-[var(--color-text-secondary)]">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                  <span>{joinedLabel(profile.joinedAt)}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="shrink-0">
+                {isMe ? (
+                  <button
+                    onClick={() => { clearError(); setEditing(true); }}
+                    className="px-4 py-2 rounded-full text-sm font-semibold border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
+                  >
+                    Edit Profile
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      onClick={() => (currentUserId ? null : onGuestAction?.())}
+                      className="px-3.5 py-2 rounded-full text-sm font-semibold border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors flex items-center gap-2"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                      Message
+                    </button>
+                    <button
+                      onClick={() => (currentUserId ? toggleFollow() : onGuestAction?.())}
+                      disabled={followPending}
+                      className={[
+                        'px-5 py-2 rounded-full text-sm font-semibold transition-colors disabled:opacity-60',
+                        following
+                          ? 'border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30'
+                          : 'bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)]',
+                      ].join(' ')}
+                    >
+                      {following ? 'Following' : 'Follow'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bio — plain text. Spacing lives on the wrapper div, not the <p>:
+                the global `p { margin: 0 }` reset in index.css is unlayered and
+                would otherwise override any margin utility set on the <p>. */}
+            {profile.bio && (
+              <div className="mt-3 max-w-[600px]">
+                <p className="text-[15px] text-[var(--color-text-primary)] leading-relaxed">{profile.bio}</p>
               </div>
             )}
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-extrabold text-[var(--color-text-heading)] tracking-tight">@{profile.username}</h1>
-                {badge && (
-                  <span className={`shrink-0 rounded px-1.5 py-0.5 border text-xs font-bold uppercase leading-none ${badge.className}`}>
-                    {badge.label}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 mt-1.5 text-xs text-[var(--color-text-secondary)]">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                <span>{joinedLabel(profile.joinedAt)}</span>
-              </div>
+            {/* Stats */}
+            <div className="flex flex-wrap gap-x-7 gap-y-2 mt-3">
+              <Stat value={formatCount(stats.postCount)}      label="Posts" />
+              <Stat value={formatCount(stats.likeCount)}      label="Likes" />
+              <Stat value={formatCount(stats.commentCount)}   label="Comments" />
+              <Stat value={formatCount(stats.followerCount)}  label="Followers" />
+              <Stat value={formatCount(stats.followingCount)} label="Following" />
             </div>
-
-            {/* Actions */}
-            <div className="shrink-0">
-              {isMe ? (
-                <button
-                  onClick={() => { clearError(); setEditing(true); }}
-                  className="px-4 py-2 rounded-full text-sm font-semibold border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
-                >
-                  Edit Profile
-                </button>
-              ) : (
-                <div className="flex items-center gap-2.5">
-                  <button
-                    onClick={() => (currentUserId ? null : onGuestAction?.())}
-                    className="px-3.5 py-2 rounded-full text-sm font-semibold border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors flex items-center gap-2"
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                    Message
-                  </button>
-                  <button
-                    onClick={() => (currentUserId ? toggleFollow() : onGuestAction?.())}
-                    disabled={followPending}
-                    className={[
-                      'px-5 py-2 rounded-full text-sm font-semibold transition-colors disabled:opacity-60',
-                      following
-                        ? 'border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30'
-                        : 'bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)]',
-                    ].join(' ')}
-                  >
-                    {following ? 'Following' : 'Follow'}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Bio */}
-          {profile.bio && (
-            <p className="mt-4 text-sm text-[var(--color-text-muted)] leading-relaxed max-w-[560px]">{profile.bio}</p>
-          )}
-
-          {/* Stats */}
-          <div className="flex flex-wrap gap-x-7 gap-y-2 mt-5">
-            <Stat value={formatCount(stats.postCount)}      label="Posts" />
-            <Stat value={formatCount(stats.likeCount)}      label="Likes" />
-            <Stat value={formatCount(stats.commentCount)}   label="Comments" />
-            <Stat value={formatCount(stats.followerCount)}  label="Followers" />
-            <Stat value={formatCount(stats.followingCount)} label="Following" />
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mt-5 -mb-px">
-            {TABS.map((t) => {
-              const active = tab === t.key;
-              return (
-                <button
-                  key={t.key}
-                  onClick={() => setTab(t.key)}
-                  className={[
-                    'relative px-1 py-3 mr-6 text-sm transition-colors',
-                    active ? 'font-bold text-[var(--color-text-heading)]' : 'font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
-                  ].join(' ')}
-                >
-                  {t.label}
-                  {active && <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-[var(--color-link)] rounded-full" />}
-                </button>
-              );
-            })}
+          <div className="px-6 border-t border-[var(--color-border)]">
+            <div className="flex gap-1">
+              {TABS.map((t) => {
+                const active = tab === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setTab(t.key)}
+                    className={[
+                      'relative px-1 py-3 mr-6 text-sm transition-colors',
+                      active ? 'font-bold text-[var(--color-text-heading)]' : 'font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
+                    ].join(' ')}
+                  >
+                    {t.label}
+                    {active && <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-[var(--color-link)] rounded-full" />}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── Body ── */}
-      <div className="px-5 py-6">
+      <div className="px-5 pt-4 pb-6">
         {tab === 'about' ? (
           <AboutTab profile={profile} />
         ) : (
