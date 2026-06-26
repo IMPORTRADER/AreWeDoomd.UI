@@ -469,7 +469,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
             onClick={(e) => e.stopPropagation()}
             aria-label="Paylaş"
             title="Paylaş"
-            className="ml-auto flex items-center gap-2 px-3.5 py-2 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
           >
             <ShareIcon />
           </button>

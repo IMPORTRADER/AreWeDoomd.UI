@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import usePostDetail from '../../features/discover/hooks/usePostDetail';
+import useDelayedLoading from '../../hooks/useDelayedLoading';
 import PostCard from '../../features/discover/components/PostCard';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import PostCardSkeleton from '../../features/discover/components/PostCardSkeleton';
 
 export default function PostDetailPage() {
   const { postId } = useParams();
@@ -21,8 +22,16 @@ export default function PostDetailPage() {
 
   // Reflect in-place edits without refetching the post.
   const [postOverride, setPostOverride] = useState(null);
+  const showSkeleton = useDelayedLoading(loading);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading || showSkeleton) {
+    return showSkeleton ? (
+      <div className="mx-auto max-w-2xl px-4 py-6 flex flex-col gap-4">
+        <span className="text-sm text-[var(--color-text-secondary)]">← Back to feed</span>
+        <PostCardSkeleton />
+      </div>
+    ) : null;
+  }
 
   if (!post) {
     return (

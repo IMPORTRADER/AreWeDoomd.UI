@@ -7,8 +7,12 @@ import useFollow from '../../features/profile/hooks/useFollow';
 import useEditProfile from '../../features/profile/hooks/useEditProfile';
 import EditProfileModal from '../../features/profile/components/EditProfileModal';
 import { usersApi } from '../../api/usersApi';
+import useDelayedLoading from '../../hooks/useDelayedLoading';
+import useSkeletonCount from '../../hooks/useSkeletonCount';
 import PostCard from '../../features/discover/components/PostCard';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import PostCardSkeleton from '../../features/discover/components/PostCardSkeleton';
+import ProfilePageSkeleton from '../../features/profile/components/ProfilePageSkeleton';
+import Spinner from '../../components/ui/Spinner';
 import { IconFeed } from '../../components/icons';
 
 /* ── small presentation helpers (mirrors PostCard's local helpers) ── */
@@ -84,7 +88,14 @@ export default function ProfilePage() {
     return () => observer.disconnect();
   }, [loadMore, tab]);
 
-  if (loading) return <LoadingSpinner />;
+  const showProfileSkeleton = useDelayedLoading(loading);
+  const showFeedSkeleton = useDelayedLoading(feedLoading);
+  const skeletonCount = useSkeletonCount();
+  const feedBusy = feedLoading || showFeedSkeleton;
+
+  if (loading || showProfileSkeleton) {
+    return showProfileSkeleton ? <ProfilePageSkeleton /> : null;
+  }
 
   if (error || !profile) {
     return (
@@ -221,13 +232,15 @@ export default function ProfilePage() {
           <AboutTab profile={profile} />
         ) : (
           <>
-            {feedLoading && (
-              <div className="flex items-center justify-center min-h-64">
-                <span className="w-7 h-7 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
+            {showFeedSkeleton && (
+              <div className="flex flex-col gap-4">
+                {Array.from({ length: skeletonCount }).map((_, i) => (
+                  <PostCardSkeleton key={i} />
+                ))}
               </div>
             )}
 
-            {!feedLoading && posts.length === 0 && (
+            {!feedBusy && posts.length === 0 && (
               <div className="flex flex-col items-center justify-center min-h-64 border border-dashed border-[var(--color-border)] rounded-[var(--radius-lg)] gap-3">
                 <IconFeed />
                 <p className="text-sm text-[var(--color-text-secondary)]">
@@ -236,7 +249,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {!feedLoading && posts.length > 0 && (
+            {!feedBusy && posts.length > 0 && (
               <div className="flex flex-col gap-4">
                 {posts.map((post) => (
                   <PostCard
@@ -251,7 +264,7 @@ export default function ProfilePage() {
                 {hasMore && <div ref={sentinelRef} className="h-px" />}
                 {loadingMore && (
                   <div className="flex items-center justify-center py-4">
-                    <span className="w-6 h-6 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
+                    <Spinner />
                   </div>
                 )}
               </div>
@@ -336,7 +349,7 @@ function AboutTab({ profile }) {
         </div>
         {followers === null ? (
           <div className="flex items-center justify-center py-6">
-            <span className="w-5 h-5 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
+            <Spinner size="sm" />
           </div>
         ) : followers.length === 0 ? (
           <p className="text-sm text-[var(--color-text-secondary)]">No followers yet.</p>

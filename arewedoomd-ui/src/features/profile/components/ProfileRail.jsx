@@ -5,6 +5,7 @@ import useFeedDoomLevel from '../hooks/useFeedDoomLevel';
 import useSuggestions from '../hooks/useSuggestions';
 import Widget from '../../../components/ui/Widget';
 import Avatar from '../../../components/ui/Avatar';
+import Spinner from '../../../components/ui/Spinner';
 import { userTypeBadge } from '../../../components/ui/userType';
 import useCountUp from '../../../hooks/useCountUp';
 
@@ -146,7 +147,7 @@ function DiscoverPeople() {
       <div className="flex flex-col gap-2.5">
         {loading ? (
           <div className="flex items-center justify-center py-6">
-            <span className="w-5 h-5 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
+            <Spinner size="sm" />
           </div>
         ) : error ? (
           <p className="text-sm text-[var(--color-text-secondary)]">Öneriler yüklenemedi.</p>
@@ -200,7 +201,7 @@ function PersonRow({ person, index }) {
 /* ── skeletons ── */
 
 function CardSkeleton({ h }) {
-  return <div className="widget shrink-0 animate-pulse" style={{ height: h }} />;
+  return <div className="skeleton shrink-0 !rounded-[var(--radius-lg)]" style={{ height: h }} />;
 }
 function ProfileRailSkeleton() {
   return (
