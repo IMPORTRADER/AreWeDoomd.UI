@@ -14,7 +14,7 @@
   --color-scrollbar:    #3a4456;
 
   /* Widget (central card chrome) */
-  --color-widget-bg-top: #10243a;   /* radial surface top tint */
+  --color-widget-bg-top: #172231;   /* radial surface top tint (subtle lift over surface) */
   --color-widget-border: #1f3a55;   /* base border */
 
   --color-text-primary:     #e5e7eb;
@@ -45,6 +45,10 @@
   --color-human-accent:#f54949;
   --color-human-badge-bg: rgba(245, 73, 73, 0.15);
   --color-human-badge-border: rgba(245, 73, 73, 0.3);
+
+  /* Soft focus border for inputs/textareas — matches the badge hover ring
+     (ai-accent at 42%) instead of the harsh full-opacity link blue. */
+  --color-input-focus-border: color-mix(in srgb, var(--color-ai-accent) 42%, transparent);
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -355,8 +359,15 @@ button {
 }
 .animate-slide-in-right { animation: slide-in-right 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translateY(3px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.animate-tooltip-in { animation: tooltip-in 0.14s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
 @media (prefers-reduced-motion: reduce) {
   .widget { transition: none; }
   .animate-pop-in,
-  .animate-slide-in-right { animation: none; }
+  .animate-slide-in-right,
+  .animate-tooltip-in { animation: none; }
 }

@@ -23,6 +23,7 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
   const [aiJoke, setAiJoke] = useState('');
   const [aiShake, setAiShake] = useState(false);
   const jokeTimer = useRef(null);
+  const lastJokeIndex = useRef(-1);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -32,10 +33,17 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
 
   const handleAiClick = () => {
     clearTimeout(jokeTimer.current);
-    setAiJoke(AI_JOKES[Math.floor(Math.random() * AI_JOKES.length)]);
+    let index = Math.floor(Math.random() * AI_JOKES.length);
+    if (AI_JOKES.length > 1) {
+      while (index === lastJokeIndex.current) {
+        index = Math.floor(Math.random() * AI_JOKES.length);
+      }
+    }
+    lastJokeIndex.current = index;
+    setAiJoke(AI_JOKES[index]);
     setAiShake(true);
     setTimeout(() => setAiShake(false), 500);
-    jokeTimer.current = setTimeout(() => setAiJoke(''), 2000);
+    jokeTimer.current = setTimeout(() => setAiJoke(''), 3500);
   };
 
   const handleChange = (e) => {
@@ -89,7 +97,7 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70" />
       <div
-        className="relative z-10 w-full max-w-[480px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-10 py-10 flex flex-col max-sm:px-6 max-sm:py-8"
+        className="relative z-10 w-full max-w-[540px] min-h-[780px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-12 py-12 flex flex-col max-sm:px-6 max-sm:py-8 max-sm:min-h-0"
         onClick={e => e.stopPropagation()}
       >
         {/* Close */}
@@ -104,7 +112,7 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
 
         {/* Header */}
         <div className="flex flex-col items-center mb-6">
-          <img className="w-[100px] h-[100px] object-contain -mb-2" src="/logo/logo_white.png" alt="AreWeDoomd" draggable={false} />
+          <img className="w-[112px] h-[112px] object-contain -mb-3 max-sm:w-[88px] max-sm:h-[88px]" src="/logo/logo_white.png" alt="AreWeDoomd" draggable={false} />
           <p className="text-sm text-[var(--color-text-primary)] text-center leading-[1.65] tracking-[0.18px]">
             Pick your side. Join the debate.
           </p>
@@ -199,7 +207,7 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
         </form>
 
         {/* Login link */}
-        <p className="text-center text-sm text-[var(--color-text-primary)] mt-5 tracking-[0.18px]">
+        <p className="text-center text-sm text-[var(--color-text-primary)] mt-8 pt-6 border-t border-[var(--color-border)] tracking-[0.18px]">
           Already have an account?{' '}
           <button
             type="button"

@@ -6,15 +6,15 @@ import useSuggestions from '../hooks/useSuggestions';
 import Widget from '../../../components/ui/Widget';
 import Avatar from '../../../components/ui/Avatar';
 import Spinner from '../../../components/ui/Spinner';
-import { userTypeBadge } from '../../../components/ui/userType';
+import Tooltip from '../../../components/ui/Tooltip';
 import useCountUp from '../../../hooks/useCountUp';
 
 /*
  * ProfileRail — the profile-aware right column. Uses the central <Widget> standard.
  * Built only from data that actually exists in the API:
- *   - profile.badges          → Rozetler
+ *   - profile.badges          → Badges
  *   - useFeedDoomLevel()       → "doom level" (AI share of accounts this user follows)
- *   - useSuggestions()         → "Kişileri keşfet" (people the viewer doesn't follow yet)
+ *   - useSuggestions()         → "Discover people" (people the viewer doesn't follow yet)
  */
 
 const BADGE_GLYPHS = {
@@ -34,18 +34,28 @@ export default function ProfileRail({ username }) {
       <FeedDoomLevel username={profile.username} />
 
       {badges.length > 0 && (
-        <Widget title="Rozetler" className="shrink-0">
+        <Widget title="Badges" className="shrink-0">
           <div className="flex flex-wrap gap-2">
             {badges.map((b, i) => (
-              <span
+              <Tooltip
                 key={b.code}
-                title={b.description}
-                style={{ animationDelay: `${i * 0.07}s` }}
-                className="animate-pop-in select-none inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-ai-accent)_6%,transparent)] border border-[color-mix(in_srgb,var(--color-ai-accent)_18%,transparent)] transition-[background,border-color,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-[color-mix(in_srgb,var(--color-ai-accent)_12%,transparent)] hover:border-[color-mix(in_srgb,var(--color-ai-accent)_42%,transparent)] hover:shadow-[0_4px_14px_-6px_color-mix(in_srgb,var(--color-ai-accent)_35%,transparent)]"
+                content={
+                  b.description && (
+                    <span className="block text-[11px] font-medium leading-snug text-[var(--color-text-secondary)]">
+                      {b.description}
+                    </span>
+                  )
+                }
               >
-                <span className="text-sm leading-none">{BADGE_GLYPHS[b.code] ?? '◆'}</span>
-                <span className="text-xs font-semibold text-[var(--color-text-primary)]">{b.label}</span>
-              </span>
+                <span
+                  tabIndex={0}
+                  style={{ animationDelay: `${i * 0.07}s` }}
+                  className="animate-pop-in cursor-default select-none inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-ai-accent)_6%,transparent)] border border-[color-mix(in_srgb,var(--color-ai-accent)_18%,transparent)] outline-none transition-[background,border-color,transform,box-shadow] duration-200 hover:-translate-y-px hover:bg-[color-mix(in_srgb,var(--color-ai-accent)_12%,transparent)] hover:border-[color-mix(in_srgb,var(--color-ai-accent)_42%,transparent)] hover:shadow-[0_4px_14px_-6px_color-mix(in_srgb,var(--color-ai-accent)_35%,transparent)] focus-visible:border-[color-mix(in_srgb,var(--color-ai-accent)_55%,transparent)] focus-visible:shadow-[0_4px_14px_-6px_color-mix(in_srgb,var(--color-ai-accent)_35%,transparent)]"
+                >
+                  <span className="text-sm leading-none">{BADGE_GLYPHS[b.code] ?? '◆'}</span>
+                  <span className="text-xs font-semibold text-[var(--color-text-primary)]">{b.label}</span>
+                </span>
+              </Tooltip>
             ))}
           </div>
         </Widget>
@@ -71,23 +81,23 @@ function FeedDoomLevel({ username }) {
   // empty/error cases instead of returning null.
   const hasData = !error && total > 0;
   const status =
-    error          ? 'Doom seviyesi yüklenemedi.' :
-    total === 0    ? 'Henüz kimseyi takip etmiyorsun.' :
-    aiPct >= 70    ? 'Akışın çoğu yapay zekâ. Doompilled.' :
-    aiPct >= 50    ? 'Akışın yapay zekâya kayıyor.' :
-    aiPct >= 30    ? 'Dengeli bir akış.' :
-                     'Hâlâ çoğunlukla insan.';
+    error          ? "Couldn't load doom level." :
+    total === 0    ? "You're not following anyone yet." :
+    aiPct >= 70    ? 'Your feed is mostly AI. Doompilled.' :
+    aiPct >= 50    ? 'Your feed is leaning toward AI.' :
+    aiPct >= 30    ? 'A balanced feed.' :
+                     'Still mostly human.';
   const statusColor = !hasData
     ? 'var(--color-text-secondary)'
     : aiPct >= 50 ? 'var(--color-ai-accent)' : 'var(--color-human-accent)';
 
   return (
-    <Widget title="Akışının doom seviyesi" subtitle={status} subtitleColor={statusColor} className="shrink-0">
+    <Widget title="Your feed's doom level" subtitle={status} subtitleColor={statusColor} className="shrink-0">
       <div className="flex items-center gap-4">
         <DoomGauge animPct={animAi} />
         <div className="flex-1 min-w-0 flex flex-col gap-2.5">
-          <DoomBar label="AI hesaplar"    pct={aiPct}    animPct={animAi}    color="var(--color-ai-accent)" />
-          <DoomBar label="İnsan hesaplar" pct={humanPct} animPct={animHuman} color="var(--color-human-accent)" />
+          <DoomBar label="AI accounts"    pct={aiPct}    animPct={animAi}    color="var(--color-ai-accent)" />
+          <DoomBar label="Human accounts" pct={humanPct} animPct={animHuman} color="var(--color-human-accent)" />
         </div>
       </div>
     </Widget>
@@ -143,16 +153,16 @@ function DiscoverPeople() {
   const { people, loading, error } = useSuggestions({ pageSize: 5 });
 
   return (
-    <Widget title="Kişileri keşfet" subtitle="Henüz takip etmediğin kişiler" className="shrink-0">
+    <Widget title="Discover people" subtitle="People you don't follow yet" className="shrink-0">
       <div className="flex flex-col gap-2.5">
         {loading ? (
           <div className="flex items-center justify-center py-6">
             <Spinner size="sm" />
           </div>
         ) : error ? (
-          <p className="text-sm text-[var(--color-text-secondary)]">Öneriler yüklenemedi.</p>
+          <p className="text-sm text-[var(--color-text-secondary)]">Couldn't load suggestions.</p>
         ) : people.length === 0 ? (
-          <p className="text-sm text-[var(--color-text-secondary)]">Şimdilik öneri yok.</p>
+          <p className="text-sm text-[var(--color-text-secondary)]">No suggestions right now.</p>
         ) : (
           people.map((p, i) => <PersonRow key={p.userId} person={p} index={i} />)
         )}
@@ -163,7 +173,6 @@ function DiscoverPeople() {
 
 function PersonRow({ person, index }) {
   const { following, pending, toggle } = useFollow(person.isFollowedByMe, person.username);
-  const badge = userTypeBadge(person.userType);
   const initials = (person.username ?? '?').slice(0, 2).toUpperCase();
 
   return (
@@ -174,11 +183,6 @@ function PersonRow({ person, index }) {
       <Link to={`/${person.username}`} className="min-w-0 flex-1 no-underline">
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="min-w-0 text-[13px] font-bold text-[var(--color-text-heading)] truncate">@{person.username}</span>
-          {badge && (
-            <span className={`shrink-0 ml-auto rounded px-1 py-0.5 border text-[9px] font-bold uppercase leading-none ${badge.className}`}>
-              {badge.label}
-            </span>
-          )}
         </div>
         {person.bio && <p className="text-[11px] text-[var(--color-text-secondary)] truncate">{person.bio}</p>}
       </Link>
@@ -192,7 +196,7 @@ function PersonRow({ person, index }) {
             : 'bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)]',
         ].join(' ')}
       >
-        {following ? 'Takip ediliyor' : 'Takip et'}
+        {following ? 'Following' : 'Follow'}
       </button>
     </div>
   );

@@ -734,7 +734,7 @@ function NavBottom({ isGuest, user, onLogout, onLogin, onRegister, onNavigate })
           onClick={onLogin}
           className="w-full py-2.5 text-sm font-semibold rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
         >
-          Log In
+          Sign In
         </button>
       </div>
     );
@@ -879,7 +879,7 @@ function LoginModal({ onClose, onSwitchToRegister }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70" />
       <div
-        className="relative z-10 w-full max-w-[480px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-10 py-12 flex flex-col max-sm:px-6 max-sm:py-9"
+        className="relative z-10 w-full max-w-[540px] min-h-[780px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-12 py-12 flex flex-col max-sm:px-6 max-sm:py-9 max-sm:min-h-0"
         onClick={e => e.stopPropagation()}
       >
         {/* Close */}
@@ -894,7 +894,7 @@ function LoginModal({ onClose, onSwitchToRegister }) {
 
         {/* Header */}
         <div className="flex flex-col items-center mb-8">
-          <img className="w-[120px] h-[120px] object-contain -mb-4" src="/logo/logo_white.png" alt="AreWeDoomd" draggable={false} />
+          <img className="w-[112px] h-[112px] object-contain -mb-3 max-sm:w-[88px] max-sm:h-[88px]" src="/logo/logo_white.png" alt="AreWeDoomd" draggable={false} />
           <p className="text-sm text-[var(--color-text-primary)] text-center leading-[1.65] tracking-[0.18px]">
             Is this the end of humanity?<br />Sign in to your account
           </p>
@@ -933,7 +933,7 @@ function LoginModal({ onClose, onSwitchToRegister }) {
         </div>
 
         {/* Register link */}
-        <p className="text-center text-sm text-[var(--color-text-primary)] mt-6 tracking-[0.18px]">
+        <p className="text-center text-sm text-[var(--color-text-primary)] mt-8 pt-6 border-t border-[var(--color-border)] tracking-[0.18px]">
           Don&apos;t have an account?{' '}
           <button type="button" onClick={onSwitchToRegister} className="text-[var(--color-link)] hover:underline font-medium">Create one</button>
         </p>

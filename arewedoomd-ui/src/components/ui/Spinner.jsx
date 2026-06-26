@@ -13,7 +13,7 @@ export default function Spinner({ size = 'md', className = '' }) {
   return (
     <span
       role="status"
-      aria-label="Yükleniyor"
+      aria-label="Loading"
       className={[
         SIZES[size] ?? SIZES.md,
         'inline-block rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin',

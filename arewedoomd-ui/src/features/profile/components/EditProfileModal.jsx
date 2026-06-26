@@ -114,19 +114,13 @@ export default function EditProfileModal({ profile, onClose, onSave, saving, err
               rows={4}
               maxLength={BIO_MAX + 40}
               placeholder="Tell the timeline who you are."
-              className="composer-scroll w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3.5 py-3 text-sm text-[var(--color-text-primary)] leading-relaxed outline-none resize-none focus:border-[var(--color-link)]"
+              className="composer-scroll w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3.5 py-3 text-sm text-[var(--color-text-primary)] leading-relaxed outline-none resize-none focus:border-[var(--color-input-focus-border)]"
             />
           </div>
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-1">
-            <button
-              type="button"
-              onClick={() => !saving && onClose()}
-              className="px-4 py-2.5 rounded-[var(--radius-md)] text-sm font-semibold border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors disabled:opacity-60"
-            >
-              Cancel
-            </button>
+            <Button type="button" variant="secondary" onClick={() => !saving && onClose()} disabled={saving}>Cancel</Button>
             <Button type="submit" variant="primary" loading={saving} disabled={!canSave}>Save changes</Button>
           </div>
         </form>

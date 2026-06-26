@@ -267,7 +267,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           <Link
             to={`/${authorUsername}`}
             onClick={(event) => event.stopPropagation()}
-            aria-label={`@${handle} profilini aç`}
+            aria-label={`Open @${handle}'s profile`}
             className="shrink-0 rounded-full transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-link)]"
           >
             {authorProfileImageUrl ? (
@@ -377,7 +377,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
                   onChange={(event) => setDraftContent(event.target.value)}
                   rows={4}
                   disabled={isUpdating}
-                  className="composer-scroll max-h-56 w-full overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3.5 py-3 text-base text-[var(--color-text-primary)] leading-relaxed outline-none resize-none focus:border-[var(--color-link)] disabled:opacity-60"
+                  className="composer-scroll max-h-56 w-full overflow-y-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3.5 py-3 text-base text-[var(--color-text-primary)] leading-relaxed outline-none resize-none focus:border-[var(--color-input-focus-border)] disabled:opacity-60"
                 />
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-xs text-[var(--color-text-secondary)] select-none">
@@ -445,7 +445,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           <button
             type="button"
             onClick={handleLikeClick}
-            aria-label={liked ? 'Beğeniyi geri al' : 'Beğen'}
+            aria-label={liked ? 'Unlike' : 'Like'}
             aria-pressed={liked}
             className={[
               'flex items-center gap-2 px-3.5 py-2 rounded-full text-sm transition-all duration-200',
@@ -467,7 +467,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           <button
             type="button"
             onClick={handleCommentClick}
-            aria-label="Yorumlar"
+            aria-label="Comments"
             className="flex items-center gap-2 px-3.5 py-2 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
           >
             <MessageIcon />
@@ -476,8 +476,8 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            aria-label="Paylaş"
-            title="Paylaş"
+            aria-label="Share"
+            title="Share"
             className="flex items-center gap-2 px-3.5 py-2 rounded-full text-sm transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-[var(--color-link)]/10"
           >
             <ShareIcon />
