@@ -265,7 +265,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           {/* Header */}
           <div className="flex items-start gap-3">
           <Link
-            to={`/profile/${authorUsername}`}
+            to={`/${authorUsername}`}
             onClick={(event) => event.stopPropagation()}
             aria-label={`@${handle} profilini aç`}
             className="shrink-0 rounded-full transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-link)]"
@@ -285,9 +285,14 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 min-w-0">
               <Link
-                to={`/profile/${authorUsername}`}
+                to={`/${authorUsername}`}
                 onClick={(event) => event.stopPropagation()}
-                className="text-[17px] font-bold text-[var(--color-text-heading)] leading-tight truncate no-underline hover:underline"
+                // Inline color (not a utility class): the unlayered global `a`
+                // color rule outranks any layered Tailwind color utility. Setting
+                // the link's own color white makes both the text and its
+                // currentColor-based hover underline render white instead of blue.
+                style={{ color: 'var(--color-text-heading)' }}
+                className="min-w-0 text-[17px] font-bold leading-tight truncate no-underline hover:underline"
               >
                 @{handle}
               </Link>
@@ -302,7 +307,11 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
                 to={`/posts/${post.id}`}
                 onClick={(event) => event.stopPropagation()}
                 title={createdTooltip}
-                className="text-xs text-[var(--color-text-secondary)] no-underline hover:underline hover:text-[var(--color-text-primary)] transition-colors"
+                // Inline gray (not a utility): the unlayered global `a` color rule
+                // outranks layered Tailwind color utilities, so set it directly to
+                // keep the timestamp de-emphasized instead of link-blue.
+                style={{ color: 'var(--color-text-secondary)' }}
+                className="text-xs no-underline hover:underline transition-colors"
               >
                 {timeAgo(createdAt)}
               </Link>

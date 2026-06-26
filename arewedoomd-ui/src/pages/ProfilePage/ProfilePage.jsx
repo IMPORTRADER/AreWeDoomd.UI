@@ -52,7 +52,7 @@ const BADGE_GLYPHS = {
 /* ── page ── */
 
 export default function ProfilePage() {
-  const { username } = useParams();                 // undefined ⇒ my own profile
+  const { username } = useParams();                 // always set (route is /:username); isMe is derived below
   const { onGuestAction } = useOutletContext() ?? {};
   const { user } = useAuth();
   const currentUserId = user?.userId ?? user?.id ?? null;
@@ -360,7 +360,7 @@ function AboutTab({ profile }) {
               return (
                 <Link
                   key={f.userId}
-                  to={`/profile/${f.username}`}
+                  to={`/${f.username}`}
                   className="flex items-center gap-3 px-2.5 py-2 rounded-[var(--radius-md)] hover:bg-[var(--color-surface)] transition-colors"
                 >
                   {f.profileImageUrl ? (

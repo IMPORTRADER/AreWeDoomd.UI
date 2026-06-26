@@ -30,7 +30,7 @@ const NAV_ITEMS = [
   { label: 'Feed',          to: '/feed',          Icon: IconFeedNav,       end: false, requiresAuth: true },
   { label: 'Search',        to: '/search',        Icon: IconSearch,        end: false, requiresAuth: true },
   { label: 'Notifications', to: '/notifications', Icon: IconNotifications, end: false, requiresAuth: true, authOnly: true },
-  { label: 'Profile',       to: '/profile',       Icon: IconProfile,       end: false, authOnly: true },
+  { label: 'Profile',       to: '/profile',       Icon: IconProfile,       end: true,  authOnly: true, isProfile: true },
   { label: 'Settings',      to: '/settings',      Icon: IconSettings,      end: false, authOnly: true },
 ];
 
@@ -74,11 +74,10 @@ export default function AppShell() {
   const isGuest = !user;
 
   // On profile routes the right rail becomes the profile-aware <ProfileRail>.
-  // `username` is undefined on /profile (own profile) and set on /profile/:username.
+  // Profiles live at the root: /:username. This is the last route in the tree,
+  // so a match here means the path wasn't a known static route (/, /posts/...).
   const location = useLocation();
-  const profileMatch =
-    matchPath('/profile', location.pathname) ||
-    matchPath('/profile/:username', location.pathname);
+  const profileMatch = matchPath('/:username', location.pathname);
   const profileUsername = profileMatch?.params?.username;
 
   const handleLogout = () => { logout(); navigate('/'); };
@@ -148,6 +147,7 @@ export default function AppShell() {
             </div>
             <NavItems
               isGuest={isGuest}
+              user={user}
               notificationsOpen={notificationsOpen}
               onToggleNotifications={() => setNotificationsOpen(prev => !prev)}
               onCloseNotifications={() => setNotificationsOpen(false)}
@@ -172,6 +172,7 @@ export default function AppShell() {
           </div>
           <NavItems
             isGuest={isGuest}
+            user={user}
             notificationsOpen={notificationsOpen}
             onToggleNotifications={() => setNotificationsOpen(prev => !prev)}
             onCloseNotifications={() => setNotificationsOpen(false)}
@@ -406,6 +407,7 @@ function ActivityIcon({ action }) {
 
 function NavItems({
   isGuest,
+  user,
   notificationsOpen,
   onToggleNotifications,
   onCloseNotifications,
@@ -418,7 +420,10 @@ function NavItems({
       {NAV_ITEMS.filter(item => !(item.authOnly && isGuest)).map((item) => {
         const NavIcon = item.Icon;
 
-        const { label, to, end, requiresAuth } = item;
+        const { label, end, requiresAuth } = item;
+        // Profiles live at /:username, so the Profile tab points at the signed-in
+        // user's own profile and stays active only there (never on others').
+        const to = item.isProfile ? `/${user?.username ?? ''}` : item.to;
         if (requiresAuth && isGuest) {
           return (
             <button
@@ -753,7 +758,7 @@ function ProfileCard({ user, onLogout, onNavigate }) {
   const initials = username.slice(0, 2).toUpperCase() || '?';
 
   const goToProfile = () => {
-    navigate('/profile');
+    navigate(`/${username}`);
     onNavigate?.();
   };
 

@@ -29,11 +29,9 @@ export default function AppRouter() {
           {/* Post detail — public, guest UI handled inside */}
           <Route path="/posts/:postId" element={<PostDetailPage />} />
 
-          {/* My profile — private (redirects guests home) */}
-          <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
-
-          {/* Someone else's profile — public */}
-          <Route path="/profile/:username" element={<ProfilePage />} />
+          {/* Profile — username at the root (e.g. /dogaAi), own or other.
+              Must stay last: static routes outrank this single dynamic segment. */}
+          <Route path="/:username" element={<ProfilePage />} />
         </Route>
 
         {/* Private */}

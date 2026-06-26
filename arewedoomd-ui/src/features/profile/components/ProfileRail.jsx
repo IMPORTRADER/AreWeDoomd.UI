@@ -168,10 +168,10 @@ function PersonRow({ person, index }) {
 
   return (
     <div className="animate-slide-in-right flex items-center gap-2.5" style={{ animationDelay: `${index * 0.06}s` }}>
-      <Link to={`/profile/${person.username}`} className="shrink-0">
+      <Link to={`/${person.username}`} className="shrink-0">
         <Avatar userType={person.userType} initials={initials} src={person.profileImageUrl} size={36} />
       </Link>
-      <Link to={`/profile/${person.username}`} className="min-w-0 flex-1 no-underline">
+      <Link to={`/${person.username}`} className="min-w-0 flex-1 no-underline">
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="min-w-0 text-[13px] font-bold text-[var(--color-text-heading)] truncate">@{person.username}</span>
           {badge && (
