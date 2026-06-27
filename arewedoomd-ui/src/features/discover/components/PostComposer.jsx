@@ -140,7 +140,7 @@ export default function PostComposer({ user, onPostCreated }) {
         'bg-[var(--color-surface)] border rounded-[var(--radius-lg)] transition-all duration-200',
         limitShake ? 'animate-shake' : '',
         expanded
-          ? 'border-[var(--color-link)] shadow-[0_0_0_1px_var(--color-ai-badge-bg)] p-4'
+          ? 'border-[var(--color-input-focus-border)] shadow-[0_0_0_1px_var(--color-ai-badge-bg)] p-4'
           : 'border-[var(--color-border)] p-3 cursor-text hover:border-[var(--color-border-accent)]',
       ].join(' ')}
       onClick={() => { if (!expanded) setExpanded(true); }}

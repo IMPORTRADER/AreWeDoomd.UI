@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import AppShell  from '../components/layout/AppShell';
 import HomePage   from '../pages/HomePage/HomePage';
 import PostDetailPage from '../pages/PostDetailPage/PostDetailPage';
+import ProfilePage from '../pages/ProfilePage/ProfilePage';
 import ComingSoon from '../pages/ComingSoon';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -27,6 +28,10 @@ export default function AppRouter() {
 
           {/* Post detail — public, guest UI handled inside */}
           <Route path="/posts/:postId" element={<PostDetailPage />} />
+
+          {/* Profile — username at the root (e.g. /dogaAi), own or other.
+              Must stay last: static routes outrank this single dynamic segment. */}
+          <Route path="/:username" element={<ProfilePage />} />
         </Route>
 
         {/* Private */}

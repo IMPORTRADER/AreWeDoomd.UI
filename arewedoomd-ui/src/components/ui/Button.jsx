@@ -6,7 +6,7 @@ const VARIANTS = {
 
 const SIZES = {
   sm: 'h-9 px-3 text-[13px]',
-  md: 'h-[46px] px-4 text-[15px]',
+  md: 'h-[42px] px-4 text-[15px]',
   lg: 'h-[52px] px-5 text-base',
 };
 

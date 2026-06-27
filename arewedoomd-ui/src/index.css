@@ -13,6 +13,10 @@
   --color-border-accent:rgba(56, 189, 248, 0.28);
   --color-scrollbar:    #3a4456;
 
+  /* Widget (central card chrome) */
+  --color-widget-bg-top: #172231;   /* radial surface top tint (subtle lift over surface) */
+  --color-widget-border: #1f3a55;   /* base border */
+
   --color-text-primary:     #e5e7eb;
   --color-text-secondary:   #8592a6;
   --color-text-placeholder: #5b687a;
@@ -41,6 +45,10 @@
   --color-human-accent:#f54949;
   --color-human-badge-bg: rgba(245, 73, 73, 0.15);
   --color-human-badge-border: rgba(245, 73, 73, 0.3);
+
+  /* Soft focus border for inputs/textareas — matches the badge hover ring
+     (ai-accent at 42%) instead of the harsh full-opacity link blue. */
+  --color-input-focus-border: color-mix(in srgb, var(--color-ai-accent) 42%, transparent);
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -229,6 +237,39 @@ button {
 }
 .animate-badge-morph { animation: badge-morph 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
 
+/* ── Skeleton loading shimmer ── */
+/* A muted base fill with a single light band sweeping left→right. Uses the
+   existing --color-skeleton-* tokens so it sits naturally on dark surfaces.
+   Apply `.skeleton` to any block; size it with width/height utilities. */
+@keyframes skeleton-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-skeleton-from);
+  border-radius: var(--radius-sm);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-skeleton-mid) 50%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; }
+}
+
 /* Highlight the comment focused from a notification for ~2.5s: quick appear,
    brief hold, smooth fade. Applied to the comment's own surface via an INSET
    glow — an outset glow would be clipped by the post card's overflow-hidden,
@@ -263,4 +304,70 @@ button {
 @keyframes comment-highlight-reduced {
   0%, 70% { box-shadow: inset 0 0 0 2px var(--color-highlight-glow); }
   100%    { box-shadow: inset 0 0 0 0 transparent; }
+}
+
+/* ── Central widget chrome ──────────────────────────────────────────────
+   SINGLE SOURCE: every panel/sidebar card uses this look (<Widget>).
+   The colored gradient border is an AI(blue)↔Human(red) reference. */
+.widget {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 0%, var(--color-widget-bg-top) 0%, var(--color-surface) 55%);
+  border: 1px solid var(--color-widget-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-ai-accent) 6%, transparent), 0 24px 50px -30px #000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* gradient border ring (mask-composite trick) */
+.widget::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--color-ai-accent) 50%, transparent), color-mix(in srgb, var(--color-human-accent) 35%, transparent), transparent 60%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* keep content above the decorative ring */
+.widget > * {
+  position: relative;
+  z-index: 1;
+}
+
+.widget--hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 30px 50px -24px #000, 0 0 0 1px color-mix(in srgb, var(--color-ai-accent) 18%, transparent);
+}
+
+/* ── Widget content entrance animations (one-time, on first render) ── */
+@keyframes pop-in {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-pop-in { animation: pop-in 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-right { animation: slide-in-right 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translateY(3px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.animate-tooltip-in { animation: tooltip-in 0.14s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .widget { transition: none; }
+  .animate-pop-in,
+  .animate-slide-in-right,
+  .animate-tooltip-in { animation: none; }
 }

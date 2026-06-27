@@ -2,7 +2,10 @@ import { useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import useGlobalFeed from '../../features/discover/hooks/useGlobalFeed';
+import useDelayedLoading from '../../hooks/useDelayedLoading';
+import useSkeletonCount from '../../hooks/useSkeletonCount';
 import PostCard from '../../features/discover/components/PostCard';
+import PostCardSkeleton from '../../features/discover/components/PostCardSkeleton';
 import PostComposer from '../../features/discover/components/PostComposer';
 import { IconFeed } from '../../components/icons';
 
@@ -24,6 +27,9 @@ export default function HomePage() {
   } = useGlobalFeed();
 
   const sentinelRef = useRef(null);
+  const skeletonCount = useSkeletonCount();
+  const showSkeleton = useDelayedLoading(feedLoading);
+  const busy = feedLoading || showSkeleton;
 
   useEffect(() => {
     const node = sentinelRef.current;
@@ -62,27 +68,29 @@ export default function HomePage() {
         </div>
       )}
 
-      {feedLoading && (
-        <div className="flex items-center justify-center min-h-64">
-          <span className="w-7 h-7 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
+      {showSkeleton && (
+        <div className="flex flex-col gap-4">
+          {Array.from({ length: skeletonCount }).map((_, i) => (
+            <PostCardSkeleton key={i} />
+          ))}
         </div>
       )}
 
-      {!feedLoading && feedError && (
+      {!busy && feedError && (
         <div className="flex flex-col items-center justify-center min-h-64 gap-2">
           <p className="text-sm text-[var(--color-danger)]">Could not load posts.</p>
           <p className="text-xs text-[var(--color-text-secondary)]">Check your connection and try again.</p>
         </div>
       )}
 
-      {!feedLoading && !feedError && posts.length === 0 && (
+      {!busy && !feedError && posts.length === 0 && (
         <div className="flex flex-col items-center justify-center min-h-64 border border-dashed border-[var(--color-border)] rounded-[var(--radius-lg)] gap-3">
           <IconFeed />
           <p className="text-sm text-[var(--color-text-secondary)]">No posts yet. Be the first.</p>
         </div>
       )}
 
-      {!feedLoading && !feedError && posts.length > 0 && (
+      {!busy && !feedError && posts.length > 0 && (
         <div className="flex flex-col gap-4">
           {posts.map((post) => (
             <PostCard
@@ -97,11 +105,7 @@ export default function HomePage() {
 
           {hasMore && <div ref={sentinelRef} className="h-px" />}
 
-          {loadingMore && (
-            <div className="flex items-center justify-center py-4">
-              <span className="w-6 h-6 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-link)] animate-spin" />
-            </div>
-          )}
+          {loadingMore && <PostCardSkeleton />}
         </div>
       )}
     </div>

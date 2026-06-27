@@ -26,21 +26,21 @@ export default function Input({
       )}
       <div className="relative flex items-center">
         {icon && (
-          <span className="absolute left-3.5 flex items-center text-[var(--color-text-secondary)] pointer-events-none">
+          <span className="absolute left-4 flex items-center text-[var(--color-text-secondary)] pointer-events-none">
             {icon}
           </span>
         )}
         <input
           className={[
-            'w-full h-[46px] bg-[var(--color-bg)] hover:bg-[var(--color-surface)] border rounded-[var(--radius-md)]',
-            'px-3.5 text-[15px] text-[var(--color-text-primary)]',
+            'w-full h-[52px] bg-[var(--color-bg)] border rounded-[var(--radius-md)] focus:border-[2.5px]',
+            'px-4 text-[16px] text-[var(--color-text-primary)]',
             'placeholder:text-[var(--color-text-placeholder)]',
-            'outline-none transition-colors duration-150',
-            icon        ? 'pl-[42px]' : '',
-            isPassword  ? 'pr-10'     : '',
+            'outline-none transition-[border-color,box-shadow,background-color] duration-150',
+            icon        ? 'pl-[46px]' : '',
+            isPassword  ? 'pr-11'     : '',
             error
-              ? 'border-[var(--color-danger)] focus:border-[var(--color-danger)]'
-              : 'border-[var(--color-border)] focus:border-[var(--color-link)]',
+              ? 'border-[var(--color-danger)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_color-mix(in_srgb,var(--color-danger)_45%,transparent)] focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_0_3px_color-mix(in_srgb,var(--color-danger)_30%,transparent)]'
+              : 'border-[#3b4a64] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(255,255,255,0.04)] focus:border-[#0494E3] focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_0_3px_color-mix(in_srgb,#0494E3_28%,transparent)]',
             disabled ? 'opacity-50 cursor-not-allowed' : '',
           ].join(' ')}
           type={inputType}

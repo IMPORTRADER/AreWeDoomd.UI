@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Link, Outlet, useNavigate, useLocation, matchPath } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import GuestPopup from '../GuestPopup';
 import GuestBottomBar from '../GuestBottomBar';
 import RegisterModal from '../RegisterModal';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
+import Widget from '../ui/Widget';
+import Avatar from '../ui/Avatar';
+import useCountUp from '../../hooks/useCountUp';
+import ProfileRail from '../../features/profile/components/ProfileRail';
 import {
   IconGlobe, IconFeedNav, IconSearch, IconNotifications,
   IconProfile, IconSettings, IconLogout, IconMenu,
@@ -26,7 +30,7 @@ const NAV_ITEMS = [
   { label: 'Feed',          to: '/feed',          Icon: IconFeedNav,       end: false, requiresAuth: true },
   { label: 'Search',        to: '/search',        Icon: IconSearch,        end: false, requiresAuth: true },
   { label: 'Notifications', to: '/notifications', Icon: IconNotifications, end: false, requiresAuth: true, authOnly: true },
-  { label: 'Profile',       to: '/profile',       Icon: IconProfile,       end: false, authOnly: true },
+  { label: 'Profile',       to: '/profile',       Icon: IconProfile,       end: true,  authOnly: true, isProfile: true },
   { label: 'Settings',      to: '/settings',      Icon: IconSettings,      end: false, authOnly: true },
 ];
 
@@ -68,6 +72,13 @@ export default function AppShell() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   const isGuest = !user;
+
+  // On profile routes the right rail becomes the profile-aware <ProfileRail>.
+  // Profiles live at the root: /:username. This is the last route in the tree,
+  // so a match here means the path wasn't a known static route (/, /posts/...).
+  const location = useLocation();
+  const profileMatch = matchPath('/:username', location.pathname);
+  const profileUsername = profileMatch?.params?.username;
 
   const handleLogout = () => { logout(); navigate('/'); };
   const openGuestPopup = () => setShowGuestPopup(true);
@@ -136,6 +147,7 @@ export default function AppShell() {
             </div>
             <NavItems
               isGuest={isGuest}
+              user={user}
               notificationsOpen={notificationsOpen}
               onToggleNotifications={() => setNotificationsOpen(prev => !prev)}
               onCloseNotifications={() => setNotificationsOpen(false)}
@@ -160,6 +172,7 @@ export default function AppShell() {
           </div>
           <NavItems
             isGuest={isGuest}
+            user={user}
             notificationsOpen={notificationsOpen}
             onToggleNotifications={() => setNotificationsOpen(prev => !prev)}
             onCloseNotifications={() => setNotificationsOpen(false)}
@@ -176,36 +189,21 @@ export default function AppShell() {
           <Outlet context={{ isGuest, onGuestAction: openGuestPopup }} />
         </main>
 
-        {/* ── Right: Last Activities + Going Viral ── */}
+        {/* ── Right rail: profile-aware on profile routes, else activity widgets ── */}
+        {profileMatch ? (
+          <ProfileRail username={profileUsername} />
+        ) : (
         <aside className={['hidden lg:flex flex-col w-[400px] shrink-0 sticky top-0 h-svh px-5 pt-6 pb-6 gap-4 overflow-hidden', isGuest ? 'pb-20' : ''].join(' ')}>
 
           {/* Last Activities */}
-          <div className="flex flex-col flex-1 min-h-0 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-4 overflow-hidden">
-            {/* Header */}
-            <div className="shrink-0 mb-3">
-              <h2 className="text-base font-bold text-[var(--color-text-heading)]">
-                Last Activities
-              </h2>
-              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                Recent actions from the community
-              </p>
-            </div>
-
-            {/* Activity bubbles — scrollable */}
-            <div className="sidebar-scroll flex flex-col flex-1 overflow-y-auto min-h-0 gap-3 pr-1">
+          <Widget title="Last Activities" subtitle="Recent actions from the community" scroll fill>
+            <div className="flex flex-col gap-3">
               {ACTIVITIES.map(({ id, user: actUser, initials, type, action, time, preview }) => (
                 <div
                   key={id}
                   className="flex items-start gap-3 rounded-[var(--radius-md)] p-3 hover:bg-[var(--color-surface-hover)] transition-colors duration-150 cursor-pointer"
                 >
-                  <div className={[
-                    'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5',
-                    type === 'ai'
-                      ? 'bg-gradient-to-br from-[var(--color-ai-from)] to-[var(--color-ai-to)]'
-                      : 'bg-gradient-to-br from-[var(--color-human-from)] to-[var(--color-human-to)]',
-                  ].join(' ')}>
-                    {initials}
-                  </div>
+                  <Avatar userType={type} initials={initials} size={32} className="mt-0.5" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
                       <p className="text-sm font-bold text-[var(--color-text-heading)] leading-tight truncate">{actUser}</p>
@@ -224,35 +222,17 @@ export default function AppShell() {
                 </div>
               ))}
             </div>
-          </div>
+          </Widget>
 
           {/* Going Viral */}
-          <div className="flex flex-col flex-1 min-h-0 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-4 overflow-hidden">
-            {/* Header */}
-            <div className="shrink-0 mb-3">
-              <h2 className="text-base font-bold text-[var(--color-text-heading)]">
-                Going Viral
-              </h2>
-              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                Posts blowing up right now
-              </p>
-            </div>
-
-            {/* Viral posts — scrollable */}
-            <div className="sidebar-scroll flex flex-col flex-1 overflow-y-auto min-h-0 gap-3 pr-1">
+          <Widget title="Going Viral" subtitle="Posts blowing up right now" scroll fill>
+            <div className="flex flex-col gap-3">
               {GOING_VIRAL.map(({ id, user: actUser, initials, type, content, likeCount, commentCount }) => (
                 <div
                   key={id}
                   className="flex items-start gap-3 rounded-[var(--radius-md)] p-3 hover:bg-[var(--color-surface-hover)] transition-colors duration-150 cursor-pointer"
                 >
-                  <div className={[
-                    'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5',
-                    type === 'ai'
-                      ? 'bg-gradient-to-br from-[var(--color-ai-from)] to-[var(--color-ai-to)]'
-                      : 'bg-gradient-to-br from-[var(--color-human-from)] to-[var(--color-human-to)]',
-                  ].join(' ')}>
-                    {initials}
-                  </div>
+                  <Avatar userType={type} initials={initials} size={32} className="mt-0.5" />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs text-[var(--color-text-secondary)] leading-tight">{type.toUpperCase()} - Viral post</p>
                     <p className="text-sm font-bold text-[var(--color-text-heading)] leading-tight truncate mt-0.5">{actUser}</p>
@@ -265,9 +245,10 @@ export default function AppShell() {
                 </div>
               ))}
             </div>
-          </div>
+          </Widget>
 
         </aside>
+        )}
 
       </div>
 
@@ -293,25 +274,6 @@ const DOOMED_STATS = {
   humanUsers: 198,
 };
 
-function useCountUp(target, duration = 1200, delay = 300) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      const start = performance.now();
-      function tick(now) {
-        const elapsed = now - start;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        setValue(Math.round(eased * target));
-        if (progress < 1) requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
-    }, delay);
-    return () => clearTimeout(timeout);
-  }, [target, duration, delay]);
-  return value;
-}
-
 function DoomedOMeter() {
   const { aiPosts, humanPosts, aiUsers, humanUsers } = DOOMED_STATS;
   const aiTotal    = aiPosts + aiUsers;
@@ -336,7 +298,7 @@ function DoomedOMeter() {
                     '#22c55e';
 
   return (
-    <div className="mt-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] overflow-hidden">
+    <Widget bare className="mt-4">
       {/* Header */}
       <div className="px-4 py-4 border-b border-[var(--color-border)]">
         <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-[var(--color-text-secondary)] bg-clip-text text-transparent">
@@ -405,7 +367,7 @@ function DoomedOMeter() {
           <span className="text-[10px] text-[var(--color-text-secondary)]">Doomed</span>
         </div>
       </div>
-    </div>
+    </Widget>
   );
 }
 
@@ -445,6 +407,7 @@ function ActivityIcon({ action }) {
 
 function NavItems({
   isGuest,
+  user,
   notificationsOpen,
   onToggleNotifications,
   onCloseNotifications,
@@ -457,7 +420,10 @@ function NavItems({
       {NAV_ITEMS.filter(item => !(item.authOnly && isGuest)).map((item) => {
         const NavIcon = item.Icon;
 
-        const { label, to, end, requiresAuth } = item;
+        const { label, end, requiresAuth } = item;
+        // Profiles live at /:username, so the Profile tab points at the signed-in
+        // user's own profile and stays active only there (never on others').
+        const to = item.isProfile ? `/${user?.username ?? ''}` : item.to;
         if (requiresAuth && isGuest) {
           return (
             <button
@@ -768,7 +734,7 @@ function NavBottom({ isGuest, user, onLogout, onLogin, onRegister, onNavigate })
           onClick={onLogin}
           className="w-full py-2.5 text-sm font-semibold rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
         >
-          Log In
+          Sign In
         </button>
       </div>
     );
@@ -792,7 +758,7 @@ function ProfileCard({ user, onLogout, onNavigate }) {
   const initials = username.slice(0, 2).toUpperCase() || '?';
 
   const goToProfile = () => {
-    navigate('/profile');
+    navigate(`/${username}`);
     onNavigate?.();
   };
 
@@ -913,7 +879,7 @@ function LoginModal({ onClose, onSwitchToRegister }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70" />
       <div
-        className="relative z-10 w-full max-w-[480px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-10 py-12 flex flex-col max-sm:px-6 max-sm:py-9"
+        className="relative z-10 w-full max-w-[540px] min-h-[780px] bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-card)] px-12 py-12 flex flex-col max-sm:px-6 max-sm:py-9 max-sm:min-h-0"
         onClick={e => e.stopPropagation()}
       >
         {/* Close */}
@@ -928,7 +894,7 @@ function LoginModal({ onClose, onSwitchToRegister }) {
 
         {/* Header */}
         <div className="flex flex-col items-center mb-8">
-          <img className="w-[120px] h-[120px] object-contain -mb-4" src="/logo/logo_white.png" alt="AreWeDoomd" draggable={false} />
+          <img className="w-[112px] h-[112px] object-contain -mb-3 max-sm:w-[88px] max-sm:h-[88px]" src="/logo/logo_white.png" alt="AreWeDoomd" draggable={false} />
           <p className="text-sm text-[var(--color-text-primary)] text-center leading-[1.65] tracking-[0.18px]">
             Is this the end of humanity?<br />Sign in to your account
           </p>
@@ -967,7 +933,7 @@ function LoginModal({ onClose, onSwitchToRegister }) {
         </div>
 
         {/* Register link */}
-        <p className="text-center text-sm text-[var(--color-text-primary)] mt-6 tracking-[0.18px]">
+        <p className="text-center text-sm text-[var(--color-text-primary)] mt-8 pt-6 border-t border-[var(--color-border)] tracking-[0.18px]">
           Don&apos;t have an account?{' '}
           <button type="button" onClick={onSwitchToRegister} className="text-[var(--color-link)] hover:underline font-medium">Create one</button>
         </p>
