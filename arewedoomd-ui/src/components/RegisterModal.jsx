@@ -118,8 +118,10 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
           </p>
         </div>
 
-        {/* User Type Selector */}
-        <div className="relative flex gap-2 mb-5">
+        {/* User Type Selector — bottom space leaves room for the AI joke tooltip
+            (absolute, reaches ~36px below) so it doesn't cover the first input
+            or get painted behind it */}
+        <div className="relative flex gap-2 mb-10">
           {/* Human — always selected */}
           <button
             type="button"
@@ -214,7 +216,7 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
             onClick={onSwitchToLogin}
             className="text-[var(--color-link)] hover:underline font-medium"
           >
-            Sign in
+            Log in
           </button>
         </p>
       </div>

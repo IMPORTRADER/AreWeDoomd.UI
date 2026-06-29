@@ -9,7 +9,7 @@ export default function GuestBottomBar({ onLogin, onRegister }) {
           onClick={onLogin}
           className="px-5 py-2.5 text-sm font-semibold rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
         >
-          Sign In
+          Log In
         </button>
         <button
           onClick={onRegister}
