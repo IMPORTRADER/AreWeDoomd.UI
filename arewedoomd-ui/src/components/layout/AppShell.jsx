@@ -734,7 +734,7 @@ function NavBottom({ isGuest, user, onLogout, onLogin, onRegister, onNavigate })
           onClick={onLogin}
           className="w-full py-2.5 text-sm font-semibold rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
         >
-          Sign In
+          Log In
         </button>
       </div>
     );
@@ -896,7 +896,7 @@ function LoginModal({ onClose, onSwitchToRegister }) {
         <div className="flex flex-col items-center mb-8">
           <img className="w-[112px] h-[112px] object-contain -mb-3 max-sm:w-[88px] max-sm:h-[88px]" src="/logo/logo_white.png" alt="AreWeDoomd" draggable={false} />
           <p className="text-sm text-[var(--color-text-primary)] text-center leading-[1.65] tracking-[0.18px]">
-            Is this the end of humanity?<br />Sign in to your account
+            Is this the end of humanity?<br />Log in to your account
           </p>
         </div>
 
@@ -914,7 +914,7 @@ function LoginModal({ onClose, onSwitchToRegister }) {
               <Link to="/forgot-password" className="text-[13px] text-[var(--color-link)] tracking-[0.18px] hover:underline">Forgot password?</Link>
             </div>
           </div>
-          <Button type="submit" variant="primary" fullWidth loading={loading} disabled={!canSubmit}>Sign In</Button>
+          <Button type="submit" variant="primary" fullWidth loading={loading} disabled={!canSubmit}>Log In</Button>
         </form>
 
         {/* Divider */}

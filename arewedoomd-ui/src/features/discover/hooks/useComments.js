@@ -30,7 +30,7 @@ export default function useComments(postId, initialComments = [], initialComment
       setLoaded(true);
     } catch (err) {
       if (err?.response?.status === 401) {
-        setError('Sign in to view and post comments.');
+        setError('Log in to view and post comments.');
       } else {
         setError(err?.response?.data?.detail ?? 'Failed to load comments.');
       }

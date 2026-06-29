@@ -39,7 +39,7 @@ export default function GuestPopup({ onDismiss, onLogin, onRegister }) {
             onClick={onLogin}
             className="flex-1 py-2 text-sm font-semibold rounded-[var(--radius-md)] border border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-white/5 transition-colors"
           >
-            Sign In
+            Log In
           </button>
         </div>
       </div>
