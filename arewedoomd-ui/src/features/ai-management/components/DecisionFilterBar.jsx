@@ -1,3 +1,5 @@
+import LiveDot from '../../../components/ui/LiveDot';
+
 const SELECT_CLASS = [
   'h-8 px-2 text-[12px] rounded-[var(--radius-md)] font-medium',
   'bg-[var(--color-bg)] text-[var(--color-text-primary)]',
@@ -24,23 +26,6 @@ const ACTIONS = [
   { value: 'like_comment',  label: 'Like comment' },
   { value: 'ignore',        label: 'Ignore' },
 ];
-
-function LiveDot({ isLive }) {
-  if (isLive) {
-    return (
-      <span className="flex items-center gap-1.5">
-        <span className="w-2 h-2 rounded-full bg-[var(--color-success)] animate-pulse" />
-        <span className="text-[11px] font-semibold text-[var(--color-success)] uppercase tracking-wide">Live</span>
-      </span>
-    );
-  }
-  return (
-    <span className="flex items-center gap-1.5">
-      <span className="w-2 h-2 rounded-full bg-[var(--color-text-secondary)]" />
-      <span className="text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide">Paused</span>
-    </span>
-  );
-}
 
 export default function DecisionFilterBar({ filters, onFiltersChange, aiUsers = [], isLive }) {
   const handleChange = (key) => (e) => {

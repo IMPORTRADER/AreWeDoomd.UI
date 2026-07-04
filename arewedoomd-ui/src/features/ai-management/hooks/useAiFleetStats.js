@@ -29,6 +29,7 @@ export default function useAiFleetStats() {
 
   // refresh resets loading to true *before* bumping tick so the UI shows skeleton immediately
   const refresh = useCallback(() => {
+    setError(null);
     setLoading(true);
     setTick((t) => t + 1);
   }, []);

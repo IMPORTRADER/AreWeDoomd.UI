@@ -34,10 +34,8 @@ export default function AdminAiPage() {
 
       <FleetStatsBar />
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Task 4: AI user table */}
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4">
         <AiUserTable onRowClick={handleRowClick} refreshRef={tableRefreshRef} />
-        {/* Task 6: Decision Feed */}
         <DecisionFeed aiUsers={aiUsers} />
       </div>
 

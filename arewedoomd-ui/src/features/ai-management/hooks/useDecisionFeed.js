@@ -103,7 +103,7 @@ export default function useDecisionFeed() {
   }, []);
 
   const loadMore = useCallback(() => {
-    if (loadingMore || !hasMore || !nextCursor) return;
+    if (loadingMore || inFlightRef.current || !hasMore || !nextCursor) return;
 
     setLoadingMore(true);
     setIsLive(false);

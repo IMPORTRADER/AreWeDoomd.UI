@@ -1,22 +1,9 @@
 import Widget from '../../../components/ui/Widget';
 import Button from '../../../components/ui/Button';
+import LiveDot from '../../../components/ui/LiveDot';
 import DecisionFilterBar from './DecisionFilterBar';
 import DecisionRow from './DecisionRow';
 import useDecisionFeed from '../hooks/useDecisionFeed';
-
-function LiveIndicator({ isLive }) {
-  if (isLive) {
-    return (
-      <span className="flex items-center gap-1.5">
-        <span className="w-2 h-2 rounded-full bg-[var(--color-success)] animate-pulse" />
-        <span className="text-[11px] font-semibold text-[var(--color-success)] uppercase tracking-wide">Live</span>
-      </span>
-    );
-  }
-  return (
-    <span className="text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide">Paused</span>
-  );
-}
 
 export default function DecisionFeed({ aiUsers = [] }) {
   const {
@@ -36,7 +23,7 @@ export default function DecisionFeed({ aiUsers = [] }) {
   return (
     <Widget
       title="Decision Feed"
-      headerRight={<LiveIndicator isLive={isLive} />}
+      headerRight={<LiveDot isLive={isLive} />}
       scroll
       fill
       bare

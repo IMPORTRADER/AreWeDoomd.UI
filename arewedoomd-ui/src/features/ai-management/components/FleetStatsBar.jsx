@@ -30,10 +30,6 @@ function SkeletonTile() {
   );
 }
 
-function Divider() {
-  return <div className="self-stretch w-px my-2" style={{ background: 'var(--color-border)' }} />;
-}
-
 export default function FleetStatsBar() {
   const { stats, loading, error, refresh } = useAiFleetStats();
   const showSkeleton = useDelayedLoading(loading);
@@ -78,31 +74,22 @@ export default function FleetStatsBar() {
 
   return (
     <Widget bare>
-      <div className="flex flex-wrap items-stretch">
+      <div className="flex flex-wrap items-stretch divide-x divide-[var(--color-border)]">
         <StatTile label="AI Agents" value={totalAiUsers} accent />
-        <Divider />
         <StatTile label="With persona" value={withPersonality} />
-        <Divider />
         {logAvailable ? (
           <>
             <StatTile label="Decisions today" value={decisionsToday} />
-            <Divider />
-            <div className="flex items-stretch">
-              <StatTile label="Executed" value={executedToday} />
-              <StatTile label="Failed" value={failedToday} />
-              <StatTile label="Dropped" value={droppedToday} />
-            </div>
-            <Divider />
+            <StatTile label="Executed" value={executedToday} />
+            <StatTile label="Failed" value={failedToday} />
+            <StatTile label="Dropped" value={droppedToday} />
           </>
         ) : (
-          <>
-            <div className="flex items-center px-4 py-3">
-              <span className="text-xs italic" style={{ color: 'var(--color-text-secondary)' }}>
-                decision log not available yet
-              </span>
-            </div>
-            <Divider />
-          </>
+          <div className="flex items-center px-4 py-3">
+            <span className="text-xs italic" style={{ color: 'var(--color-text-secondary)' }}>
+              decision log not available yet
+            </span>
+          </div>
         )}
         <StatTile label="Actions last hour" value={actionsLastHour} />
       </div>

@@ -192,7 +192,7 @@ describe('useDecisionFeed', () => {
     expect(result.current.items[0].activityId).toBe('3');
   });
 
-  it('poll response landing after loadMore does not clobber items', async () => {
+  it('loadMore is blocked while a poll is in-flight; poll response replaces items normally', async () => {
     // Manually control poll promise resolution
     let resolvePoll;
     const pollPromise = new Promise((resolve) => {
@@ -200,9 +200,8 @@ describe('useDecisionFeed', () => {
     });
 
     aiManagementApi.getDecisions
-      .mockResolvedValueOnce(PAGE1)  // 1st call: initial fetch
-      .mockReturnValueOnce(pollPromise)  // 2nd call: poll (unresolved)
-      .mockResolvedValueOnce(PAGE2); // 3rd call: loadMore
+      .mockResolvedValueOnce(PAGE1)    // 1st call: initial fetch
+      .mockReturnValueOnce(pollPromise); // 2nd call: poll (unresolved)
 
     const { result } = renderHook(() => useDecisionFeed());
 
@@ -219,26 +218,25 @@ describe('useDecisionFeed', () => {
       await Promise.resolve();
     });
 
-    // Call loadMore while poll is still in-flight (but unresolved)
+    // loadMore called while poll is in-flight — guard (inFlightRef.current) blocks it
     await act(async () => {
       result.current.loadMore();
       await Promise.resolve();
     });
 
-    expect(result.current.items).toHaveLength(2);
+    // Items unchanged; isLive still true because loadMore was a no-op
+    expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0].activityId).toBe('1');
-    expect(result.current.items[1].activityId).toBe('2');
-    expect(result.current.isLive).toBe(false);
+    expect(result.current.isLive).toBe(true);
 
-    // Now resolve the poll promise
+    // Now resolve the poll promise — items updated normally
     await act(async () => {
       resolvePoll(POLL_REFRESH);
       await Promise.resolve();
     });
 
-    // Items should STILL contain both item 1 and 2 (poll response discarded because isLive=false)
-    expect(result.current.items).toHaveLength(2);
-    expect(result.current.items[0].activityId).toBe('1');
-    expect(result.current.items[1].activityId).toBe('2');
+    expect(result.current.items).toHaveLength(1);
+    expect(result.current.items[0].activityId).toBe('3');
+    expect(result.current.isLive).toBe(true);
   });
 });
