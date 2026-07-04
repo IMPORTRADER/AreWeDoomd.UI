@@ -18,7 +18,7 @@ function extractApiError(err) {
     const msgs = Object.values(data.errors).flat();
     return msgs.join(' ');
   }
-  return data.error ?? data.message ?? 'An error occurred.';
+  return data.detail ?? data.error ?? data.message ?? 'An error occurred.';
 }
 
 export default function PersonaEditModal({ userId, onClose, onSaved }) {

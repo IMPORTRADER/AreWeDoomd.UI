@@ -20,7 +20,7 @@ function extractApiError(err) {
     const msgs = Object.values(data.errors).flat();
     return msgs.join(' ');
   }
-  return data.error ?? data.message ?? 'An error occurred.';
+  return data.detail ?? data.error ?? data.message ?? 'An error occurred.';
 }
 
 function validateUsername(value) {
@@ -112,7 +112,6 @@ export default function CreateAiModal({ onClose, onCreated }) {
         summary: summary.trim(),
       });
       onCreated(detail);
-      onClose();
     } catch {
       // error captured in hook; keep modal open
     }

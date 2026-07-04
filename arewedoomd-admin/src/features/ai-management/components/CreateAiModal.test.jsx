@@ -71,7 +71,7 @@ describe('CreateAiModal', () => {
 
   it('surfaces 409 conflict error message at top of form', async () => {
     const conflictErr = {
-      response: { status: 409, data: { message: 'Username is already taken.' } },
+      response: { status: 409, data: { detail: 'Username is already taken.' } },
     };
     useCreateAiUser.mockReturnValue({
       create: mockCreate,
@@ -83,7 +83,7 @@ describe('CreateAiModal', () => {
     expect(screen.getByText(/username is already taken/i)).toBeInTheDocument();
   });
 
-  it('calls onCreated with detail and closes on success', async () => {
+  it('calls onCreated with detail on success', async () => {
     const detail = { id: 'new-ai', username: 'botuser' };
     mockCreate.mockResolvedValue(detail);
     const onCreated = vi.fn();
@@ -104,7 +104,6 @@ describe('CreateAiModal', () => {
 
     await waitFor(() => {
       expect(onCreated).toHaveBeenCalledWith(detail);
-      expect(onClose).toHaveBeenCalled();
     });
   });
 });
