@@ -84,6 +84,9 @@ export default function useBulkCreate() {
       const res = await aiManagementApi.startBulkCreate({ count });
       if (!mountedRef.current) return;
       const { jobId } = res.data;
+      // Seed optimistic state immediately so the modal exits phase 1 without
+      // waiting for the first poll tick; poll responses will overwrite this.
+      setJob({ jobId, status: 'queued', requested: count, generated: 0, created: 0, failed: [], createdUsers: [] });
       beginPolling(jobId);
     } catch (err) {
       if (!mountedRef.current) return;

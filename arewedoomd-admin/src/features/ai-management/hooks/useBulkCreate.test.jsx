@@ -38,6 +38,30 @@ describe('useBulkCreate', () => {
     expect(result.current.error).toBeNull();
   });
 
+  it('seeds optimistic job state immediately after 202, before first poll tick', async () => {
+    aiManagementApi.startBulkCreate.mockResolvedValue({ data: { jobId: JOB_ID } });
+    aiManagementApi.getBulkJob.mockResolvedValue({ data: queued });
+
+    const { result } = renderHook(() => useBulkCreate());
+
+    await act(async () => {
+      result.current.start({ count: 5 });
+      await Promise.resolve();
+    });
+
+    // job is set immediately — no poll tick needed
+    expect(result.current.job).not.toBeNull();
+    expect(result.current.job.jobId).toBe(JOB_ID);
+    expect(result.current.job.status).toBe('queued');
+    expect(result.current.job.requested).toBe(5);
+    expect(result.current.job.generated).toBe(0);
+    expect(result.current.job.created).toBe(0);
+    expect(result.current.job.failed).toEqual([]);
+    expect(result.current.job.createdUsers).toEqual([]);
+    // getBulkJob has not been called yet (no timer advance)
+    expect(aiManagementApi.getBulkJob).not.toHaveBeenCalled();
+  });
+
   it('start → POSTs then polls every 1500 ms until terminal state stops polling', async () => {
     aiManagementApi.startBulkCreate.mockResolvedValue({ data: { jobId: JOB_ID } });
     aiManagementApi.getBulkJob
