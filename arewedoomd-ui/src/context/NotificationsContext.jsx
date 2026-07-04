@@ -6,7 +6,6 @@ import { createNotificationsConnection, RECEIVE_NOTIFICATION } from '../features
 const MAX_NOTIFICATIONS = 10;
 const BADGE_COUNT_DURATION_MS = 7000;
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const NotificationsContext = createContext(null);
 
 export function NotificationsProvider({ children }) {
@@ -70,13 +69,10 @@ export function NotificationsProvider({ children }) {
   useEffect(() => {
     if (!user) {
       clearBadgeTimer();
-      // Defer state updates to prevent cascading renders
-      Promise.resolve().then(() => {
-        setNotifications([]);
-        setUnreadCount(0);
-        setBadgeMode('hidden');
-        setToasts([]);
-      });
+      setNotifications([]);
+      setUnreadCount(0);
+      setBadgeMode('hidden');
+      setToasts([]);
       return undefined;
     }
 

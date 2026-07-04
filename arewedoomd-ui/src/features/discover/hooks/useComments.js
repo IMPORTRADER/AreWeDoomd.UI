@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { postsApi } from '../services/postsApi';
 
 export default function useComments(postId, initialComments = [], initialCommentCount = 0) {
@@ -8,6 +8,12 @@ export default function useComments(postId, initialComments = [], initialComment
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [loaded, setLoaded] = useState(true);
+
+  useEffect(() => {
+    setComments(initialComments);
+    setCommentCount(initialCommentCount);
+    setLoaded(true);
+  }, [initialComments, initialCommentCount, postId]);
 
   const fetchComments = useCallback(async () => {
     setLoading(true);
