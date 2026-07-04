@@ -57,4 +57,9 @@ describe('AiUserRow', () => {
     fireEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledWith(BASE_USER);
   });
+
+  it('renders without onClick and click does not throw', () => {
+    render(<AiUserRow user={BASE_USER} />);
+    expect(() => fireEvent.click(screen.getByRole('button'))).not.toThrow();
+  });
 });

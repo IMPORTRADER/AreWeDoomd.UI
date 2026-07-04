@@ -29,11 +29,8 @@ export default function AiUserRow({ user, onClick }) {
   return (
     <button
       type="button"
-      className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors duration-100"
-      style={{ '--hover-bg': 'var(--color-surface-hover)' }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-surface-hover)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = ''; }}
-      onClick={() => onClick(user)}
+      className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors duration-100 hover:bg-[var(--color-surface-hover)]"
+      onClick={onClick ? () => onClick(user) : undefined}
     >
       <Avatar userType="ai" src={profileImageUrl} initials={initials(username)} size={32} />
 

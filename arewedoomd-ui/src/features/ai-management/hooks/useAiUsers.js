@@ -5,31 +5,43 @@ const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
 export default function useAiUsers({ trait = '', search = '' } = {}) {
-  const [users, setUsers]           = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [hasMore, setHasMore]       = useState(false);
-  const [loading, setLoading]       = useState(true);
+  const [users, setUsers]             = useState([]);
+  const [totalCount, setTotalCount]   = useState(0);
+  const [hasMore, setHasMore]         = useState(false);
+  const [loading, setLoading]         = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError]           = useState(null);
-  const [tick, setTick]             = useState(0);
+  const [error, setError]             = useState(null);
+  const [tick, setTick]               = useState(0);
 
-  // Debounced search ref
-  const searchRef = useRef(search);
-  const traitRef  = useRef(trait);
+  // Track previous filter values to distinguish filter changes from tick bumps.
+  // Refs are initialised to the current prop values so the very first run
+  // (mount) sees filtersChanged === false and uses delay 0 (immediate).
+  const prevTraitRef  = useRef(trait);
+  const prevSearchRef = useRef(search);
 
+  // Mounted flag for loadMore cancellation.
+  const mountedRef = useRef(true);
   useEffect(() => {
-    searchRef.current = search;
-    traitRef.current  = trait;
-  }, [search, trait]);
+    return () => { mountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
+
+    // Only debounce when the user actually changed a filter; tick bumps
+    // from refresh() use delay 0 so they resolve immediately.
+    const filtersChanged =
+      prevTraitRef.current !== trait || prevSearchRef.current !== search;
+    prevTraitRef.current  = trait;
+    prevSearchRef.current = search;
+    const delay = filtersChanged ? SEARCH_DEBOUNCE_MS : 0;
 
     const run = () => {
       setLoading(true);
       setUsers([]);
 
-      aiManagementApi.listAiUsers({ trait: traitRef.current, search: searchRef.current, offset: 0, pageSize: PAGE_SIZE })
+      aiManagementApi
+        .listAiUsers({ trait, search, offset: 0, pageSize: PAGE_SIZE })
         .then((res) => {
           if (cancelled) return;
           const { items, totalCount: total, hasMore: more } = res.data;
@@ -42,8 +54,7 @@ export default function useAiUsers({ trait = '', search = '' } = {}) {
         .finally(() => { if (!cancelled) setLoading(false); });
     };
 
-    // Debounce only when search/trait changes (not on tick bumps from refresh())
-    const timer = setTimeout(run, SEARCH_DEBOUNCE_MS);
+    const timer = setTimeout(run, delay);
 
     return () => {
       cancelled = true;
@@ -55,8 +66,15 @@ export default function useAiUsers({ trait = '', search = '' } = {}) {
     if (loadingMore || !hasMore) return;
 
     setLoadingMore(true);
-    aiManagementApi.listAiUsers({ trait: traitRef.current, search: searchRef.current, offset: users.length, pageSize: PAGE_SIZE })
+    aiManagementApi
+      .listAiUsers({
+        trait:    prevTraitRef.current,
+        search:   prevSearchRef.current,
+        offset:   users.length,
+        pageSize: PAGE_SIZE,
+      })
       .then((res) => {
+        if (!mountedRef.current) return;
         const { items, totalCount: total, hasMore: more } = res.data;
         setUsers((prev) => {
           const seen = new Set(prev.map((u) => u.id));
@@ -66,12 +84,11 @@ export default function useAiUsers({ trait = '', search = '' } = {}) {
         setHasMore(more);
         setError(null);
       })
-      .catch((err) => setError(err))
-      .finally(() => setLoadingMore(false));
+      .catch((err) => { if (mountedRef.current) setError(err); })
+      .finally(() => { if (mountedRef.current) setLoadingMore(false); });
   }, [loadingMore, hasMore, users.length]);
 
   const refresh = useCallback(() => {
-    setLoading(true);
     setTick((t) => t + 1);
   }, []);
 
