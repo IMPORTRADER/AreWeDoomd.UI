@@ -1,0 +1,130 @@
+/* Input — "Variant A · Icon-aligned label" (mirrors _mock/inputs2.html)
+   Outline field with a floating label that notches to the top-left above the
+   icon column; on focus a curved PostCard red→blue gradient appears at the
+   bottom only. */
+
+.awd-field {
+  --start: 16px;            /* resting label x (text column) */
+  --float-x: 0px;          /* icon column vs text column when floated */
+  --scale: 0.78;
+  --notch-bg: var(--color-bg);   /* color that "cuts" the border behind the label */
+  /* PostCard signature gradient (blue→red, bright at edges) */
+  --grad-postcard: linear-gradient(90deg,
+      rgba(56, 189, 248, 0.85) 0%,
+      rgba(56, 189, 248, 0.30) 34%,
+      rgba(245, 73, 73, 0.30) 66%,
+      rgba(245, 73, 73, 0.85) 100%);
+  position: relative;
+  width: 100%;
+}
+.awd-field.has-icon { --start: 44px; }
+
+/* fixed-height positioning context: keeps icon / underline / label anchored to
+   the 52px input box, so showing the error message below can't push them down */
+.awd-field .awd-control { position: relative; width: 100%; }
+
+.awd-field input {
+  width: 100%;
+  height: 52px;
+  background: var(--color-bg);
+  border: 1px solid #2c3a52;
+  border-radius: var(--radius-md);
+  padding: 0 16px 0 var(--start);
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+}
+.awd-field.is-focus input { border-color: #3c4d6a; }
+/* placeholder always hidden — the floating label conveys the field name; we
+   don't reveal the placeholder example text on focus */
+.awd-field input::placeholder { color: transparent; }
+
+.awd-field .awd-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+  transition: color 0.16s ease;
+}
+
+.awd-field .awd-eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  padding: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.16s ease;
+}
+.awd-field .awd-eye:hover { color: var(--color-text-primary); }
+
+/* floating label — always notches to the TOP-LEFT, on the border line */
+.awd-field .awd-label {
+  position: absolute;
+  left: var(--start);
+  top: 50%;
+  transform: translateY(-50%);
+  transform-origin: left center;
+  font-size: 16px;
+  color: var(--color-text-placeholder);
+  white-space: nowrap;
+  pointer-events: none;
+  padding: 0 5px;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), color 0.18s ease;
+}
+.awd-field.float .awd-label {
+  transform: translate(var(--float-x), calc(-50% - 26px)) scale(var(--scale));
+  background: var(--notch-bg);
+  color: var(--color-text-muted);
+}
+.awd-field.is-focus.float .awd-label { color: var(--color-ai-accent); }
+
+/* gradient underline — appears on focus, BOTTOM only (PostCard colors) */
+.awd-field .awd-gline {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+  padding: 0 0 2.5px 0;          /* gradient thickness — BOTTOM only */
+  background: var(--grad-postcard);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.awd-field.is-focus .awd-gline { opacity: 1; }
+
+/* error */
+.awd-field .awd-err {
+  margin: 7px 2px 0;
+  font-size: 12px;
+  color: var(--color-danger);
+}
+.awd-field.error input { border-color: var(--color-danger); }
+.awd-field.error .awd-icon { color: var(--color-danger); }
+.awd-field.error.float .awd-label,
+.awd-field.error.is-focus.float .awd-label { color: var(--color-danger); }
+.awd-field.error .awd-gline { background: var(--color-danger); }
+
+/* disabled */
+.awd-field.disabled { opacity: 0.7; }
+.awd-field.disabled input:disabled {
+  background: #202731;
+  cursor: not-allowed;
+}
