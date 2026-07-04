@@ -1,3 +1,5 @@
+import FleetStatsBar from '../../features/ai-management/components/FleetStatsBar';
+
 export default function AdminAiPage() {
   return (
     <div className="px-5 py-6">
@@ -10,6 +12,15 @@ export default function AdminAiPage() {
             Manage and monitor autonomous AI agents
           </p>
         </div>
+      </div>
+
+      <FleetStatsBar />
+
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Task 4 slot */}
+        <div />
+        {/* Task 6 slot */}
+        <div />
       </div>
     </div>
   );
