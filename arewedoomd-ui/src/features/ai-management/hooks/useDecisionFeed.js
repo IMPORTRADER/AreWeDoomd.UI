@@ -77,7 +77,7 @@ export default function useDecisionFeed() {
       aiManagementApi
         .getDecisions({ ...filtersRef.current, cursor: undefined, pageSize: PAGE_SIZE })
         .then((res) => {
-          if (!mountedRef.current) return;
+          if (!mountedRef.current || !isLiveRef.current) return;
           const { items: newItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
           setItems(newItems);
           setNextCursor(nc);
