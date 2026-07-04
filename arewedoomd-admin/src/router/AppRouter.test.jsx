@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import * as AdminAuthContextModule from '../context/AdminAuthContext';
-import { RequireAdmin } from './AppRouter';
+import { RequireAdmin, PublicRoute } from './AppRouter';
 
 vi.mock('../context/AdminAuthContext', () => ({
   useAdminAuth: vi.fn(),
@@ -98,5 +98,39 @@ describe('RequireAdmin', () => {
     expect(screen.getByTestId('loading-spinner')).toBeTruthy();
     expect(screen.queryByTestId('protected')).toBeNull();
     expect(screen.queryByTestId('login-page')).toBeNull();
+  });
+});
+
+describe('PublicRoute', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('redirects authenticated admin from /login to /', async () => {
+    AdminAuthContextModule.useAdminAuth.mockReturnValue({
+      user: { username: 'admin', isAdmin: true },
+      loading: false,
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <div data-testid="login-page">Login</div>
+              </PublicRoute>
+            }
+          />
+          <Route path="/" element={<div data-testid="home-page">Home</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('login-page')).toBeNull();
+      expect(screen.getByTestId('home-page')).toBeTruthy();
+    });
   });
 });

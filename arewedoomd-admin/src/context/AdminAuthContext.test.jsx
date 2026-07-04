@@ -137,7 +137,7 @@ describe('AdminAuthContext', () => {
 
       await waitFor(() => expect(screen.getByTestId('user').textContent).toBe('admin'));
 
-      act(() => {
+      await act(async () => {
         screen.getByTestId('logout-btn').click();
       });
 

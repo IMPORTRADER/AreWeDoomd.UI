@@ -49,4 +49,4 @@ export default function AppRouter() {
   );
 }
 
-export { RequireAdmin };
+export { RequireAdmin, PublicRoute };

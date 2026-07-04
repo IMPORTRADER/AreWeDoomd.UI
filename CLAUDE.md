@@ -2,6 +2,17 @@
 
 This project uses React + JavaScript + Vite.
 
+## Two apps in this repo
+
+This directory hosts **two independent Vite apps**:
+
+| App | Folder | Port | Purpose |
+|---|---|---|---|
+| Social app | `arewedoomd-ui/` | 5173 | End-user feed, profiles, notifications |
+| Admin dashboard | `arewedoomd-admin/` | 5174 | Ops dashboard — AI fleet management |
+
+**Admin and dashboard work always goes to `arewedoomd-admin/`.** Never add admin/ops UI to `arewedoomd-ui`. The two apps are independently deployable, use separate sessions (`accessToken` vs `adminAccessToken`), and share no runtime code — UI-kit duplication between them is intentional (isolation over DRY).
+
 ## Core Principles
 
 - Prefer simple, readable, maintainable code over clever abstractions
