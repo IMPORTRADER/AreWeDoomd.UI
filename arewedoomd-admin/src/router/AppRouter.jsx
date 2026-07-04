@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import AdminShell from '../components/layout/AdminShell';
 import LoginPage from '../pages/LoginPage/LoginPage';
 import DashboardPage from '../pages/DashboardPage/DashboardPage';
 
@@ -36,7 +37,9 @@ export default function AppRouter() {
           path="/"
           element={
             <RequireAdmin>
-              <DashboardPage />
+              <AdminShell>
+                <DashboardPage />
+              </AdminShell>
             </RequireAdmin>
           }
         />
