@@ -24,6 +24,8 @@ export default function useDecisionFeed() {
   const mountedRef   = useRef(true);
 
   useEffect(() => {
+    // StrictMode remount runs this effect twice; re-arm the guard on each mount
+    mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
 

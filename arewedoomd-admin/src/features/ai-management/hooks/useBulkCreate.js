@@ -27,6 +27,8 @@ export default function useBulkCreate() {
   const pendingRef  = useRef(false);
 
   useEffect(() => {
+    // StrictMode remount runs this effect twice; re-arm the guard on each mount
+    mountedRef.current = true;
     return () => {
       mountedRef.current = false;
       if (intervalRef.current) clearInterval(intervalRef.current);
