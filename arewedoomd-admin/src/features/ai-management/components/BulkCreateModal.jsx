@@ -188,6 +188,21 @@ export default function BulkCreateModal({ onClose, onJobTerminal }) {
           {/* ── Phase 2: running / terminal ── */}
           {job && (
             <>
+              {/* Poll error */}
+              {apiError && (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2.5 px-3.5 py-3 bg-red-500/[0.08] border border-red-500/25 rounded-[var(--radius-md)] text-red-400 text-[13px] leading-relaxed">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4 shrink-0">
+                      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span>{apiError}</span>
+                  </div>
+                  <p className="text-xs text-[var(--color-text-secondary)]">
+                    Güncelleme alınamadı — iş sunucuda devam ediyor olabilir.
+                  </p>
+                </div>
+              )}
+
               {/* Status line */}
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium text-[var(--color-text-primary)] capitalize">{job.status}</span>

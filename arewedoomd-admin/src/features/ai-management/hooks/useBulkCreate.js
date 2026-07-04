@@ -24,6 +24,7 @@ export default function useBulkCreate() {
 
   const mountedRef  = useRef(true);
   const intervalRef = useRef(null);
+  const pendingRef  = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -48,6 +49,10 @@ export default function useBulkCreate() {
       // Visibility-pause: same check pattern as useDecisionFeed
       if (document.visibilityState !== 'visible') return;
 
+      // In-flight guard: prevent overlapping requests
+      if (pendingRef.current) return;
+
+      pendingRef.current = true;
       try {
         const res = await aiManagementApi.getBulkJob(jobId);
         if (!mountedRef.current) return;
@@ -60,6 +65,8 @@ export default function useBulkCreate() {
         if (!mountedRef.current) return;
         setError(err);
         stopPolling();
+      } finally {
+        pendingRef.current = false;
       }
     }, POLL_INTERVAL_MS);
   }, [stopPolling]);

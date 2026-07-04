@@ -204,4 +204,34 @@ describe('BulkCreateModal', () => {
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
     expect(onClose).toHaveBeenCalled();
   });
+
+  // ── Poll error visibility ────────────────────────────────────────────────
+
+  it('shows error banner when poll fails during Phase 2 (job creating + error set)', () => {
+    useBulkCreate.mockReturnValue(runningJob({
+      error: {
+        response: {
+          status: 500,
+          data: { detail: 'Server error during poll' },
+        },
+      },
+    }));
+    render(<BulkCreateModal onClose={vi.fn()} onJobTerminal={vi.fn()} />);
+    // Should show the error banner
+    expect(screen.getByText(/server error during poll/i)).toBeInTheDocument();
+    // Should also show the muted explanatory line
+    expect(screen.getByText(/güncelleme alınamadı.*iş sunucuda|update unavailable.*job/i)).toBeInTheDocument();
+  });
+
+  // ── Retry ordering ───────────────────────────────────────────────────────
+
+  it('retry failed calls reset before start (ordering guard)', () => {
+    useBulkCreate.mockReturnValue(terminalJob());
+    render(<BulkCreateModal onClose={vi.fn()} onJobTerminal={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /retry.*2/i }));
+    // Assert reset was called before start
+    const resetCallIdx = mockReset.mock.invocationCallOrder?.[0];
+    const startCallIdx = mockStart.mock.invocationCallOrder?.[0];
+    expect(resetCallIdx).toBeLessThan(startCallIdx);
+  });
 });
