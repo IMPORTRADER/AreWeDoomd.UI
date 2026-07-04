@@ -187,4 +187,21 @@ describe('PersonaEditModal', () => {
       expect(onSaved).toHaveBeenCalledWith(updatedDetail);
     });
   });
+
+  it('shows error state when persona detail fails to load', () => {
+    useAiUserDetail.mockReturnValue({
+      detail: null,
+      loading: false,
+      error: new Error('boom'),
+    });
+
+    render(
+      <PersonaEditModal userId="u1" onClose={vi.fn()} onSaved={vi.fn()} />
+    );
+
+    // Should show error message
+    expect(screen.getByText(/couldn't load|failed to load/i)).toBeInTheDocument();
+    // Should NOT render form
+    expect(screen.queryByPlaceholderText(/add a trait/i)).not.toBeInTheDocument();
+  });
 });

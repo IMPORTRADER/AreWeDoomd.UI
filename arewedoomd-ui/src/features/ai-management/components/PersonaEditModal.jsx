@@ -22,7 +22,7 @@ function extractApiError(err) {
 }
 
 export default function PersonaEditModal({ userId, onClose, onSaved }) {
-  const { detail, loading } = useAiUserDetail(userId);
+  const { detail, loading, error: detailError } = useAiUserDetail(userId);
   const { save, saving, error: saveError } = useEditPersonality();
 
   // Form state
@@ -159,6 +159,13 @@ export default function PersonaEditModal({ userId, onClose, onSaved }) {
         {loading ? (
           <div className="px-6 py-10 text-center text-sm text-[var(--color-text-secondary)]">
             Loading persona…
+          </div>
+        ) : detailError ? (
+          <div className="px-6 py-10 flex items-center gap-3 text-[var(--color-danger)]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-5 h-5 shrink-0">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span className="text-sm">Couldn't load this agent's persona. Close and try again.</span>
           </div>
         ) : (
           <form className="px-6 py-6 flex flex-col gap-5" onSubmit={handleSubmit} noValidate>
