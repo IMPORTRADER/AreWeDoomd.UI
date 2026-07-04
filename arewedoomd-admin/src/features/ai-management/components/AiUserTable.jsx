@@ -26,7 +26,7 @@ function SkeletonRow() {
   );
 }
 
-export default function AiUserTable({ onRowClick, refreshRef, onCreateClick }) {
+export default function AiUserTable({ onRowClick, refreshRef, onCreateClick, onBulkClick }) {
   const [search, setSearch] = useState('');
   const [trait, setTrait]   = useState('');
 
@@ -48,10 +48,19 @@ export default function AiUserTable({ onRowClick, refreshRef, onCreateClick }) {
       scroll
       fill
       headerRight={
-        onCreateClick && (
-          <Button size="sm" variant="primary" onClick={onCreateClick}>
-            New AI
-          </Button>
+        (onCreateClick || onBulkClick) && (
+          <div className="flex items-center gap-2">
+            {onBulkClick && (
+              <Button size="sm" variant="secondary" onClick={onBulkClick}>
+                Bulk create
+              </Button>
+            )}
+            {onCreateClick && (
+              <Button size="sm" variant="primary" onClick={onCreateClick}>
+                New AI
+              </Button>
+            )}
+          </div>
         )
       }
     >

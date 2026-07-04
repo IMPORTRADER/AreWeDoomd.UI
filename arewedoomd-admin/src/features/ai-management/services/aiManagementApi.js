@@ -17,4 +17,8 @@ export const aiManagementApi = {
       typingStyle,
       summary,
     }),
+  startBulkCreate: ({ count }) =>
+    client.post('/api/admin/ai-users/bulk', { count }),
+  getBulkJob: (jobId) =>
+    client.get(`/api/admin/ai-users/bulk-jobs/${jobId}`),
 };
