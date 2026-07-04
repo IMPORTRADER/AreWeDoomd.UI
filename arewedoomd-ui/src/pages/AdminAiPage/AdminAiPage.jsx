@@ -2,10 +2,13 @@ import { useCallback, useRef, useState } from 'react';
 import FleetStatsBar from '../../features/ai-management/components/FleetStatsBar';
 import AiUserTable from '../../features/ai-management/components/AiUserTable';
 import PersonaEditModal from '../../features/ai-management/components/PersonaEditModal';
+import DecisionFeed from '../../features/ai-management/components/DecisionFeed';
+import useAiUsers from '../../features/ai-management/hooks/useAiUsers';
 
 export default function AdminAiPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const tableRefreshRef = useRef(null);
+  const { users: aiUsers } = useAiUsers();
 
   const handleRowClick = (user) => setSelectedUser(user);
 
@@ -34,8 +37,8 @@ export default function AdminAiPage() {
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Task 4: AI user table */}
         <AiUserTable onRowClick={handleRowClick} refreshRef={tableRefreshRef} />
-        {/* Task 6 slot */}
-        <div />
+        {/* Task 6: Decision Feed */}
+        <DecisionFeed aiUsers={aiUsers} />
       </div>
 
       {selectedUser && (
