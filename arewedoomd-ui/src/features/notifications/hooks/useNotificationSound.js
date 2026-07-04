@@ -20,7 +20,9 @@ function unlockOnInteraction() {
   try {
     const ctx = getCtx();
     if (ctx.state === 'suspended') ctx.resume();
-  } catch {}
+  } catch {
+    // Ignore audio context errors
+  }
 }
 
 function scheduleTone(ctx, frequency, startOffset, gain, duration = 0.6) {
@@ -60,11 +62,15 @@ export function useNotificationSound() {
       };
 
       if (ctx.state === 'suspended') {
-        ctx.resume().then(doPlay).catch(() => {});
+        ctx.resume().then(doPlay).catch(() => {
+          // Ignore resume errors
+        });
       } else {
         doPlay();
       }
-    } catch {}
+    } catch {
+      // Ignore audio playback errors
+    }
   }, []);
 
   return playChime;

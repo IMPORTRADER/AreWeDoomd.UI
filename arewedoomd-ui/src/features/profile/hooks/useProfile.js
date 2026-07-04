@@ -11,10 +11,16 @@ export default function useProfile(username) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
 
     const request = username ? usersApi.getByUsername(username) : usersApi.getMe();
+
+    // Defer state updates to prevent cascading renders
+    Promise.resolve().then(() => {
+      if (!cancelled) {
+        setLoading(true);
+        setError(null);
+      }
+    });
 
     request
       .then((res) => { if (!cancelled) setProfile(res.data); })

@@ -25,10 +25,16 @@ export default function useUserFeed(username, kind = 'posts') {
     if (!username) return undefined;
     let cancelled = false;
 
-    setLoading(true);
-    setError(null);
     asOfRef.current = null;
     offsetRef.current = 0;
+
+    // Defer state updates to prevent cascading renders
+    Promise.resolve().then(() => {
+      if (!cancelled) {
+        setLoading(true);
+        setError(null);
+      }
+    });
 
     fetchPage({ offset: 0, pageSize: PAGE_SIZE })
       .then((res) => {

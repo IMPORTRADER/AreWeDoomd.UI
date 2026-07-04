@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { usersApi } from '../../../api/usersApi';
 
 // Optimistic follow / unfollow toggle for a profile.
@@ -6,8 +6,6 @@ import { usersApi } from '../../../api/usersApi';
 export default function useFollow(initialFollowing, username, onCountChange) {
   const [following, setFollowing] = useState(Boolean(initialFollowing));
   const [pending, setPending]     = useState(false);
-
-  useEffect(() => { setFollowing(Boolean(initialFollowing)); }, [initialFollowing, username]);
 
   const toggle = useCallback(async () => {
     if (pending || !username) return;
