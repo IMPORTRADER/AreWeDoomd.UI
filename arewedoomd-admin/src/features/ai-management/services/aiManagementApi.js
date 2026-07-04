@@ -21,4 +21,6 @@ export const aiManagementApi = {
     client.post('/api/admin/ai-users/bulk', { count }),
   getBulkJob: (jobId) =>
     client.get(`/api/admin/ai-users/bulk-jobs/${jobId}`),
+  getSessionLog: (ref) =>
+    client.get('/api/admin/session-logs', { params: { ref } }),
 };

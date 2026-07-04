@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import useSessionLog from '../hooks/useSessionLog';
 
 function timeAgo(dateString) {
   const diff = Date.now() - new Date(dateString).getTime();
@@ -36,10 +37,23 @@ function OutcomeBadge({ outcome }) {
 
 export default function DecisionRow({ decision, users }) {
   const [expanded, setExpanded] = useState(false);
+  const [sessionLogOpen, setSessionLogOpen] = useState(false);
+  const { content, loading, error, fetch: fetchLog, reset } = useSessionLog();
 
   const shortId = decision.aiUserId ? decision.aiUserId.slice(0, 8) : '—';
   const username = users?.find((u) => u.id === decision.aiUserId)?.username;
   const displayId = username ? `@${username}` : shortId;
+
+  function handleToggleSessionLog(e) {
+    e.stopPropagation();
+    if (!sessionLogOpen) {
+      setSessionLogOpen(true);
+      fetchLog(decision.sessionLogRef);
+    } else {
+      setSessionLogOpen(false);
+      reset();
+    }
+  }
 
   return (
     <div
@@ -101,9 +115,47 @@ export default function DecisionRow({ decision, users }) {
               </div>
             )}
             {decision.sessionLogRef && (
-              <div>
-                <span className="text-[var(--color-text-secondary)] font-semibold">Log ref: </span>
-                <span className="text-[var(--color-text-primary)] font-mono text-[11px] break-all">{decision.sessionLogRef}</span>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[var(--color-text-secondary)] font-semibold">Log ref: </span>
+                  <span className="text-[var(--color-text-primary)] font-mono text-[11px] break-all">{decision.sessionLogRef}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleToggleSessionLog}
+                  className="text-[11px] text-[var(--color-ai-accent)] underline underline-offset-2 hover:opacity-80 transition-opacity"
+                >
+                  {sessionLogOpen ? 'Gizle' : 'Prompt/yanıtı gör'}
+                </button>
+                {sessionLogOpen && (
+                  <div>
+                    {loading && (
+                      <p
+                        data-testid="session-log-loading"
+                        className="text-[11px] text-[var(--color-text-muted)] italic"
+                      >
+                        Yükleniyor…
+                      </p>
+                    )}
+                    {error && !loading && (
+                      <p className="text-[11px] text-[var(--color-text-muted)] italic">
+                        Oturum dosyası bulunamadı.
+                      </p>
+                    )}
+                    {content && !loading && !error && (
+                      <pre
+                        className="mt-1 max-h-64 overflow-auto text-[11px] font-mono whitespace-pre-wrap break-words rounded border p-2"
+                        style={{
+                          background: 'var(--color-surface-2)',
+                          color: 'var(--color-text-muted)',
+                          borderColor: 'var(--color-border)',
+                        }}
+                      >
+                        {content}
+                      </pre>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

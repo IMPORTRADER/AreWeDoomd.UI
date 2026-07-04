@@ -25,7 +25,7 @@ export default function LoginPage() {
       setError(
         err.message === 'Bu hesap admin yetkisine sahip değil.'
           ? err.message
-          : (err.response?.data?.message ?? 'Giriş başarısız. Tekrar deneyin.')
+          : (err.response?.data?.detail ?? err.response?.data?.message ?? 'Giriş başarısız. Tekrar deneyin.')
       );
     } finally {
       setLoading(false);
