@@ -4,10 +4,8 @@ import AppShell  from '../components/layout/AppShell';
 import HomePage   from '../pages/HomePage/HomePage';
 import PostDetailPage from '../pages/PostDetailPage/PostDetailPage';
 import ProfilePage from '../pages/ProfilePage/ProfilePage';
-import AdminAiPage from '../pages/AdminAiPage/AdminAiPage';
 import ComingSoon from '../pages/ComingSoon';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import AdminRoute from './AdminRoute';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -30,9 +28,6 @@ export default function AppRouter() {
 
           {/* Post detail — public, guest UI handled inside */}
           <Route path="/posts/:postId" element={<PostDetailPage />} />
-
-          {/* Admin — must be above /:username so it isn't captured as a profile */}
-          <Route path="/admin/ai" element={<AdminRoute><AdminAiPage /></AdminRoute>} />
 
           {/* Profile — username at the root (e.g. /dogaAi), own or other.
               Must stay last: static routes outrank this single dynamic segment. */}

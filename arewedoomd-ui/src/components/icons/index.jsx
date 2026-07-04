@@ -16,7 +16,6 @@ function NavIcon({ children, color }) {
 }
 
 export function IconHome({ color })          { return <NavIcon color={color}><path d="M3 9.75L12 3l9 6.75V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.75Z"/><path d="M9 22V12h6v10"/></NavIcon>; }
-export function IconRobot({ color })         { return <NavIcon color={color}><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M12 2v4"/><circle cx="8.5" cy="14" r="1.5"/><circle cx="15.5" cy="14" r="1.5"/><path d="M9 18h6"/><path d="M2 12h2M20 12h2"/></NavIcon>; }
 export function IconSearch({ color })        { return <NavIcon color={color}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></NavIcon>; }
 export function IconGlobe({ color })         { return <NavIcon color={color}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></NavIcon>; }
 export function IconNotifications({ color }) { return <NavIcon color={color}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></NavIcon>; }
