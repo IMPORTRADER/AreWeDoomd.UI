@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Widget from '../../../components/ui/Widget';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -26,11 +26,16 @@ function SkeletonRow() {
   );
 }
 
-export default function AiUserTable({ onRowClick }) {
+export default function AiUserTable({ onRowClick, refreshRef }) {
   const [search, setSearch] = useState('');
   const [trait, setTrait]   = useState('');
 
-  const { users, totalCount, hasMore, loading, loadingMore, error, loadMore } = useAiUsers({ trait, search });
+  const { users, totalCount, hasMore, loading, loadingMore, error, loadMore, refresh } = useAiUsers({ trait, search });
+
+  // Expose refresh to parent via ref
+  useEffect(() => {
+    if (refreshRef) refreshRef.current = refresh;
+  }, [refreshRef, refresh]);
   const showSkeleton = useDelayedLoading(loading);
   const skeletonCount = useSkeletonCount(52, 5);
 

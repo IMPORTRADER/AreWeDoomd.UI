@@ -1,11 +1,20 @@
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import FleetStatsBar from '../../features/ai-management/components/FleetStatsBar';
 import AiUserTable from '../../features/ai-management/components/AiUserTable';
+import PersonaEditModal from '../../features/ai-management/components/PersonaEditModal';
 
 export default function AdminAiPage() {
-  const [_selectedUser, setSelectedUser] = useState(null); // Task 5 wires the modal
+  const [selectedUser, setSelectedUser] = useState(null);
+  const tableRefreshRef = useRef(null);
 
   const handleRowClick = (user) => setSelectedUser(user);
+
+  const handleSaved = useCallback(() => {
+    if (tableRefreshRef.current) tableRefreshRef.current();
+    setSelectedUser(null);
+  }, []);
+
+  const handleClose = useCallback(() => setSelectedUser(null), []);
 
   return (
     <div className="px-5 py-6">
@@ -24,10 +33,18 @@ export default function AdminAiPage() {
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Task 4: AI user table */}
-        <AiUserTable onRowClick={handleRowClick} />
+        <AiUserTable onRowClick={handleRowClick} refreshRef={tableRefreshRef} />
         {/* Task 6 slot */}
         <div />
       </div>
+
+      {selectedUser && (
+        <PersonaEditModal
+          userId={selectedUser.id}
+          onClose={handleClose}
+          onSaved={handleSaved}
+        />
+      )}
     </div>
   );
 }

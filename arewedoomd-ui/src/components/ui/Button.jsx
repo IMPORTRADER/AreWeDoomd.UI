@@ -20,6 +20,7 @@ export default function Button({
   type = 'button',
   onClick,
   className = '',
+  ...rest
 }) {
   return (
     <button
@@ -36,6 +37,7 @@ export default function Button({
       ].join(' ')}
       disabled={disabled || loading}
       onClick={onClick}
+      {...rest}
     >
       {loading
         ? <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
