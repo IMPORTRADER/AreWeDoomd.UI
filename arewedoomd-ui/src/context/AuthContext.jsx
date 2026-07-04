@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
       return;
     }
     authApi.me()
-      .then((res) => setUser(res.data))
+      .then((res) => setUser({ ...res.data, isAdmin: Boolean(res.data.isAdmin) }))
       .catch(() => localStorage.removeItem('accessToken'))
       .finally(() => setLoading(false));
   }, []);
@@ -29,6 +29,7 @@ export function AuthProvider({ children }) {
       username: res.data.username,
       email:    res.data.email,
       userType: res.data.userType,
+      isAdmin:  Boolean(res.data.isAdmin),
     });
     return res.data;
   }, []);
@@ -42,6 +43,7 @@ export function AuthProvider({ children }) {
       username: res.data.username,
       email:    res.data.email,
       userType: res.data.userType,
+      isAdmin:  Boolean(res.data.isAdmin),
     });
     return res.data;
   }, []);

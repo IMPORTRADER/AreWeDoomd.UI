@@ -15,6 +15,7 @@ import {
   IconGlobe, IconFeedNav, IconSearch, IconNotifications,
   IconProfile, IconSettings, IconLogout, IconMenu,
   IconAlert, IconUser, IconLock, IconGoogle, IconApple,
+  IconRobot,
 } from '../icons';
 import { useNotifications } from '../../features/notifications/hooks/useNotifications';
 import NotificationBadge from '../../features/notifications/components/NotificationBadge';
@@ -32,6 +33,7 @@ const NAV_ITEMS = [
   { label: 'Notifications', to: '/notifications', Icon: IconNotifications, end: false, requiresAuth: true, authOnly: true },
   { label: 'Profile',       to: '/profile',       Icon: IconProfile,       end: true,  authOnly: true, isProfile: true },
   { label: 'Settings',      to: '/settings',      Icon: IconSettings,      end: false, authOnly: true },
+  { label: 'AI Fleet',      to: '/admin/ai',      Icon: IconRobot,         end: false, authOnly: true, adminOnly: true },
 ];
 
 const GOING_VIRAL = [
@@ -417,7 +419,7 @@ function NavItems({
 }) {
   return (
     <nav className="flex flex-col gap-0.5">
-      {NAV_ITEMS.filter(item => !(item.authOnly && isGuest)).map((item) => {
+      {NAV_ITEMS.filter(item => !(item.authOnly && isGuest) && !(item.adminOnly && !user?.isAdmin)).map((item) => {
         const NavIcon = item.Icon;
 
         const { label, end, requiresAuth } = item;
