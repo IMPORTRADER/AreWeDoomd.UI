@@ -9,4 +9,12 @@ export const aiManagementApi = {
     client.get('/api/admin/decisions', { params: { aiUserId, action, outcome, fromUtc, toUtc, cursor, pageSize } }),
   updatePersonality: (userId, { traits, typingStyle, summary }) =>
     client.put(`/api/admin/ai-users/${userId}/personality`, { traits, typingStyle, summary }),
+  createAiUser: ({ username, email, traits, typingStyle, summary }) =>
+    client.post('/api/admin/ai-users', {
+      username,
+      ...(email ? { email } : {}),
+      traits,
+      typingStyle,
+      summary,
+    }),
 };

@@ -26,7 +26,7 @@ function SkeletonRow() {
   );
 }
 
-export default function AiUserTable({ onRowClick, refreshRef }) {
+export default function AiUserTable({ onRowClick, refreshRef, onCreateClick }) {
   const [search, setSearch] = useState('');
   const [trait, setTrait]   = useState('');
 
@@ -47,6 +47,13 @@ export default function AiUserTable({ onRowClick, refreshRef }) {
       subtitle={`${totalCount} agents`}
       scroll
       fill
+      headerRight={
+        onCreateClick && (
+          <Button size="sm" variant="primary" onClick={onCreateClick}>
+            New AI
+          </Button>
+        )
+      }
     >
       {/* Controls */}
       <div className="flex flex-col gap-2 mb-3">
