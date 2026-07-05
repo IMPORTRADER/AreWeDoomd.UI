@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Avatar from '../../../components/ui/Avatar';
 import Button from '../../../components/ui/Button';
+import isTokenBudgetError from '../utils/isTokenBudgetError';
 
 function extractApiError(err) {
   if (!err) return null;
@@ -84,6 +86,8 @@ function ScoreBadge({ item }) {
 // ── Per-account row ───────────────────────────────────────────────────────────
 function AccountRow({ item }) {
   const [expanded, setExpanded] = useState(false);
+  const [errorExpanded, setErrorExpanded] = useState(false);
+  const isFailed = item.status === 'Failed';
 
   return (
     <div className="flex flex-col gap-1 py-2 border-b border-[var(--color-border)] last:border-0">
@@ -116,6 +120,34 @@ function AccountRow({ item }) {
             <p className="mt-1 text-xs text-[var(--color-text-secondary)] leading-relaxed">
               {item.reasoning}
             </p>
+          )}
+        </div>
+      )}
+
+      {isFailed && item.errorDetail && (
+        <div>
+          <button
+            type="button"
+            className="text-xs hover:underline"
+            style={{ color: 'var(--color-danger)' }}
+            onClick={() => setErrorExpanded((v) => !v)}
+          >
+            {errorExpanded ? 'Hatayı gizle' : 'Hatayı gör'}
+          </button>
+          {errorExpanded && (
+            <div className="mt-1 flex flex-col gap-1">
+              <p className="text-xs leading-relaxed break-words" style={{ color: 'var(--color-danger)' }}>
+                {item.errorDetail}
+              </p>
+              {isTokenBudgetError(item.errorDetail) && (
+                <Link
+                  to="/llm-settings"
+                  className="text-xs text-[var(--color-link)] hover:underline"
+                >
+                  Token bütçesi yetersiz görünüyor — LLM Ayarları'ndan artırın →
+                </Link>
+              )}
+            </div>
           )}
         </div>
       )}
