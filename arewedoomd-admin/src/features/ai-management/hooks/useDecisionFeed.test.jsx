@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { StrictMode } from 'react';
 import { renderHook, act } from '@testing-library/react';
 import useDecisionFeed from './useDecisionFeed';
 
@@ -238,5 +239,30 @@ describe('useDecisionFeed', () => {
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0].activityId).toBe('3');
     expect(result.current.isLive).toBe(true);
+  });
+
+  it('loading clears after initial fetch when rendered inside StrictMode (mountedRef reset regression)', async () => {
+    // Regression: React StrictMode runs effect cleanup then re-runs the effect.
+    // The cleanup for the empty-deps mountedRef guard sets mountedRef.current = false.
+    // Without the fix, the effect body never resets it to true, so the fetch's
+    // finally block sees mountedRef.current === false and skips setLoading(false),
+    // leaving the spinner running forever.
+    aiManagementApi.getDecisions.mockResolvedValue(PAGE1);
+
+    const { result } = renderHook(() => useDecisionFeed(), {
+      wrapper: ({ children }) => <StrictMode>{children}</StrictMode>,
+    });
+
+    expect(result.current.loading).toBe(true);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.items).toHaveLength(1);
+    expect(result.current.items[0].activityId).toBe('1');
+    // React 19 runs effects once (not double-invoked) even in StrictMode.
+    expect(aiManagementApi.getDecisions).toHaveBeenCalledTimes(1);
   });
 });
