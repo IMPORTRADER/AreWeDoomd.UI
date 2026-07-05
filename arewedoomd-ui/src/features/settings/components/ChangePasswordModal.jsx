@@ -9,6 +9,7 @@ export default function ChangePasswordModal({ onClose }) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPasswordVisible, setNewPasswordVisible] = useState(false);
   const [localError, setLocalError] = useState(null);
 
   const { submit, saving, error, clearError } = useChangePassword({ onSuccess: onClose });
@@ -21,7 +22,9 @@ export default function ChangePasswordModal({ onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const v = validatePasswordForm({ currentPassword, newPassword, confirmPassword });
+    // Yeni şifre görünürken teyit alanı gizlenir; o durumda eşleşme kontrolü atlanır.
+    const confirmForValidation = newPasswordVisible ? newPassword : confirmPassword;
+    const v = validatePasswordForm({ currentPassword, newPassword, confirmPassword: confirmForValidation });
     if (v) { setLocalError(v); return; }
     setLocalError(null);
     clearError();
@@ -58,9 +61,26 @@ export default function ChangePasswordModal({ onClose }) {
           <Input label="Mevcut şifre" type="password" name="currentPassword" value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" />
           <Input label="Yeni şifre" type="password" name="newPassword" value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" />
-          <Input label="Yeni şifre (tekrar)" type="password" name="confirmPassword" value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" />
+            onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password"
+            onVisibilityChange={setNewPasswordVisible} />
+
+          {/* Yeni şifre görünür olunca teyit alanı animasyonla daralarak kaybolur:
+              şifreyi görebiliyorsan tekrar teyide gerek yok. -mt-5 gizliyken
+              üstteki gap-5'i de toplayarak boşluk bırakmaz. */}
+          <div
+            aria-hidden={newPasswordVisible}
+            className={[
+              'grid transition-[grid-template-rows,opacity,margin-top] duration-300 ease-out',
+              newPasswordVisible
+                ? 'grid-rows-[0fr] opacity-0 -mt-5 pointer-events-none'
+                : 'grid-rows-[1fr] opacity-100 mt-0',
+            ].join(' ')}
+          >
+            <div className="overflow-hidden">
+              <Input label="Yeni şifre (tekrar)" type="password" name="confirmPassword" value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" />
+            </div>
+          </div>
 
           <div className="flex items-center justify-end gap-3 pt-1">
             <Button type="button" variant="secondary" onClick={() => !saving && onClose()} disabled={saving}>İptal</Button>
