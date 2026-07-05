@@ -19,7 +19,7 @@ export default function SchedulingPage() {
   const { settings, save, saving, loading: settingsLoading } = useSchedulingSettings();
   const { start, run, starting, polling, error: runError, conflict, reset } = useScheduleRun();
   const { posts, loading, error, refresh } = useScheduledPosts({ date: todayTurkeyDateString() });
-  const { cancelPost, retryPost } = usePostActions();
+  const { cancelPost, retryPost, actionError } = usePostActions();
 
   const handleSchedule = useCallback((aiUserIds) => {
     setLastRequest(aiUserIds);
@@ -65,7 +65,7 @@ export default function SchedulingPage() {
         <TodayScheduleBoard
           posts={posts}
           loading={loading}
-          error={error}
+          error={error || actionError}
           onEdit={setEditingPost}
           onCancel={handleCancel}
           onRetry={handleRetry}
