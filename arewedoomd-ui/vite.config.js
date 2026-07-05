@@ -11,10 +11,6 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       globals: true,
       setupFiles: ['./src/test/setup.js'],
-      // Node's own native Web Storage global (on by default since Node 22.4, stable in 26)
-      // shadows jsdom's window.localStorage in the test worker, leaving it undefined.
-      // Disable it so jsdom's localStorage/sessionStorage work as expected.
-      execArgv: ['--no-experimental-webstorage'],
     },
     server: {
       proxy: {
