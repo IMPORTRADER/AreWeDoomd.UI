@@ -17,8 +17,11 @@ export default function useChangePassword({ onSuccess } = {}) {
       onSuccess?.(res.data);
       return res.data;
     } catch (err) {
+      // Yanlış şifre backend'de 400 döner. 401'i burada ele almıyoruz:
+      // client interceptor'ı token varken gelen 401'de oturumu kapatıp
+      // /login'e yönlendirir (bu catch'e ulaşmadan).
       const status = err?.response?.status;
-      if (status === 400 || status === 401) {
+      if (status === 400) {
         setError(err?.response?.data?.detail ?? 'Mevcut şifre yanlış.');
       } else {
         setError(err?.response?.data?.detail ?? 'Şifre değiştirilemedi.');
