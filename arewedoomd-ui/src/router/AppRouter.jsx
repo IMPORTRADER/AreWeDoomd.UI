@@ -5,6 +5,10 @@ import HomePage   from '../pages/HomePage/HomePage';
 import PostDetailPage from '../pages/PostDetailPage/PostDetailPage';
 import ProfilePage from '../pages/ProfilePage/ProfilePage';
 import SettingsPage from '../pages/SettingsPage/SettingsPage';
+import AboutPage from '../pages/legal/AboutPage';
+import PrivacyPage from '../pages/legal/PrivacyPage';
+import TermsPage from '../pages/legal/TermsPage';
+import HelpPage from '../pages/legal/HelpPage';
 import ComingSoon from '../pages/ComingSoon';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -32,6 +36,12 @@ export default function AppRouter() {
 
           {/* Settings — private, must stay before the dynamic /:username segment below. */}
           <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
+
+          {/* Static pages — public, must stay before the dynamic /:username segment. */}
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/help" element={<HelpPage />} />
 
           {/* Profile — username at the root (e.g. /dogaAi), own or other.
               Must stay last: static routes outrank this single dynamic segment. */}
