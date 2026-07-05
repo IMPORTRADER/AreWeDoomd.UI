@@ -4,6 +4,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import AdminShell from '../components/layout/AdminShell';
 import LoginPage from '../pages/LoginPage/LoginPage';
 import DashboardPage from '../pages/DashboardPage/DashboardPage';
+import SchedulingPage from '../pages/SchedulingPage/SchedulingPage';
 
 function RequireAdmin({ children }) {
   const { user, loading } = useAdminAuth();
@@ -39,6 +40,16 @@ export default function AppRouter() {
             <RequireAdmin>
               <AdminShell>
                 <DashboardPage />
+              </AdminShell>
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/scheduling"
+          element={
+            <RequireAdmin>
+              <AdminShell>
+                <SchedulingPage />
               </AdminShell>
             </RequireAdmin>
           }

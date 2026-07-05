@@ -56,8 +56,9 @@ export default function AdminShell({ children }) {
             <NavLink to="/" end className={NAV_LINK_CLASS}>
               Dashboard
             </NavLink>
-            {/* TODO: Create link */}
-            {/* TODO: Jobs link */}
+            <NavLink to="/scheduling" className={NAV_LINK_CLASS}>
+              Scheduling
+            </NavLink>
           </nav>
 
           {/* Right side: username + logout */}
