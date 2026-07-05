@@ -93,11 +93,14 @@ function AccountRow({ item }) {
           {item.username}
         </span>
         <ScoreBadge item={item} />
-        {item.postCount != null && (
-          <span className="text-xs text-[var(--color-text-secondary)]">
-            {item.postCount} gönderi
-          </span>
-        )}
+        {(() => {
+          const count = item.requestedPostCount ?? item.posts?.length ?? 0;
+          return count > 0 ? (
+            <span className="text-xs text-[var(--color-text-secondary)]">
+              {count} gönderi
+            </span>
+          ) : null;
+        })()}
       </div>
 
       {item.reasoning && (

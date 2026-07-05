@@ -3,8 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import TodayScheduleBoard from './TodayScheduleBoard';
 
 const pendingPost = {
-  id: 'p1', aiUserId: 'u1', content: 'merhaba dünya',
-  scheduledAtUtc: '2026-07-05T12:00:00Z', status: 'Pending',
+  id: 'p1', aiUserId: 'u1', aiUsername: 'test-ai', aiProfileImageUrl: null,
+  content: 'merhaba dünya', scheduledAtUtc: '2026-07-05T12:00:00Z', status: 'Pending',
   wasTimeAdjusted: false, errorMessage: null,
 };
 
