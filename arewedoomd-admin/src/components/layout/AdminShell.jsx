@@ -59,6 +59,9 @@ export default function AdminShell({ children }) {
             <NavLink to="/scheduling" className={NAV_LINK_CLASS}>
               Scheduling
             </NavLink>
+            <NavLink to="/llm-settings" className={NAV_LINK_CLASS}>
+              LLM Ayarları
+            </NavLink>
           </nav>
 
           {/* Right side: username + logout */}

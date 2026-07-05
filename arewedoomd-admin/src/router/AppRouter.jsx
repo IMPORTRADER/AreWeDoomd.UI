@@ -5,6 +5,7 @@ import AdminShell from '../components/layout/AdminShell';
 import LoginPage from '../pages/LoginPage/LoginPage';
 import DashboardPage from '../pages/DashboardPage/DashboardPage';
 import SchedulingPage from '../pages/SchedulingPage/SchedulingPage';
+import LlmSettingsPage from '../pages/LlmSettingsPage/LlmSettingsPage';
 
 function RequireAdmin({ children }) {
   const { user, loading } = useAdminAuth();
@@ -50,6 +51,16 @@ export default function AppRouter() {
             <RequireAdmin>
               <AdminShell>
                 <SchedulingPage />
+              </AdminShell>
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/llm-settings"
+          element={
+            <RequireAdmin>
+              <AdminShell>
+                <LlmSettingsPage />
               </AdminShell>
             </RequireAdmin>
           }
