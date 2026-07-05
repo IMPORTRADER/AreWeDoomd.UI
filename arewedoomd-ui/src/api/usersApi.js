@@ -44,4 +44,12 @@ export const usersApi = {
 
   // PATCH /api/users/me → UserProfileResponse (auth)  body: { bio?, username? }
   updateMe: (payload) => client.patch('/api/users/me', payload),
+
+  // PATCH /api/users/me/password → { accessToken, message } (auth)
+  changePassword: (currentPassword, newPassword) =>
+    client.patch('/api/users/me/password', { currentPassword, newPassword }),
+
+  // PATCH /api/users/me/email → { accessToken, message } (auth)
+  changeEmail: (currentPassword, newEmail) =>
+    client.patch('/api/users/me/email', { currentPassword, newEmail }),
 };
