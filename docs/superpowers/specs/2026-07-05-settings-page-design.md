@@ -17,11 +17,17 @@ mevcut profil düzenleme akışına yönlendirilecek.
 - Profili Düzenle satırı (mevcut modala yönlendirme)
 - Şifre değiştirme (backend hazır, sadece UI)
 - E-posta değiştirme (yeni backend endpoint)
-- Hesap silme — sert silme + cascade (yeni backend endpoint)
+- Hesabı Sil satırı — **disabled ("Yakında")**; işlevsellik sonraki sürüme bırakıldı
 - Bilgi & Destek statik sayfaları (placeholder içerik)
 - Çıkış Yap
 
 ### Dahil değil (bu sürümde)
+- **Hesap silmenin gerçek işlevi (backend).** Ertelendi. Not: SQL Server "çoklu
+  cascade yolu" kısıtı nedeniyle DB-seviyesinde cascade (FK + `OnDelete.Cascade`)
+  bu şemada mümkün değil (User→Comment hem doğrudan hem Post üzerinden = çift yol;
+  UserFollows'ta iki FK aynı tabloya). Ele alınınca yaklaşım: handler içinde tek
+  transaction'da elle silme — kullanıcının postlarını sil (mevcut Post→Comment/Like
+  cascade'i otomatik temizler), kalan yetim yorum/beğeni/takip/bildirimleri elle sil.
 - E-posta doğrulama / onay maili (SMTP yok — e-posta doğrulamasız değişir)
 - Yumuşak silme / hesap dondurma / geri alma
 - Bildirim tercihleri, tema seçimi, dil seçimi (gelecekte)
@@ -39,7 +45,7 @@ Ayarlar
 ├─ Güvenlik
 │    ├─ Şifre Değiştir            → modal
 │    ├─ E-posta Değiştir          → modal
-│    └─ Hesabı Sil                → onay modalı (destructive)
+│    └─ Hesabı Sil                → DISABLED ("Yakında")
 ├─ Bilgi & Destek
 │    ├─ Hakkımızda                → /about
 │    ├─ Gizlilik & KVKK           → /privacy
@@ -72,8 +78,8 @@ Escape ile kapatma, header + form + primary/secondary butonlar, hata bandı).
 
 ## Güvenlik Akışları
 
-Ortak kural: **e-posta değiştirme ve hesap silme, işlem öncesi mevcut şifreyi
-ister.** Backend `VerifyPassword` ile doğrular.
+Ortak kural: **e-posta değiştirme, işlem öncesi mevcut şifreyi ister.** Backend
+`VerifyPassword` ile doğrular. (Hesap silme bu sürümde disabled — aşağıya bakın.)
 
 ### Şifre Değiştir (backend hazır)
 - Endpoint: `PATCH /api/users/me/password` — body `{ currentPassword, newPassword }`
@@ -90,16 +96,11 @@ ister.** Backend `VerifyPassword` ile doğrular.
 - Doğrulama maili **yok** — e-posta doğrudan güncellenir.
 - UI başarıda: `AuthContext` içindeki `user.email` güncellenir. Token değişmez.
 
-### Hesabı Sil (yeni backend) — sert silme + cascade
-- Endpoint: **yeni** `DELETE /api/users/me` — body `{ currentPassword }`
-- Backend: `DeleteAccountCommand` + handler. Şifre doğrulanır, sonra kullanıcı
-  **ve** ilişkili içerik silinir: postlar, yorumlar, post/yorum beğenileri,
-  takip ilişkileri (her iki yön). EF cascade davranışı doğrulanacak; cascade
-  yoksa handler'da açıkça silinir.
-- KVKK: veri gerçekten silinir (yumuşak silme değil) — veri silme hakkına uygun.
-- UI: onay modalı destructive stildedir. `currentPassword` + ek bir kasıtlılık
-  onayı (checkbox veya "SİL" yazma). Başarıda: `logout()` çağrılır (token temizle),
-  ana sayfaya yönlendirilir.
+### Hesabı Sil — bu sürümde DISABLED
+- Güvenlik grubunda görünür ama **pasif** bir satır olarak durur; yanında
+  "Yakında" rozeti, tıklanamaz (disabled stil). Backend işlevi yok.
+- Gerekçe ve gelecekteki yaklaşım "Dahil değil" bölümünde (SQL Server cascade
+  kısıtı → handler'da elle silme) belgelenmiştir.
 
 ## Bilgi & Destek
 
@@ -127,19 +128,22 @@ altında destructive stilde bir satır; tıklayınca `logout()` + ana sayfaya y�
 
 - UI: her modal için form doğrulama + başarı/başarısızlık akışı (vitest +
   testing-library, mevcut `src/test/setup.js` düzeni).
-- Backend: yeni ChangeEmail ve DeleteAccount komut handler'ları için birim
-  testleri (mevcut UsersController testleri deseni).
+- Backend: yeni ChangeEmail komut handler'ı için birim testleri (mevcut
+  UpdateUserProfile/UsersController testleri deseni).
 - Uçtan uca doğrulama: `verify` skill ile Docker API + Vite üzerinden gerçek akış.
 
 ## Backend Değişiklik Özeti (AreWeDoomd.Api)
 
-1. `PATCH /api/users/me/email` — ChangeEmailCommand + handler + benzersizlik +
-   şifre doğrulama. (`User.ChangeEmail` hazır.)
-2. `DELETE /api/users/me` — DeleteAccountCommand + handler + cascade silme +
-   şifre doğrulama.
+1. `PATCH /api/users/me/email` — ChangeEmailCommand + validator + handler +
+   e-posta benzersizlik kontrolü + şifre doğrulama + yeni token. (`User.ChangeEmail`
+   domain metodu zaten var.) `PATCH /me/password` zincirinin birebir kardeşi.
+
+(Hesap silme backend'i bu sürümde YOK — ertelendi.)
 
 ## Açık / Gelecek
 
+- **Hesap silme işlevi** — B yaklaşımı (handler'da transaction ile elle silme).
+  Detay "Dahil değil" bölümünde.
 - Avatar yükleme (`PATCH /me/profile-image` backend'de hazır) — sonraki sürüm.
 - Bildirim tercihleri, tema, dil — sonraki sürüm.
 - E-posta doğrulama akışı — SMTP geldiğinde.
