@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { NavLink, Link, Outlet, useNavigate, useLocation, matchPath } from 'react-router-dom';
+import { NavLink, Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { getProfileUsername } from './profileRoute';
 import { useAuth } from '../../context/AuthContext';
 import GuestPopup from '../GuestPopup';
 import GuestBottomBar from '../GuestBottomBar';
@@ -74,11 +75,11 @@ export default function AppShell() {
   const isGuest = !user;
 
   // On profile routes the right rail becomes the profile-aware <ProfileRail>.
-  // Profiles live at the root: /:username. This is the last route in the tree,
-  // so a match here means the path wasn't a known static route (/, /posts/...).
+  // Profiles live at the root: /:username, so we must exclude the reserved
+  // static routes (see getProfileUsername) — otherwise /settings & friends
+  // would be treated as usernames and the right rail would never load.
   const location = useLocation();
-  const profileMatch = matchPath('/:username', location.pathname);
-  const profileUsername = profileMatch?.params?.username;
+  const profileUsername = getProfileUsername(location.pathname);
 
   const handleLogout = () => { logout(); navigate('/'); };
   const openGuestPopup = () => setShowGuestPopup(true);
@@ -190,7 +191,7 @@ export default function AppShell() {
         </main>
 
         {/* ── Right rail: profile-aware on profile routes, else activity widgets ── */}
-        {profileMatch ? (
+        {profileUsername ? (
           <ProfileRail username={profileUsername} />
         ) : (
         <aside className={['hidden lg:flex flex-col w-[400px] shrink-0 sticky top-0 h-svh px-5 pt-6 pb-6 gap-4 overflow-hidden', isGuest ? 'pb-20' : ''].join(' ')}>
