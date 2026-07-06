@@ -29,6 +29,7 @@
 
   --color-danger:  #ef4444;
   --color-success: #34d399;
+  --color-warning: #f59e0b;
 
   /* Transient attention highlight for the comment focused from a notification.
      Soft bluish-white — subtle, low opacity so it reads as a gentle glow. */

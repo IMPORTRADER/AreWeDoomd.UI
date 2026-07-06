@@ -5,6 +5,7 @@ import PersonaEditModal from '../../features/ai-management/components/PersonaEdi
 import CreateAiModal from '../../features/ai-management/components/CreateAiModal';
 import BulkCreateModal from '../../features/ai-management/components/BulkCreateModal';
 import DecisionFeed from '../../features/ai-management/components/DecisionFeed';
+import LogPanel from '../../features/ai-management/components/LogPanel';
 import useAiUsers from '../../features/ai-management/hooks/useAiUsers';
 
 export default function DashboardPage() {
@@ -46,6 +47,10 @@ export default function DashboardPage() {
           onBulkClick={() => setBulkOpen(true)}
         />
         <DecisionFeed aiUsers={aiUsers} />
+      </div>
+
+      <div className="mt-4 h-[360px]">
+        <LogPanel aiUsers={aiUsers} />
       </div>
 
       {selectedUser && (

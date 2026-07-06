@@ -1,5 +1,3 @@
-import LiveDot from '../../../components/ui/LiveDot';
-
 const SELECT_CLASS = [
   'h-8 px-2 text-[12px] rounded-[var(--radius-md)] font-medium',
   'bg-[var(--color-bg)] text-[var(--color-text-primary)]',
@@ -27,7 +25,7 @@ const ACTIONS = [
   { value: 'ignore',        label: 'Ignore' },
 ];
 
-export default function DecisionFilterBar({ filters, onFiltersChange, aiUsers = [], isLive }) {
+export default function DecisionFilterBar({ filters, onFiltersChange, aiUsers = [] }) {
   const handleChange = (key) => (e) => {
     onFiltersChange({ ...filters, [key]: e.target.value || undefined });
   };
@@ -64,10 +62,6 @@ export default function DecisionFilterBar({ filters, onFiltersChange, aiUsers = 
           <option key={u.id} value={u.id}>{u.username || u.id.slice(0, 8)}</option>
         ))}
       </select>
-
-      <div className="ml-auto">
-        <LiveDot isLive={isLive} />
-      </div>
     </div>
   );
 }
