@@ -1,0 +1,374 @@
+@import "tailwindcss";
+
+:root {
+  /* AreWeDoomd dark design system */
+  --color-bg:           #0b0f17;
+  --color-surface:      #151b26;
+  --color-surface-2:    #1c2433;
+  --color-surface-hover:#202b3d;
+  --color-panel:        #101722;
+  --color-skeleton-from: rgba(229, 231, 235, 0.025);
+  --color-skeleton-mid:  rgba(229, 231, 235, 0.06);
+  --color-border:       #242f41;
+  --color-border-accent:rgba(56, 189, 248, 0.28);
+  --color-scrollbar:    #3a4456;
+
+  /* Widget (central card chrome) */
+  --color-widget-bg-top: #172231;   /* radial surface top tint (subtle lift over surface) */
+  --color-widget-border: #1f3a55;   /* base border */
+
+  --color-text-primary:     #e5e7eb;
+  --color-text-secondary:   #8592a6;
+  --color-text-placeholder: #5b687a;
+  --color-text-heading:     #f8fafc;
+  --color-text-muted:       #c7d0dc;
+
+  --color-link:              #38bdf8;
+  --color-btn-primary:       #0369a1;
+  --color-btn-primary-hover: #0ea5e9;
+
+  --color-danger:  #ef4444;
+  --color-success: #34d399;
+  --color-warning: #f59e0b;
+
+  /* Transient attention highlight for the comment focused from a notification.
+     Soft bluish-white — subtle, low opacity so it reads as a gentle glow. */
+  --color-highlight-glow: rgba(170, 205, 255, 0.22);
+
+  /* User type gradients */
+  --color-ai-from:    #075985;
+  --color-ai-to:      #0e7490;
+  --color-ai-accent:  #38bdf8;
+  --color-ai-badge-bg: rgba(56, 189, 248, 0.15);
+  --color-ai-badge-border: rgba(56, 189, 248, 0.3);
+  --color-human-from:  #8f1f1f;
+  --color-human-to:    #c93636;
+  --color-human-accent:#f54949;
+  --color-human-badge-bg: rgba(245, 73, 73, 0.15);
+  --color-human-badge-border: rgba(245, 73, 73, 0.3);
+
+  /* Soft focus border for inputs/textareas — matches the badge hover ring
+     (ai-accent at 42%) instead of the harsh full-opacity link blue. */
+  --color-input-focus-border: color-mix(in srgb, var(--color-ai-accent) 42%, transparent);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-card: 0px 24px 48px 0px rgba(0, 0, 0, 0.6);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--color-text-primary);
+  background: var(--color-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+}
+
+p {
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  color: var(--color-text-heading);
+  font-family: var(--font-sans);
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+/* ── Sidebar widget scrollbar ── */
+
+.sidebar-scroll-fade {
+  mask-image: linear-gradient(to bottom, black calc(100% - 32px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 32px), transparent 100%);
+}
+
+/* Keep wheel scrolling contained to the panel — prevents scroll chaining
+   (Notification / Last Activities / Going Viral leaking into the main feed). */
+/* Reading-panel variant of the composer scrollbar: same inset rounded pill and
+   transparent track, but a slightly chunkier thumb (easier to grab on long
+   lists) in a more subtle colour so it recedes behind the content. */
+.sidebar-scroll {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scrollbar) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 12px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--color-scrollbar);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-placeholder);
+}
+
+/* ── Comment composer scrollbar ── */
+/* Same thin, rounded language as .sidebar-scroll, but the thumb is inset from
+   the edge (transparent border + padding-box clip) so it sits inside the
+   rounded textarea instead of hugging its border, with a higher-contrast colour
+   so it reads as part of the input's own content. */
+.composer-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-text-placeholder) transparent;
+}
+
+.composer-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.composer-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.composer-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--color-text-placeholder);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.composer-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-secondary);
+}
+
+/* ── Animation keyframes ── */
+
+@keyframes blob-drift-1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(60px, 80px) scale(1.08); }
+  66%  { transform: translate(-40px, 50px) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes blob-drift-2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-70px, -60px) scale(1.05); }
+  66%  { transform: translate(50px, -80px) scale(0.97); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes blob-drift-3 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-80px, 60px) scale(1.1); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%      { transform: translateX(-6px); }
+  30%      { transform: translateX(5px); }
+  45%      { transform: translateX(-4px); }
+  60%      { transform: translateX(3px); }
+  75%      { transform: translateX(-2px); }
+  90%      { transform: translateX(1px); }
+}
+.animate-shake { animation: shake 0.5s ease-out; }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.2s ease-out; }
+
+@keyframes heart-pop {
+  0%   { transform: scale(1); }
+  15%  { transform: scale(1.35); }
+  30%  { transform: scale(0.9); }
+  45%  { transform: scale(1.15); }
+  60%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes heart-ring {
+  0%   { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.animate-heart-pop { animation: heart-pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.animate-heart-ring { animation: heart-ring 0.5s ease-out forwards; }
+
+@keyframes badge-morph {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { opacity: 1; transform: scale(1.15); }
+  80%  { transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-badge-morph { animation: badge-morph 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+
+/* ── Skeleton loading shimmer ── */
+/* A muted base fill with a single light band sweeping left→right. Uses the
+   existing --color-skeleton-* tokens so it sits naturally on dark surfaces.
+   Apply `.skeleton` to any block; size it with width/height utilities. */
+@keyframes skeleton-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-skeleton-from);
+  border-radius: var(--radius-sm);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-skeleton-mid) 50%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; }
+}
+
+/* Highlight the comment focused from a notification for ~2.5s: quick appear,
+   brief hold, smooth fade. Applied to the comment's own surface via an INSET
+   glow — an outset glow would be clipped by the post card's overflow-hidden,
+   and a backdrop tint would sit behind the comment's opaque background.
+   Removed on animationend. */
+@keyframes comment-highlight {
+  0% {
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+  8% {
+    box-shadow: inset 0 0 0 2px var(--color-highlight-glow), inset 0 0 30px -4px var(--color-highlight-glow);
+  }
+  60% {
+    box-shadow: inset 0 0 0 2px var(--color-highlight-glow), inset 0 0 30px -4px var(--color-highlight-glow);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+}
+
+.comment-highlight {
+  animation: comment-highlight 2500ms ease-out;
+}
+
+/* Reduced motion: hold a steady inset ring, then fade it out — no pulsing glow. */
+@media (prefers-reduced-motion: reduce) {
+  .comment-highlight {
+    animation: comment-highlight-reduced 2500ms ease-out;
+  }
+}
+
+@keyframes comment-highlight-reduced {
+  0%, 70% { box-shadow: inset 0 0 0 2px var(--color-highlight-glow); }
+  100%    { box-shadow: inset 0 0 0 0 transparent; }
+}
+
+/* ── Central widget chrome ──────────────────────────────────────────────
+   SINGLE SOURCE: every panel/sidebar card uses this look (<Widget>).
+   The colored gradient border is an AI(blue)↔Human(red) reference. */
+.widget {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 0%, var(--color-widget-bg-top) 0%, var(--color-surface) 55%);
+  border: 1px solid var(--color-widget-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-ai-accent) 6%, transparent), 0 24px 50px -30px #000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* gradient border ring (mask-composite trick) */
+.widget::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--color-ai-accent) 50%, transparent), color-mix(in srgb, var(--color-human-accent) 35%, transparent), transparent 60%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* keep content above the decorative ring */
+.widget > * {
+  position: relative;
+  z-index: 1;
+}
+
+.widget--hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 30px 50px -24px #000, 0 0 0 1px color-mix(in srgb, var(--color-ai-accent) 18%, transparent);
+}
+
+/* ── Widget content entrance animations (one-time, on first render) ── */
+@keyframes pop-in {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-pop-in { animation: pop-in 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-right { animation: slide-in-right 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translateY(3px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.animate-tooltip-in { animation: tooltip-in 0.14s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .widget { transition: none; }
+  .animate-pop-in,
+  .animate-slide-in-right,
+  .animate-tooltip-in { animation: none; }
+}

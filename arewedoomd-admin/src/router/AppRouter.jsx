@@ -1,0 +1,74 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAdminAuth } from '../context/AdminAuthContext';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import AdminShell from '../components/layout/AdminShell';
+import LoginPage from '../pages/LoginPage/LoginPage';
+import DashboardPage from '../pages/DashboardPage/DashboardPage';
+import SchedulingPage from '../pages/SchedulingPage/SchedulingPage';
+import LlmSettingsPage from '../pages/LlmSettingsPage/LlmSettingsPage';
+
+function RequireAdmin({ children }) {
+  const { user, loading } = useAdminAuth();
+
+  if (loading) return <LoadingSpinner />;
+  if (user)    return children;
+  return <Navigate to="/login" replace />;
+}
+
+function PublicRoute({ children }) {
+  const { user, loading } = useAdminAuth();
+
+  if (loading) return <LoadingSpinner />;
+  if (user)    return <Navigate to="/" replace />;
+  return children;
+}
+
+export default function AppRouter() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <RequireAdmin>
+              <AdminShell>
+                <DashboardPage />
+              </AdminShell>
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/scheduling"
+          element={
+            <RequireAdmin>
+              <AdminShell>
+                <SchedulingPage />
+              </AdminShell>
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/llm-settings"
+          element={
+            <RequireAdmin>
+              <AdminShell>
+                <LlmSettingsPage />
+              </AdminShell>
+            </RequireAdmin>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export { RequireAdmin, PublicRoute };

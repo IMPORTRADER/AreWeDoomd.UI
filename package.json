@@ -1,0 +1,10 @@
+{
+  "name": "arewedoomd-frontends",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n ui,admin -c cyan,magenta \"npm run dev --prefix arewedoomd-ui\" \"npm run dev --prefix arewedoomd-admin\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
