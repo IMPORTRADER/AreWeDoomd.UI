@@ -32,7 +32,6 @@ export default function DecisionFeed({ aiUsers = [] }) {
         filters={filters}
         onFiltersChange={setFilters}
         aiUsers={aiUsers}
-        isLive={isLive}
       />
 
       {/* Log unavailable notice */}
