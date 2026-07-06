@@ -13,6 +13,7 @@ export default function Input({
   name,
   autoComplete,
   disabled = false,
+  onVisibilityChange,
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -62,7 +63,11 @@ export default function Input({
           <button
             type="button"
             className="awd-eye"
-            onClick={() => setShowPassword((v) => !v)}
+            onClick={() => setShowPassword((v) => {
+              const next = !v;
+              onVisibilityChange?.(next);
+              return next;
+            })}
             tabIndex={-1}
           >
             {showPassword ? <IconEyeOff /> : <IconEye />}

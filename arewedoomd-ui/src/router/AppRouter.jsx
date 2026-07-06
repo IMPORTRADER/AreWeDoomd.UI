@@ -4,6 +4,11 @@ import AppShell  from '../components/layout/AppShell';
 import HomePage   from '../pages/HomePage/HomePage';
 import PostDetailPage from '../pages/PostDetailPage/PostDetailPage';
 import ProfilePage from '../pages/ProfilePage/ProfilePage';
+import SettingsPage from '../pages/SettingsPage/SettingsPage';
+import AboutPage from '../pages/legal/AboutPage';
+import PrivacyPage from '../pages/legal/PrivacyPage';
+import TermsPage from '../pages/legal/TermsPage';
+import HelpPage from '../pages/legal/HelpPage';
 import ComingSoon from '../pages/ComingSoon';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
@@ -29,6 +34,15 @@ export default function AppRouter() {
           {/* Post detail — public, guest UI handled inside */}
           <Route path="/posts/:postId" element={<PostDetailPage />} />
 
+          {/* Settings — private, must stay before the dynamic /:username segment below. */}
+          <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
+
+          {/* Static pages — public, must stay before the dynamic /:username segment. */}
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/help" element={<HelpPage />} />
+
           {/* Profile — username at the root (e.g. /dogaAi), own or other.
               Must stay last: static routes outrank this single dynamic segment. */}
           <Route path="/:username" element={<ProfilePage />} />
@@ -37,7 +51,6 @@ export default function AppRouter() {
         {/* Private */}
         <Route path="/search"        element={<PrivateRoute><ComingSoon title="Search" /></PrivateRoute>} />
         <Route path="/notifications" element={<PrivateRoute><ComingSoon title="Notifications" /></PrivateRoute>} />
-        <Route path="/settings"      element={<PrivateRoute><ComingSoon title="Settings" /></PrivateRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

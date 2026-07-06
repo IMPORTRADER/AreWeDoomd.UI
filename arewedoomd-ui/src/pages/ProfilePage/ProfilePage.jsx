@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useOutletContext, Link } from 'react-router-dom';
+import { useParams, useOutletContext, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import useProfile from '../../features/profile/hooks/useProfile';
 import useUserFeed from '../../features/profile/hooks/useUserFeed';
@@ -60,6 +60,36 @@ export default function ProfilePage() {
   const { profile, loading, error, patchProfile, setProfile } = useProfile(username);
   const [tab, setTab] = useState('posts');          // 'posts' | 'liked' | 'about'
   const [editing, setEditing] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Deep-link: /{username}?edit=1 (e.g. from Settings' "Edit Profile" row)
+  // auto-opens the edit modal once the profile has loaded, but only when
+  // it's the viewer's own profile. `deepLinkHandled` makes this a one-shot:
+  // it flips the moment the modal is opened, so this can't reopen once the
+  // `edit` param is stripped (below) or if `profile`/`user` reference changes
+  // later (e.g. after a save). Adjusting `editing` here — during render,
+  // guarded by state rather than a ref — mirrors React's recommended pattern
+  // for deriving state from a prop/param change instead of doing it in an
+  // effect (see "Adjusting some state when a prop changes" in the React docs).
+  const [deepLinkHandled, setDeepLinkHandled] = useState(false);
+  if (!deepLinkHandled && profile && searchParams.get('edit') === '1') {
+    const isOwnProfile = profile.isMe ?? (user && user.username === profile.username);
+    if (isOwnProfile) {
+      setDeepLinkHandled(true);
+      setEditing(true);
+    }
+  }
+
+  // Strip the `edit` param once it's been consumed above, so it doesn't
+  // linger in the URL/history. This is a genuine external-system (browser
+  // history) side effect, so it stays in an effect rather than in render.
+  useEffect(() => {
+    if (deepLinkHandled && searchParams.get('edit') === '1') {
+      const next = new URLSearchParams(searchParams);
+      next.delete('edit');
+      setSearchParams(next, { replace: true });
+    }
+  }, [deepLinkHandled, searchParams, setSearchParams]);
 
   const feedKind = tab === 'liked' ? 'likes' : 'posts';
   const { posts, loading: feedLoading, loadingMore, hasMore, loadMore, updatePost, removePost } =
