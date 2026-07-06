@@ -40,15 +40,14 @@ export default function LogPanel({ aiUsers = [] }) {
       title="Agent Logs"
       headerRight={
         <span className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            loading={clearing}
+          <button
+            type="button"
             onClick={handleClear}
-            className="text-[var(--color-danger)]"
+            disabled={clearing}
+            className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-danger)] hover:opacity-75 disabled:opacity-50 transition-opacity cursor-pointer disabled:cursor-default"
           >
-            Clear
-          </Button>
+            {clearing ? 'Clearing…' : 'Clear'}
+          </button>
           <LiveDot isLive={isLive} />
         </span>
       }
