@@ -4,6 +4,7 @@ import Button from '../../../components/ui/Button';
 import LiveDot from '../../../components/ui/LiveDot';
 import LogFilterBar from './LogFilterBar';
 import LogRow from './LogRow';
+import ClearLogsConfirmModal from './ClearLogsConfirmModal';
 import useAgentLogs from '../hooks/useAgentLogs';
 
 export default function LogPanel({ aiUsers = [] }) {
@@ -24,10 +25,11 @@ export default function LogPanel({ aiUsers = [] }) {
   } = useAgentLogs();
 
   const [search, setSearch] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const handleClear = () => {
-    if (!window.confirm('All agent logs will be permanently deleted. Continue?')) return;
-    clearLogs();
+  const handleConfirmClear = async () => {
+    await clearLogs();
+    setConfirmOpen(false);
   };
   const query = search.trim().toLowerCase();
   const visibleItems = query
@@ -42,7 +44,7 @@ export default function LogPanel({ aiUsers = [] }) {
         <span className="flex items-center gap-3">
           <button
             type="button"
-            onClick={handleClear}
+            onClick={() => setConfirmOpen(true)}
             disabled={clearing}
             className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-ai-accent)] hover:opacity-75 disabled:opacity-50 transition-opacity cursor-pointer disabled:cursor-default"
           >
@@ -110,6 +112,14 @@ export default function LogPanel({ aiUsers = [] }) {
             </Button>
           )}
         </div>
+      )}
+
+      {confirmOpen && (
+        <ClearLogsConfirmModal
+          onConfirm={handleConfirmClear}
+          onClose={() => setConfirmOpen(false)}
+          clearing={clearing}
+        />
       )}
     </Widget>
   );
