@@ -16,12 +16,19 @@ export default function LogPanel({ aiUsers = [] }) {
     error,
     filters,
     isLive,
+    clearing,
     setFilters,
     loadMore,
     backToLive,
+    clearLogs,
   } = useAgentLogs();
 
   const [search, setSearch] = useState('');
+
+  const handleClear = () => {
+    if (!window.confirm('All agent logs will be permanently deleted. Continue?')) return;
+    clearLogs();
+  };
   const query = search.trim().toLowerCase();
   const visibleItems = query
     ? items.filter((l) =>
@@ -31,7 +38,20 @@ export default function LogPanel({ aiUsers = [] }) {
   return (
     <Widget
       title="Agent Logs"
-      headerRight={<LiveDot isLive={isLive} />}
+      headerRight={
+        <span className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            loading={clearing}
+            onClick={handleClear}
+            className="text-[var(--color-danger)]"
+          >
+            Clear
+          </Button>
+          <LiveDot isLive={isLive} />
+        </span>
+      }
       scroll
       fill
       bare

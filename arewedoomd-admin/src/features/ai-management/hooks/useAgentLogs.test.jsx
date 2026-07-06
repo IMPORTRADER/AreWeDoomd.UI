@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import useAgentLogs from './useAgentLogs';
 
 vi.mock('../services/aiManagementApi', () => ({
-  aiManagementApi: { getAgentLogs: vi.fn() },
+  aiManagementApi: { getAgentLogs: vi.fn(), clearAgentLogs: vi.fn() },
 }));
 
 import { aiManagementApi } from '../services/aiManagementApi';
@@ -98,5 +98,33 @@ describe('useAgentLogs', () => {
     });
 
     expect(aiManagementApi.getAgentLogs).toHaveBeenCalledTimes(2);
+  });
+
+  it('clearLogs deletes server logs, empties the list, and refetches live', async () => {
+    aiManagementApi.getAgentLogs.mockResolvedValue(
+      page([{ ts: '2026-07-06T10:00:00Z', level: 'info', source: 'admin', message: 'old' }]),
+    );
+    aiManagementApi.clearAgentLogs.mockResolvedValue({ data: { deletedFiles: 2 } });
+
+    const { result } = renderHook(() => useAgentLogs());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(result.current.items).toHaveLength(1);
+
+    aiManagementApi.getAgentLogs.mockResolvedValue(page([]));
+
+    await act(async () => {
+      await result.current.clearLogs();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(aiManagementApi.clearAgentLogs).toHaveBeenCalledTimes(1);
+    expect(result.current.items).toHaveLength(0);
+    expect(result.current.isLive).toBe(true);
+    expect(result.current.clearing).toBe(false);
   });
 });
