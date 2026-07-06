@@ -44,7 +44,7 @@ export default function LogPanel({ aiUsers = [] }) {
             type="button"
             onClick={handleClear}
             disabled={clearing}
-            className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-50 transition-colors cursor-pointer disabled:cursor-default"
+            className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-ai-accent)] hover:opacity-75 disabled:opacity-50 transition-opacity cursor-pointer disabled:cursor-default"
           >
             {clearing ? 'Clearing…' : 'Clear'}
           </button>
