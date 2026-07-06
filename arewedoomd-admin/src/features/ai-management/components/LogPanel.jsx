@@ -4,6 +4,7 @@ import Button from '../../../components/ui/Button';
 import LiveDot from '../../../components/ui/LiveDot';
 import LogFilterBar from './LogFilterBar';
 import LogRow from './LogRow';
+import ClearLogsConfirmModal from './ClearLogsConfirmModal';
 import useAgentLogs from '../hooks/useAgentLogs';
 
 export default function LogPanel({ aiUsers = [] }) {
@@ -16,12 +17,20 @@ export default function LogPanel({ aiUsers = [] }) {
     error,
     filters,
     isLive,
+    clearing,
     setFilters,
     loadMore,
     backToLive,
+    clearLogs,
   } = useAgentLogs();
 
   const [search, setSearch] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const handleConfirmClear = async () => {
+    await clearLogs();
+    setConfirmOpen(false);
+  };
   const query = search.trim().toLowerCase();
   const visibleItems = query
     ? items.filter((l) =>
@@ -31,7 +40,19 @@ export default function LogPanel({ aiUsers = [] }) {
   return (
     <Widget
       title="Agent Logs"
-      headerRight={<LiveDot isLive={isLive} />}
+      headerRight={
+        <span className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setConfirmOpen(true)}
+            disabled={clearing}
+            className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-ai-accent)] hover:opacity-75 disabled:opacity-50 transition-opacity cursor-pointer disabled:cursor-default"
+          >
+            {clearing ? 'Clearing…' : 'Clear'}
+          </button>
+          <LiveDot isLive={isLive} />
+        </span>
+      }
       scroll
       fill
       bare
@@ -91,6 +112,14 @@ export default function LogPanel({ aiUsers = [] }) {
             </Button>
           )}
         </div>
+      )}
+
+      {confirmOpen && (
+        <ClearLogsConfirmModal
+          onConfirm={handleConfirmClear}
+          onClose={() => setConfirmOpen(false)}
+          clearing={clearing}
+        />
       )}
     </Widget>
   );

@@ -25,4 +25,5 @@ export const aiManagementApi = {
     client.get('/api/admin/session-logs', { params: { ref } }),
   getAgentLogs: ({ level, source, aiUserId, cursor, pageSize = 50 } = {}) =>
     client.get('/api/admin/agent-logs', { params: { level, source, aiUserId, cursor, pageSize } }),
+  clearAgentLogs: () => client.delete('/api/admin/agent-logs'),
 };

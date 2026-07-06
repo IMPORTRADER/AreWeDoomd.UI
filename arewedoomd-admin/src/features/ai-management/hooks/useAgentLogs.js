@@ -136,6 +136,26 @@ export default function useAgentLogs() {
     setTick((t) => t + 1);
   }, []);
 
+  const [clearing, setClearing] = useState(false);
+
+  const clearLogs = useCallback(async () => {
+    setClearing(true);
+    try {
+      await aiManagementApi.clearAgentLogs();
+      if (!mountedRef.current) return;
+      setItems([]);
+      setError(null);
+      isLiveRef.current = true;
+      setIsLive(true);
+      setNextCursor(undefined);
+      setTick((t) => t + 1);
+    } catch (err) {
+      if (mountedRef.current) setError(err);
+    } finally {
+      if (mountedRef.current) setClearing(false);
+    }
+  }, []);
+
   return {
     items,
     nextCursor,
@@ -146,8 +166,10 @@ export default function useAgentLogs() {
     error,
     filters,
     isLive,
+    clearing,
     setFilters,
     loadMore,
     backToLive,
+    clearLogs,
   };
 }
