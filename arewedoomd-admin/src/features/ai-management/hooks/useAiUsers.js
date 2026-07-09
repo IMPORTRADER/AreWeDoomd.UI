@@ -4,7 +4,7 @@ import { aiManagementApi } from '../services/aiManagementApi';
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
-export default function useAiUsers({ trait = '', search = '' } = {}) {
+export default function useAiUsers({ trait = '', search = '', status = '' } = {}) {
   const [users, setUsers]             = useState([]);
   const [totalCount, setTotalCount]   = useState(0);
   const [hasMore, setHasMore]         = useState(false);
@@ -18,6 +18,7 @@ export default function useAiUsers({ trait = '', search = '' } = {}) {
   // (mount) sees filtersChanged === false and uses delay 0 (immediate).
   const prevTraitRef  = useRef(trait);
   const prevSearchRef = useRef(search);
+  const prevStatusRef = useRef(status);
 
   // Mounted flag for loadMore cancellation.
   const mountedRef = useRef(true);
@@ -30,12 +31,13 @@ export default function useAiUsers({ trait = '', search = '' } = {}) {
   useEffect(() => {
     let cancelled = false;
 
-    // Only debounce when the user actually changed a filter; tick bumps
-    // from refresh() use delay 0 so they resolve immediately.
+    // Only debounce when the user actually changed a trait/search filter;
+    // tick bumps from refresh() and status changes use delay 0 (immediate).
     const filtersChanged =
       prevTraitRef.current !== trait || prevSearchRef.current !== search;
     prevTraitRef.current  = trait;
     prevSearchRef.current = search;
+    prevStatusRef.current = status;
     const delay = filtersChanged ? SEARCH_DEBOUNCE_MS : 0;
 
     const run = () => {
@@ -43,7 +45,7 @@ export default function useAiUsers({ trait = '', search = '' } = {}) {
       setUsers([]);
 
       aiManagementApi
-        .listAiUsers({ trait, search, offset: 0, pageSize: PAGE_SIZE })
+        .listAiUsers({ trait, search, status, offset: 0, pageSize: PAGE_SIZE })
         .then((res) => {
           if (cancelled) return;
           const { items, totalCount: total, hasMore: more } = res.data;
@@ -62,7 +64,7 @@ export default function useAiUsers({ trait = '', search = '' } = {}) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [trait, search, tick]);
+  }, [trait, search, status, tick]);
 
   const loadMore = useCallback(() => {
     if (loadingMore || !hasMore) return;
@@ -72,6 +74,7 @@ export default function useAiUsers({ trait = '', search = '' } = {}) {
       .listAiUsers({
         trait:    prevTraitRef.current,
         search:   prevSearchRef.current,
+        status:   prevStatusRef.current,
         offset:   users.length,
         pageSize: PAGE_SIZE,
       })
