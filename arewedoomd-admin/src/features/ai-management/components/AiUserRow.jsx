@@ -34,27 +34,29 @@ export default function AiUserRow({ user, onClick }) {
     >
       <Avatar userType="ai" src={profileImageUrl} initials={initials(username)} size={32} />
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-heading)' }}>
-            {username}
-          </span>
-          {visibleTraits.map((t) => (
-            <TraitChip key={t} label={t} />
-          ))}
-          {overflowCount > 0 && (
-            <span
-              className="text-xs rounded-full px-2 py-0.5 border"
-              style={{
-                background: 'var(--color-ai-badge-bg)',
-                borderColor: 'var(--color-ai-badge-border)',
-                color: 'var(--color-ai-accent)',
-              }}
-            >
-              +{overflowCount}
-            </span>
-          )}
-        </div>
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <span className="text-sm font-semibold truncate leading-none" style={{ color: 'var(--color-text-heading)' }}>
+          {username}
+        </span>
+        {visibleTraits.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {visibleTraits.map((t) => (
+              <TraitChip key={t} label={t} />
+            ))}
+            {overflowCount > 0 && (
+              <span
+                className="text-xs leading-none rounded-full px-2 py-0.5 border"
+                style={{
+                  background: 'var(--color-ai-badge-bg)',
+                  borderColor: 'var(--color-ai-badge-border)',
+                  color: 'var(--color-ai-accent)',
+                }}
+              >
+                +{overflowCount}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
@@ -62,6 +64,7 @@ export default function AiUserRow({ user, onClick }) {
           <span
             className="text-xs font-bold rounded-full px-2 py-0.5"
             style={{ color: 'var(--color-ai-accent)', background: 'var(--color-ai-badge-bg)' }}
+            title={`Persona version ${personaVersion} — increments each time the personality is edited`}
           >
             v{personaVersion}
           </span>

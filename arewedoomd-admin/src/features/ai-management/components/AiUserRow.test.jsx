@@ -42,7 +42,9 @@ describe('AiUserRow', () => {
 
   it('shows persona version badge when hasPersonality is true', () => {
     render(<AiUserRow user={BASE_USER} onClick={vi.fn()} />);
-    expect(screen.getByText('v3')).toBeInTheDocument();
+    const badge = screen.getByText('v3');
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveAttribute('title', expect.stringMatching(/persona version 3/i));
   });
 
   it('shows "no persona" chip when hasPersonality is false', () => {
