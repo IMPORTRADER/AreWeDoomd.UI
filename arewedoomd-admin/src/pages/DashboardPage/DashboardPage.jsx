@@ -45,7 +45,7 @@ export default function DashboardPage() {
       <FleetStatsBar />
       {rateLimited && <RateLimitBanner />}
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4">
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4 h-[560px] lg:h-[calc(100svh-320px)] lg:min-h-[480px]">
         <AiUserTable
           onRowClick={handleRowClick}
           refreshRef={tableRefreshRef}

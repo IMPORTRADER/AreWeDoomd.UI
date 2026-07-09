@@ -4,7 +4,6 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import useAiUsers from '../hooks/useAiUsers';
 import useDelayedLoading from '../../../hooks/useDelayedLoading';
-import useSkeletonCount from '../../../hooks/useSkeletonCount';
 import AiUserRow from './AiUserRow';
 import TraitChip from './TraitChip';
 import usePersonaCatalog, { flattenTraits } from '../hooks/usePersonaCatalog';
@@ -36,7 +35,7 @@ export default function AiUserTable({ onRowClick, refreshRef, onCreateClick, onB
     if (refreshRef) refreshRef.current = refresh;
   }, [refreshRef, refresh]);
   const showSkeleton = useDelayedLoading(loading);
-  const skeletonCount = useSkeletonCount(52, 5);
+  const skeletonCount = 8;
 
   const { catalog } = usePersonaCatalog();
   const popularTraits = flattenTraits(catalog).slice(0, 8);
