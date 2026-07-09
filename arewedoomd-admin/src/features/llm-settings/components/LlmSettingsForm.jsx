@@ -16,6 +16,7 @@ export default function LlmSettingsForm({ settings, onSave, saving }) {
     model:                    settings?.model ?? '',
     scoringModel:             settings?.scoringModel ?? '',
     thinkingEnabled:          settings?.thinkingEnabled ?? false,
+    provider:                 settings?.provider ?? '',
     scoringTokensPerAccount:  settings?.scoringTokensPerAccount ?? 512,
     compositionTokensPerPost: settings?.compositionTokensPerPost ?? 800,
     replyMaxTokens:           settings?.replyMaxTokens ?? 1024,
@@ -34,9 +35,32 @@ export default function LlmSettingsForm({ settings, onSave, saving }) {
     });
   };
 
+  const providers = settings?.availableProviders ?? [];
+
   return (
     <Widget title="LLM Ayarları">
       <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="llmProvider" className="text-sm font-medium text-[var(--color-text-primary)]">
+            Provider
+            <span className="ml-1 text-xs font-normal text-[var(--color-text-secondary)]">(boş = env varsayılanı)</span>
+          </label>
+          <select
+            id="llmProvider"
+            value={form.provider}
+            onChange={(e) => setField('provider', e.target.value)}
+            disabled={saving}
+            className={INPUT_CLASS}
+          >
+            <option value="">(env varsayılanı)</option>
+            {providers.map((p) => (
+              <option key={p.name} value={p.name} disabled={!p.isConfigured}>
+                {p.name}{p.isConfigured ? '' : ' (API key tanımlı değil)'}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="flex flex-col gap-1.5">
           <label htmlFor="llmModel" className="text-sm font-medium text-[var(--color-text-primary)]">
             Model
