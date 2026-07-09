@@ -72,8 +72,8 @@ export default function BulkDeactivateConfirmModal({
           {errorMessage && (
             <p className="mt-3 text-[12px] rounded-[var(--radius-md)] px-3 py-2 border" style={{
               color: 'var(--color-danger)',
-              background: 'rgba(239,68,68,0.08)',
-              borderColor: 'rgba(239,68,68,0.3)',
+              background: 'color-mix(in srgb, var(--color-danger) 8%, transparent)',
+              borderColor: 'color-mix(in srgb, var(--color-danger) 30%, transparent)',
             }}>
               {errorMessage}
             </p>

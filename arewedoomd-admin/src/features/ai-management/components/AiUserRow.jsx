@@ -41,7 +41,7 @@ export default function AiUserRow({ user, selected = false, onSelect, onClick })
   return (
     <tr
       className={`cursor-pointer transition-colors duration-100 border-b border-[var(--color-border)]
-        ${selected ? 'bg-[rgba(56,189,248,0.07)] hover:bg-[rgba(56,189,248,0.10)]' : 'hover:bg-[var(--color-surface-hover)]'}
+        ${selected ? 'bg-[color-mix(in_srgb,var(--color-ai-accent)_7%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-ai-accent)_10%,transparent)]' : 'hover:bg-[var(--color-surface-hover)]'}
         ${isDeactivated ? 'opacity-45' : ''}`}
       onClick={onClick ? () => onClick(user) : undefined}
     >
@@ -131,8 +131,8 @@ export default function AiUserRow({ user, selected = false, onSelect, onClick })
             className="text-xs rounded-full px-2 py-0.5 border"
             style={{
               color: 'var(--color-warning)',
-              background: 'rgba(245,158,11,0.12)',
-              borderColor: 'rgba(245,158,11,0.3)',
+              background: 'color-mix(in srgb, var(--color-warning) 12%, transparent)',
+              borderColor: 'color-mix(in srgb, var(--color-warning) 30%, transparent)',
             }}
           >
             no persona

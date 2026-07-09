@@ -148,6 +148,7 @@ export default function AiUserTable({ onRowClick, refreshRef, onCreateClick, onB
       scroll={false}
       fill
       bare
+      bodyClassName="flex flex-col flex-1 min-h-0"
       headerRight={
         (onCreateClick || onBulkClick) && (
           <div className="flex items-center gap-2">
@@ -169,7 +170,7 @@ export default function AiUserTable({ onRowClick, refreshRef, onCreateClick, onB
       <AiUserStatusChips
         counts={chipCounts}
         active={status}
-        onChange={setStatus}
+        onChange={(val) => { setStatus(val); setSelected(new Set()); }}
       />
 
       {/* Toolbar: search + trait input */}

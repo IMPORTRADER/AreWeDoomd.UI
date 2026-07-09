@@ -16,8 +16,8 @@ export default function BulkActionBar({ count, onDeactivate, onReactivate, onCle
         bg-[var(--color-surface-2)] border border-[var(--color-ai-badge-border)]
         rounded-[var(--radius-md)] px-3.5 py-2.5
         shadow-[0_12px_30px_-10px_#000]
-        transition-transform duration-[220ms] cubic-bezier(0.22,1,0.36,1)
-        ${visible ? 'translate-y-0' : 'translate-y-[calc(100%+20px)]'}`}
+        transition-[transform,visibility] duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)]
+        ${visible ? 'translate-y-0 visible pointer-events-auto' : 'translate-y-[calc(100%+20px)] invisible pointer-events-none'}`}
       aria-hidden={!visible}
     >
       <span className="text-[13px] font-bold" style={{ color: 'var(--color-ai-accent)' }}>
@@ -31,9 +31,9 @@ export default function BulkActionBar({ count, onDeactivate, onReactivate, onCle
         onClick={onDeactivate}
         className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-md)]
           font-semibold text-xs px-3 py-1.5 transition-colors duration-150 cursor-pointer
-          border border-[rgba(239,68,68,0.35)]"
+          border border-[color-mix(in_srgb,var(--color-danger)_35%,transparent)]"
         style={{
-          background: 'rgba(239,68,68,0.14)',
+          background: 'color-mix(in srgb, var(--color-danger) 14%, transparent)',
           color: 'var(--color-danger)',
         }}
       >
