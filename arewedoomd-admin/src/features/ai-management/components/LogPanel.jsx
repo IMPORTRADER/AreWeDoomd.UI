@@ -5,9 +5,8 @@ import LiveDot from '../../../components/ui/LiveDot';
 import LogFilterBar from './LogFilterBar';
 import LogRow from './LogRow';
 import ClearLogsConfirmModal from './ClearLogsConfirmModal';
-import useAgentLogs from '../hooks/useAgentLogs';
 
-export default function LogPanel({ aiUsers = [] }) {
+export default function LogPanel({ aiUsers = [], logs }) {
   const {
     items,
     hasMore,
@@ -22,7 +21,7 @@ export default function LogPanel({ aiUsers = [] }) {
     loadMore,
     backToLive,
     clearLogs,
-  } = useAgentLogs();
+  } = logs;
 
   const [search, setSearch] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);

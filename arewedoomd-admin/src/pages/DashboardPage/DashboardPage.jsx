@@ -6,7 +6,10 @@ import CreateAiModal from '../../features/ai-management/components/CreateAiModal
 import BulkCreateModal from '../../features/ai-management/components/BulkCreateModal';
 import DecisionFeed from '../../features/ai-management/components/DecisionFeed';
 import LogPanel from '../../features/ai-management/components/LogPanel';
+import RateLimitBanner from '../../features/ai-management/components/RateLimitBanner';
 import useAiUsers from '../../features/ai-management/hooks/useAiUsers';
+import useAgentLogs from '../../features/ai-management/hooks/useAgentLogs';
+import useRateLimitAlert from '../../features/ai-management/hooks/useRateLimitAlert';
 
 export default function DashboardPage() {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -14,6 +17,8 @@ export default function DashboardPage() {
   const [bulkOpen, setBulkOpen]         = useState(false);
   const tableRefreshRef = useRef(null);
   const { users: aiUsers } = useAiUsers();
+  const agentLogs = useAgentLogs();
+  const rateLimited = useRateLimitAlert(agentLogs.items);
 
   const handleRowClick = (user) => setSelectedUser(user);
 
@@ -38,6 +43,7 @@ export default function DashboardPage() {
   return (
     <>
       <FleetStatsBar />
+      {rateLimited && <RateLimitBanner />}
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4">
         <AiUserTable
@@ -50,7 +56,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-4 h-[360px]">
-        <LogPanel aiUsers={aiUsers} />
+        <LogPanel aiUsers={aiUsers} logs={agentLogs} />
       </div>
 
       {selectedUser && (
