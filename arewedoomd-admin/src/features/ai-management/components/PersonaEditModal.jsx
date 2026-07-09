@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import Button from '../../../components/ui/Button';
 import useAiUserDetail from '../hooks/useAiUserDetail';
 import useEditPersonality from '../hooks/useEditPersonality';
+import usePersonaCatalog, { flattenTraits } from '../hooks/usePersonaCatalog';
+import TraitInput from './TraitInput';
+import SuggestionChips from './SuggestionChips';
 
 const TYPING_STYLE_MAX = 500;
 const SUMMARY_MAX      = 1000;
-const TRAIT_MIN        = 2;
-const TRAIT_MAX_CHARS  = 60;
-const TRAIT_MAX_COUNT  = 10;
 
 function extractApiError(err) {
   if (!err) return null;
@@ -24,11 +24,10 @@ function extractApiError(err) {
 export default function PersonaEditModal({ userId, onClose, onSaved }) {
   const { detail, loading, error: detailError } = useAiUserDetail(userId);
   const { save, saving, error: saveError } = useEditPersonality();
+  const { catalog } = usePersonaCatalog();
 
   // Form state
   const [traits, setTraits]           = useState([]);
-  const [traitInput, setTraitInput]   = useState('');
-  const [traitError, setTraitError]   = useState('');
   const [typingStyle, setTypingStyle] = useState('');
   const [summary, setSummary]         = useState('');
 
@@ -42,16 +41,12 @@ export default function PersonaEditModal({ userId, onClose, onSaved }) {
       setTraits(detail.traits ?? []);
       setTypingStyle(detail.typingStyle ?? '');
       setSummary(detail.summary ?? '');
-      setTraitInput('');
-      setTraitError('');
     } else if (!detail && seededForRef.current !== null) {
       // userId changed and detail reset — clear form
       seededForRef.current = null;
       setTraits([]);
       setTypingStyle('');
       setSummary('');
-      setTraitInput('');
-      setTraitError('');
     }
   }, [detail, userId]);
 
@@ -63,43 +58,6 @@ export default function PersonaEditModal({ userId, onClose, onSaved }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, saving]);
-
-  // Trait management
-  const commitTrait = () => {
-    const value = traitInput.replace(/,$/, '').trim();
-    if (!value) {
-      setTraitInput('');
-      return;
-    }
-
-    if (value.length < TRAIT_MIN || value.length > TRAIT_MAX_CHARS) {
-      setTraitError(`Traits must be ${TRAIT_MIN}–${TRAIT_MAX_CHARS} characters.`);
-      return;
-    }
-    if (traits.length >= TRAIT_MAX_COUNT) {
-      setTraitError(`Maximum ${TRAIT_MAX_COUNT} traits allowed.`);
-      return;
-    }
-    if (traits.includes(value)) {
-      setTraitError('That trait is already added.');
-      return;
-    }
-
-    setTraits((prev) => [...prev, value]);
-    setTraitInput('');
-    setTraitError('');
-  };
-
-  const handleTraitKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      commitTrait();
-    }
-  };
-
-  const removeTrait = (t) => {
-    setTraits((prev) => prev.filter((x) => x !== t));
-  };
 
   // Validation
   const typingStyleRemaining = TYPING_STYLE_MAX - typingStyle.length;
@@ -180,58 +138,12 @@ export default function PersonaEditModal({ userId, onClose, onSaved }) {
             )}
 
             {/* Traits */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-[var(--color-text-primary)]">
-                Traits
-                <span className="ml-1 text-xs font-normal text-[var(--color-text-secondary)]">
-                  ({traits.length}/{TRAIT_MAX_COUNT})
-                </span>
-              </label>
-
-              {/* Existing trait chips */}
-              {traits.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {traits.map((t) => (
-                    <span
-                      key={t}
-                      className="inline-flex items-center gap-1 text-xs rounded-full px-2 py-0.5 border"
-                      style={{
-                        background: 'var(--color-ai-badge-bg)',
-                        borderColor: 'var(--color-ai-badge-border)',
-                        color: 'var(--color-ai-accent)',
-                      }}
-                    >
-                      {t}
-                      <button
-                        type="button"
-                        onClick={() => removeTrait(t)}
-                        className="ml-0.5 hover:opacity-70 transition-opacity leading-none"
-                        aria-label={`Remove ${t}`}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Add trait input */}
-              <input
-                type="text"
-                value={traitInput}
-                onChange={(e) => {
-                  setTraitInput(e.target.value);
-                  setTraitError('');
-                }}
-                onKeyDown={handleTraitKeyDown}
-                placeholder="Add a trait (Enter or comma to add)"
-                disabled={saving || traits.length >= TRAIT_MAX_COUNT}
-                className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3.5 py-2.5 text-sm text-[var(--color-text-primary)] outline-none focus:border-[var(--color-input-focus-border)] disabled:opacity-50"
-              />
-              {traitError && (
-                <p className="text-xs text-red-400">{traitError}</p>
-              )}
-            </div>
+            <TraitInput
+              traits={traits}
+              onChange={setTraits}
+              disabled={saving}
+              suggestions={flattenTraits(catalog)}
+            />
 
             {/* Typing Style */}
             <div className="flex flex-col gap-2">
@@ -254,6 +166,11 @@ export default function PersonaEditModal({ userId, onClose, onSaved }) {
                 placeholder="Describe how this AI types and communicates…"
                 disabled={saving}
                 className="composer-scroll w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3.5 py-3 text-sm text-[var(--color-text-primary)] leading-relaxed outline-none resize-none focus:border-[var(--color-input-focus-border)] disabled:opacity-50"
+              />
+              <SuggestionChips
+                items={catalog?.typingStyleSuggestions ?? []}
+                onPick={setTypingStyle}
+                disabled={saving}
               />
             </div>
 
