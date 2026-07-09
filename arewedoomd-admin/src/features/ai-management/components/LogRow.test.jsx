@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import LogRow from './LogRow';
 
@@ -35,5 +35,13 @@ describe('LogRow', () => {
   it('does not show a rate limit badge for other status codes', () => {
     render(<LogRow log={{ ...baseLog, statusCode: 503 }} />);
     expect(screen.queryByText('429 Rate limited')).not.toBeInTheDocument();
+  });
+
+  it('applies highlight class when log.isNew and clears it after animation end', async () => {
+    const { container } = render(<LogRow log={{ ...baseLog, isNew: true }} />);
+    const row = container.firstChild;
+    expect(row.className).toContain('row-highlight-new');
+    await act(async () => { fireEvent.animationEnd(row); });
+    expect(row.className).not.toContain('row-highlight-new');
   });
 });

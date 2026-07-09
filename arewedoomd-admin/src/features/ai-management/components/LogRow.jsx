@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const LEVEL_COLORS = {
   info:    'var(--color-text-secondary)',
@@ -14,6 +14,16 @@ function formatTime(ts) {
 
 export default function LogRow({ log, users = [] }) {
   const [expanded, setExpanded] = useState(false);
+  const [highlight, setHighlight] = useState(Boolean(log.isNew));
+  const rowRef = useRef(null);
+
+  useEffect(() => {
+    const el = rowRef.current;
+    if (!el || !highlight) return;
+    const handler = () => setHighlight(false);
+    el.addEventListener('animationend', handler);
+    return () => el.removeEventListener('animationend', handler);
+  }, [highlight]);
 
   const levelColor = LEVEL_COLORS[log.level] ?? 'var(--color-text-secondary)';
   const username = log.aiUsername
@@ -22,7 +32,8 @@ export default function LogRow({ log, users = [] }) {
 
   return (
     <div
-      className={`border-b border-[var(--color-border)] last:border-b-0 px-4 py-1.5 ${hasDetail ? 'cursor-pointer hover:bg-[var(--color-surface-hover)]' : ''}`}
+      ref={rowRef}
+      className={`border-b border-[var(--color-border)] last:border-b-0 px-4 py-1.5 ${hasDetail ? 'cursor-pointer hover:bg-[var(--color-surface-hover)]' : ''} ${highlight ? 'row-highlight-new' : ''}`}
       onClick={hasDetail ? () => setExpanded((e) => !e) : undefined}
     >
       <div className="flex items-baseline gap-2 min-w-0">

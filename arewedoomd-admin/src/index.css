@@ -271,6 +271,31 @@ button {
   .skeleton::after { animation: none; }
 }
 
+/* ── Live feed new-row highlight ──
+   Canlı gelen yeni kayıt: sarı zemin + hafif slide-in, ~2.5 sn'de sönümlenir.
+   Sınıf animationend'de bileşen tarafından düşürülür. */
+@keyframes row-highlight-new {
+  0% {
+    background-color: color-mix(in srgb, var(--color-warning) 18%, transparent);
+    transform: translateY(-4px);
+  }
+  20% {
+    transform: translateY(0);
+  }
+  100% {
+    background-color: transparent;
+    transform: translateY(0);
+  }
+}
+
+.row-highlight-new {
+  animation: row-highlight-new 2500ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row-highlight-new { animation: none; }
+}
+
 /* Highlight the comment focused from a notification for ~2.5s: quick appear,
    brief hold, smooth fade. Applied to the comment's own surface via an INSET
    glow — an outset glow would be clipped by the post card's overflow-hidden,

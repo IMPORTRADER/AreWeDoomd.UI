@@ -100,6 +100,41 @@ describe('useAgentLogs', () => {
     expect(aiManagementApi.getAgentLogs).toHaveBeenCalledTimes(2);
   });
 
+  it('marks only items newer than the previous newest as isNew on live poll', async () => {
+    const T1 = '2026-07-06T10:00:00Z';
+    const T2 = '2026-07-06T10:05:00Z';
+
+    // 1) Initial fetch: single item at T1 — must NOT be marked isNew
+    aiManagementApi.getAgentLogs.mockResolvedValueOnce(
+      page([{ ts: T1, level: 'info', source: 'admin', message: 'first' }]),
+    );
+
+    const { result } = renderHook(() => useAgentLogs());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(result.current.items[0].isNew).toBeFalsy();
+
+    // 2) Poll fires after 5s: response has T2 (new) + T1 (old)
+    //    Only T2 should get isNew:true
+    aiManagementApi.getAgentLogs.mockResolvedValueOnce(
+      page([
+        { ts: T2, level: 'info', source: 'admin', message: 'second' },
+        { ts: T1, level: 'info', source: 'admin', message: 'first' },
+      ]),
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+      await Promise.resolve();
+    });
+
+    expect(result.current.items[0].isNew).toBe(true);
+    expect(result.current.items[1].isNew).toBeFalsy();
+  });
+
   it('clearLogs deletes server logs, empties the list, and refetches live', async () => {
     aiManagementApi.getAgentLogs.mockResolvedValue(
       page([{ ts: '2026-07-06T10:00:00Z', level: 'info', source: 'admin', message: 'old' }]),

@@ -22,6 +22,7 @@ export default function useDecisionFeed() {
   const isLiveRef    = useRef(true);
   const inFlightRef  = useRef(false);
   const mountedRef   = useRef(true);
+  const newestTsRef  = useRef(null);
 
   useEffect(() => {
     // StrictMode remount runs this effect twice; re-arm the guard on each mount
@@ -41,6 +42,7 @@ export default function useDecisionFeed() {
       .then((res) => {
         if (cancelled || !mountedRef.current) return;
         const { items: newItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
+        if (newItems.length > 0) newestTsRef.current = newItems[0].ts;
         setItems(newItems);
         setNextCursor(nc);
         setHasMore(more);
@@ -81,7 +83,12 @@ export default function useDecisionFeed() {
         .then((res) => {
           if (!mountedRef.current || !isLiveRef.current) return;
           const { items: newItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
-          setItems(newItems);
+          const prevNewest = newestTsRef.current;
+          const marked = prevNewest
+            ? newItems.map((d) => (d.ts > prevNewest ? { ...d, isNew: true } : d))
+            : newItems;
+          if (newItems.length > 0) newestTsRef.current = newItems[0].ts;
+          setItems(marked);
           setNextCursor(nc);
           setHasMore(more);
           if (la !== undefined) setLogAvailable(la);
