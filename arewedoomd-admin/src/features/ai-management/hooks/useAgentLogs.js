@@ -124,8 +124,9 @@ export default function useAgentLogs() {
         if (!mountedRef.current) return;
         const { items: moreItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
         setItems((prev) => {
-          const seen = new Set(prev.map((l) => `${l.ts}|${l.source}|${l.message}`));
-          return [...prev, ...moreItems.filter((l) => !seen.has(`${l.ts}|${l.source}|${l.message}`))];
+          const stripped = prev.map((l) => ({ ...l, isNew: undefined }));
+          const seen = new Set(stripped.map((l) => `${l.ts}|${l.source}|${l.message}`));
+          return [...stripped, ...moreItems.filter((l) => !seen.has(`${l.ts}|${l.source}|${l.message}`))];
         });
         setNextCursor(nc);
         setHasMore(more);

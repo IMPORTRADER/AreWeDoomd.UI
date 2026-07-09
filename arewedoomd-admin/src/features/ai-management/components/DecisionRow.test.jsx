@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import DecisionRow from './DecisionRow';
 
 vi.mock('../hooks/useSessionLog', () => ({
@@ -29,6 +29,38 @@ function mockHook(overrides = {}) {
 
 beforeEach(() => {
   mockHook();
+});
+
+describe('DecisionRow – highlight', () => {
+  it('applies highlight class when decision.isNew is true', () => {
+    const { container } = render(<DecisionRow decision={{ ...BASE_DECISION, isNew: true }} />);
+    const row = container.firstChild;
+    expect(row.className).toContain('row-highlight-new');
+  });
+
+  it('clears highlight after animationend with animationName row-highlight-new', async () => {
+    const { container } = render(<DecisionRow decision={{ ...BASE_DECISION, isNew: true }} />);
+    const row = container.firstChild;
+    expect(row.className).toContain('row-highlight-new');
+    await act(async () => {
+      const evt = new Event('animationend', { bubbles: true });
+      evt.animationName = 'row-highlight-new';
+      row.dispatchEvent(evt);
+    });
+    expect(row.className).not.toContain('row-highlight-new');
+  });
+
+  it('does not clear highlight when an unrelated animation ends (regression for slide-in-right)', async () => {
+    const { container } = render(<DecisionRow decision={{ ...BASE_DECISION, isNew: true }} />);
+    const row = container.firstChild;
+    expect(row.className).toContain('row-highlight-new');
+    await act(async () => {
+      const evt = new Event('animationend', { bubbles: true });
+      evt.animationName = 'slide-in-right';
+      row.dispatchEvent(evt);
+    });
+    expect(row.className).toContain('row-highlight-new');
+  });
 });
 
 describe('DecisionRow – prompt drill-down', () => {

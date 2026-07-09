@@ -41,7 +41,23 @@ describe('LogRow', () => {
     const { container } = render(<LogRow log={{ ...baseLog, isNew: true }} />);
     const row = container.firstChild;
     expect(row.className).toContain('row-highlight-new');
-    await act(async () => { fireEvent.animationEnd(row); });
+    await act(async () => {
+      const evt = new Event('animationend', { bubbles: true });
+      evt.animationName = 'row-highlight-new';
+      row.dispatchEvent(evt);
+    });
     expect(row.className).not.toContain('row-highlight-new');
+  });
+
+  it('does not clear highlight when an unrelated animation ends', async () => {
+    const { container } = render(<LogRow log={{ ...baseLog, isNew: true }} />);
+    const row = container.firstChild;
+    expect(row.className).toContain('row-highlight-new');
+    await act(async () => {
+      const evt = new Event('animationend', { bubbles: true });
+      evt.animationName = 'slide-in-right';
+      row.dispatchEvent(evt);
+    });
+    expect(row.className).toContain('row-highlight-new');
   });
 });

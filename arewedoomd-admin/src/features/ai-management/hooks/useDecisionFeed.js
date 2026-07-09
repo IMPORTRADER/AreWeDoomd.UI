@@ -124,8 +124,9 @@ export default function useDecisionFeed() {
         if (!mountedRef.current) return;
         const { items: moreItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
         setItems((prev) => {
-          const seen = new Set(prev.map((d) => d.activityId));
-          return [...prev, ...moreItems.filter((d) => !seen.has(d.activityId))];
+          const stripped = prev.map((d) => ({ ...d, isNew: undefined }));
+          const seen = new Set(stripped.map((d) => d.activityId));
+          return [...stripped, ...moreItems.filter((d) => !seen.has(d.activityId))];
         });
         setNextCursor(nc);
         setHasMore(more);

@@ -20,7 +20,7 @@ export default function LogRow({ log, users = [] }) {
   useEffect(() => {
     const el = rowRef.current;
     if (!el || !highlight) return;
-    const handler = () => setHighlight(false);
+    const handler = (e) => { if (e.animationName === 'row-highlight-new') setHighlight(false); };
     el.addEventListener('animationend', handler);
     return () => el.removeEventListener('animationend', handler);
   }, [highlight]);
