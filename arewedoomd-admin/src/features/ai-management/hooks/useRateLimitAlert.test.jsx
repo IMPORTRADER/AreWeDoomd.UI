@@ -3,7 +3,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import useRateLimitAlert from './useRateLimitAlert';
 
 describe('useRateLimitAlert', () => {
-  beforeEach(() => vi.useFakeTimers());
+  beforeEach(() => {
+    // Hook reads Date.now(); fake timers must also fake Date (do not scope toFake to avoid expiry test breakage)
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-09T12:00:00Z'));
+  });
   afterEach(() => vi.useRealTimers());
 
   it('returns true when a 429 log is within the 5 minute window', () => {
