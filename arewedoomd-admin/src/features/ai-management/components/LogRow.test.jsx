@@ -26,4 +26,14 @@ describe('LogRow', () => {
     fireEvent.click(screen.getByText(/Gemini call failed/));
     expect(screen.getByText('HTTP 503 from provider')).toBeInTheDocument();
   });
+
+  it('shows a rate limit badge when statusCode is 429', () => {
+    render(<LogRow log={{ ...baseLog, statusCode: 429 }} />);
+    expect(screen.getByText('429 Rate limited')).toBeInTheDocument();
+  });
+
+  it('does not show a rate limit badge for other status codes', () => {
+    render(<LogRow log={{ ...baseLog, statusCode: 503 }} />);
+    expect(screen.queryByText('429 Rate limited')).not.toBeInTheDocument();
+  });
 });

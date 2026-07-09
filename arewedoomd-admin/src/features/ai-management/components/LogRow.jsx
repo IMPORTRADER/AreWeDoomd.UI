@@ -35,6 +35,14 @@ export default function LogRow({ log, users = [] }) {
         >
           {log.level}
         </span>
+        {log.statusCode === 429 && (
+          <span
+            className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border shrink-0"
+            style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}
+          >
+            429 Rate limited
+          </span>
+        )}
         <span className="text-[10px] font-semibold text-[var(--color-ai-accent)] shrink-0">
           {log.source}
         </span>
