@@ -153,4 +153,40 @@ describe('CreateAiModal', () => {
     expect(screen.getByText(/3.{0,5}24/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create ai user/i })).toBeDisabled();
   });
+
+  it('dice regeneration marks the form dirty', () => {
+    render(<CreateAiModal onClose={vi.fn()} onCreated={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /doomer/i }));
+
+    const summaryBefore = screen.getByLabelText(/summary/i).value;
+
+    // Click dice (regenerate username) — this should mark the form dirty
+    fireEvent.click(screen.getByRole('button', { name: /regenerate username/i }));
+
+    // Now switching archetype should show the confirm bar
+    fireEvent.click(screen.getByRole('button', { name: /troll/i }));
+    expect(screen.getByText(/replace the form/i)).toBeInTheDocument();
+    // Summary must not have been silently replaced
+    expect(screen.getByLabelText(/summary/i).value).toBe(summaryBefore);
+  });
+
+  it('Escape dismisses the confirm bar instead of closing', () => {
+    const onClose = vi.fn();
+    render(<CreateAiModal onClose={onClose} onCreated={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /doomer/i }));
+    fireEvent.change(screen.getByLabelText(/summary/i), { target: { value: 'my own words' } });
+
+    // Open the confirm bar
+    fireEvent.click(screen.getByRole('button', { name: /troll/i }));
+    expect(screen.getByText(/replace the form/i)).toBeInTheDocument();
+
+    // First Escape: should dismiss confirm bar, NOT close modal
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByText(/replace the form/i)).not.toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+
+    // Second Escape: modal should now close
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
 });

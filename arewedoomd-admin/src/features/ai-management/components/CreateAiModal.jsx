@@ -50,11 +50,16 @@ export default function CreateAiModal({ onClose, onCreated }) {
   // ESC key
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape' && !creating) onClose();
+      if (e.key !== 'Escape' || creating) return;
+      if (pendingArchetype) {
+        setPendingArchetype(null);
+        return;
+      }
+      onClose();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose, creating]);
+  }, [onClose, creating, pendingArchetype]);
 
   const applyArchetype = (a) => {
     if (a == null) {
@@ -92,6 +97,7 @@ export default function CreateAiModal({ onClose, onCreated }) {
       ...prev,
       username: usernameFromPattern(pattern, catalog.usernameWordPools ?? {}),
     }));
+    setDirty(true);
   };
 
   // Validation
