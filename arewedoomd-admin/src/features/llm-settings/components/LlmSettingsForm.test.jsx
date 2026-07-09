@@ -8,7 +8,6 @@ const SETTINGS = {
   thinkingEnabled: false,
   scoringTokensPerAccount: 512,
   compositionTokensPerPost: 800,
-  personaTokensPerPersona: 700,
   replyMaxTokens: 1024,
   updatedAt: '2026-07-06T12:00:00Z',
 };

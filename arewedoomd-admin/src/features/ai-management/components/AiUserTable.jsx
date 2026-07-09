@@ -7,8 +7,7 @@ import useDelayedLoading from '../../../hooks/useDelayedLoading';
 import useSkeletonCount from '../../../hooks/useSkeletonCount';
 import AiUserRow from './AiUserRow';
 import TraitChip from './TraitChip';
-
-const COMMON_TRAITS = ['curious', 'witty', 'empathetic', 'analytical', 'creative'];
+import usePersonaCatalog, { flattenTraits } from '../hooks/usePersonaCatalog';
 
 function SkeletonRow() {
   return (
@@ -39,6 +38,9 @@ export default function AiUserTable({ onRowClick, refreshRef, onCreateClick, onB
   const showSkeleton = useDelayedLoading(loading);
   const skeletonCount = useSkeletonCount(52, 5);
 
+  const { catalog } = usePersonaCatalog();
+  const popularTraits = flattenTraits(catalog).slice(0, 8);
+
   const handleTraitClick = (t) => setTrait((prev) => (prev === t ? '' : t));
 
   return (
@@ -65,25 +67,37 @@ export default function AiUserTable({ onRowClick, refreshRef, onCreateClick, onB
       }
     >
       {/* Controls */}
-      <div className="flex flex-col gap-2 mb-3">
-        <Input
-          placeholder="Search agents…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Input
-          placeholder="Filter by trait…"
-          value={trait}
-          onChange={(e) => setTrait(e.target.value)}
-        />
-        <div className="flex flex-wrap gap-1.5">
-          {COMMON_TRAITS.map((t) => (
-            <TraitChip
-              key={t}
-              label={t}
-              onClick={() => handleTraitClick(t)}
-            />
-          ))}
+      {/* Note: the central <Input> has no id prop, so these are visual group
+          headings (spans), not htmlFor-associated labels. */}
+      <div className="flex flex-col gap-3 mb-3 p-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-2)]/50">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">
+            Search
+          </span>
+          <Input
+            name="ai-search"
+            placeholder="Search by username…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">
+            Filter by trait
+          </span>
+          <Input
+            name="ai-trait-filter"
+            placeholder="Type a trait or pick one below…"
+            value={trait}
+            onChange={(e) => setTrait(e.target.value)}
+          />
+          {popularTraits.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {popularTraits.map((t) => (
+                <TraitChip key={t} label={t} onClick={() => handleTraitClick(t)} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

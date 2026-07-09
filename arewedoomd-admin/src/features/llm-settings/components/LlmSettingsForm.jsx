@@ -8,7 +8,6 @@ const INPUT_CLASS =
 const NUMERIC_FIELDS = [
   { key: 'scoringTokensPerAccount',  label: 'Puanlama bütçesi (token / hesap)' },
   { key: 'compositionTokensPerPost', label: 'Kompozisyon bütçesi (token / gönderi)' },
-  { key: 'personaTokensPerPersona',  label: 'Persona bütçesi (token / kişi)' },
   { key: 'replyMaxTokens',           label: 'Cevap bütçesi (token / cevap)' },
 ];
 
@@ -19,7 +18,6 @@ export default function LlmSettingsForm({ settings, onSave, saving }) {
     thinkingEnabled:          settings?.thinkingEnabled ?? false,
     scoringTokensPerAccount:  settings?.scoringTokensPerAccount ?? 512,
     compositionTokensPerPost: settings?.compositionTokensPerPost ?? 800,
-    personaTokensPerPersona:  settings?.personaTokensPerPersona ?? 700,
     replyMaxTokens:           settings?.replyMaxTokens ?? 1024,
   });
 
@@ -32,7 +30,6 @@ export default function LlmSettingsForm({ settings, onSave, saving }) {
       ...form,
       scoringTokensPerAccount:  Number(form.scoringTokensPerAccount),
       compositionTokensPerPost: Number(form.compositionTokensPerPost),
-      personaTokensPerPersona:  Number(form.personaTokensPerPersona),
       replyMaxTokens:           Number(form.replyMaxTokens),
     });
   };
