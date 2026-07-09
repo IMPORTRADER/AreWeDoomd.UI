@@ -40,8 +40,6 @@ export default function usePersonaCatalog() {
 
   useEffect(() => {
     if (cachedCatalog != null) {
-      setCatalog(cachedCatalog);
-      setLoading(false);
       return undefined;
     }
 
