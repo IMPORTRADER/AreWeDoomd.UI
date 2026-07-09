@@ -44,8 +44,6 @@ export default function usePersonaCatalog() {
     }
 
     let cancelled = false;
-    setLoading(true);
-    setError(null);
 
     aiManagementApi
       .getPersonaCatalog()
@@ -64,6 +62,7 @@ export default function usePersonaCatalog() {
     cachedCatalog = null;
     setCatalog(null);
     setError(null);
+    setLoading(true);
     setTick((t) => t + 1);
   }, []);
 
