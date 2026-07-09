@@ -65,6 +65,7 @@ export default function usePersonaCatalog() {
   const retry = useCallback(() => {
     cachedCatalog = null;
     setCatalog(null);
+    setError(null);
     setTick((t) => t + 1);
   }, []);
 
