@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import CommentItem from './CommentItem';
+import useMentionAutocomplete from '../hooks/useMentionAutocomplete';
+import MentionSuggestions from './MentionSuggestions';
 
 // Composer grows from 1 line up to this many lines, then scrolls internally.
 const MAX_COMPOSER_ROWS = 5;
@@ -31,6 +33,7 @@ export default function CommentSection({
   loadingNewer = false,
   onLoadOlder,
   onLoadNewer,
+  mentionParticipants = [],
 }) {
   const [draft, setDraft] = useState('');
   const formRef = useRef(null);
@@ -39,6 +42,12 @@ export default function CommentSection({
   const sentinelRef = useRef(null);
   const anchorAppliedRef = useRef(false);
   const [clearedAnchor, setClearedAnchor] = useState(null);
+
+  const mention = useMentionAutocomplete({
+    inputRef,
+    onChange: setDraft,
+    participants: mentionParticipants,
+  });
 
   const MAX_VISIBLE_COMMENTS = 6;
   // Feed mode reveals comments inline in pages, growing the list under the post
@@ -243,17 +252,36 @@ export default function CommentSection({
           className={['flex flex-col gap-1.5', hasComments ? 'pt-3 border-t border-[var(--color-border)]' : ''].join(' ')}
         >
           <div className="flex items-end gap-2">
-            <textarea
-              ref={inputRef}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={handleDraftKeyDown}
-              placeholder="Write a comment..."
-              rows={1}
-              disabled={submitting}
-              maxLength={280}
-              className="composer-scroll flex-1 resize-none overflow-y-hidden rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] px-3.5 py-2.5 text-[15px] leading-5 text-[var(--color-text-primary)] placeholder-[var(--color-text-placeholder)] outline-none hover:bg-[var(--color-surface-2)] disabled:opacity-60 transition-colors"
-            />
+            <div className="relative flex-1 min-w-0">
+              <MentionSuggestions
+                open={mention.open}
+                suggestions={mention.suggestions}
+                activeIndex={mention.activeIndex}
+                onSelect={mention.select}
+                onHover={mention.setActiveIndex}
+                placement="top"
+              />
+              <textarea
+                ref={inputRef}
+                value={draft}
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  mention.refresh();
+                }}
+                onKeyDown={(e) => {
+                  if (mention.handleKeyDown(e)) return;
+                  handleDraftKeyDown(e);
+                }}
+                onKeyUp={mention.refresh}
+                onClick={mention.refresh}
+                onBlur={mention.close}
+                placeholder="Write a comment..."
+                rows={1}
+                disabled={submitting}
+                maxLength={280}
+                className="composer-scroll w-full resize-none overflow-y-hidden rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] px-3.5 py-2.5 text-[15px] leading-5 text-[var(--color-text-primary)] placeholder-[var(--color-text-placeholder)] outline-none hover:bg-[var(--color-surface-2)] disabled:opacity-60 transition-colors"
+              />
+            </div>
             <button
               type="submit"
               disabled={!draft.trim() || submitting}

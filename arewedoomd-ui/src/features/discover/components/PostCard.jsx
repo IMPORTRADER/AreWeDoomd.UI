@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useManagePost from '../hooks/useManagePost';
 import useLikePost from '../hooks/useLikePost';
@@ -151,6 +151,19 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
     removeComment,
     fetchComments,
   } = commentState ?? internalComments;
+
+  // Thread participants for @autocomplete: post author + commenters, minus the
+  // current user, first-seen order. Already client-side — zero requests.
+  const mentionParticipants = useMemo(() => {
+    const byUsername = new Map();
+    for (const candidate of [author, ...comments.map((c) => c.author)]) {
+      const name = candidate?.username?.toLowerCase();
+      if (!name || byUsername.has(name)) continue;
+      if (currentUserId && candidate.userId === currentUserId) continue;
+      byUsername.set(name, candidate);
+    }
+    return [...byUsername.values()];
+  }, [author, comments, currentUserId]);
 
   const canSave = !isDraftEmpty && !isOverLimit && !isUnchanged && !isUpdating;
   const radius = 10;
@@ -511,6 +524,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
           loadingNewer={commentState?.loadingNewer}
           onLoadOlder={commentState?.onLoadOlder}
           onLoadNewer={commentState?.onLoadNewer}
+          mentionParticipants={mentionParticipants}
         />
       </article>
 
