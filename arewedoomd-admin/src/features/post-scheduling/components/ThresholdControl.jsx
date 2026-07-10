@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Widget from '../../../components/ui/Widget';
 import Button from '../../../components/ui/Button';
 
@@ -12,17 +12,52 @@ const STRATEGY_OPTIONS = [
   { value: 1, label: 'Tek çağrı (eşik altını da üret)' },
 ];
 
+const FIELD_COUNT = 6;
+
+// ── Skeleton: same field-row shape as the real form so the widget's height
+// doesn't change when settings finish loading (avoids a layout jump).
+function SkeletonForm() {
+  return (
+    <div className="flex flex-col gap-4">
+      {Array.from({ length: FIELD_COUNT }).map((_, i) => (
+        <div key={i} className="flex flex-col gap-1.5">
+          <div className="skeleton h-3 w-32 rounded" />
+          <div className="skeleton h-[42px] w-full rounded-[var(--radius-md)]" />
+        </div>
+      ))}
+      <div className="flex justify-end pt-1">
+        <div className="skeleton h-9 w-20 rounded-[var(--radius-md)]" />
+      </div>
+    </div>
+  );
+}
+
 export default function ThresholdControl({ settings, onSave, saving }) {
-  // Initialise from the prop directly; the parent must not render this
-  // component until settings has loaded (guard with a null/loading check there).
   const [form, setForm] = useState({
-    desireThreshold: settings?.desireThreshold ?? 60,
-    maxPostsPerDay:  settings?.maxPostsPerDay  ?? 3,
-    postLengthGuide: settings?.postLengthGuide ?? 500,
-    latePolicy:      settings?.latePolicy      ?? 0,
-    lateGraceHours:  settings?.lateGraceHours  ?? 3,
-    strategy:        settings?.strategy        ?? 0,
+    desireThreshold: 60,
+    maxPostsPerDay:  3,
+    postLengthGuide: 500,
+    latePolicy:      0,
+    lateGraceHours:  3,
+    strategy:        0,
   });
+
+  // Seed the form once settings arrive — the widget is mounted immediately
+  // (with a skeleton) rather than waiting on the parent to gate rendering.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (settings && !seededRef.current) {
+      seededRef.current = true;
+      setForm({
+        desireThreshold: settings.desireThreshold ?? 60,
+        maxPostsPerDay:  settings.maxPostsPerDay  ?? 3,
+        postLengthGuide: settings.postLengthGuide ?? 500,
+        latePolicy:      settings.latePolicy      ?? 0,
+        lateGraceHours:  settings.lateGraceHours  ?? 3,
+        strategy:        settings.strategy        ?? 0,
+      });
+    }
+  }, [settings]);
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -39,6 +74,14 @@ export default function ThresholdControl({ settings, onSave, saving }) {
       strategy: Number(form.strategy),
     });
   };
+
+  if (!settings) {
+    return (
+      <Widget title="Planlama Ayarları">
+        <SkeletonForm />
+      </Widget>
+    );
+  }
 
   return (
     <Widget title="Planlama Ayarları">

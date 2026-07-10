@@ -16,7 +16,7 @@ export default function SchedulingPage() {
   const [editingPost, setEditingPost] = useState(null);
   const [lastRequest, setLastRequest] = useState(null);
 
-  const { settings, save, saving, loading: settingsLoading } = useSchedulingSettings();
+  const { settings, save, saving } = useSchedulingSettings();
   const { start, run, starting, polling, error: runError, conflict, reset } = useScheduleRun();
   const { posts, loading, error, refresh } = useScheduledPosts({ date: todayTurkeyDateString() });
   const { cancelPost, retryPost, actionError } = usePostActions();
@@ -57,19 +57,19 @@ export default function SchedulingPage() {
             onSchedule={handleSchedule}
             scheduling={starting || polling}
           />
-          {!settingsLoading && settings && (
-            <ThresholdControl settings={settings} onSave={save} saving={saving} />
-          )}
+          <ThresholdControl settings={settings} onSave={save} saving={saving} />
         </div>
 
-        <TodayScheduleBoard
-          posts={posts}
-          loading={loading}
-          error={error || actionError}
-          onEdit={setEditingPost}
-          onCancel={handleCancel}
-          onRetry={handleRetry}
-        />
+        <div className="h-[560px] lg:h-[calc(100svh-140px)] lg:min-h-[480px] flex flex-col">
+          <TodayScheduleBoard
+            posts={posts}
+            loading={loading}
+            error={error || actionError}
+            onEdit={setEditingPost}
+            onCancel={handleCancel}
+            onRetry={handleRetry}
+          />
+        </div>
       </div>
 
       {runOpen && (

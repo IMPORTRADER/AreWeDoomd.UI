@@ -79,4 +79,25 @@ describe('useAiUsers', () => {
 
     expect(aiManagementApi.listAiUsers).toHaveBeenCalledTimes(2);
   });
+
+  it('passes status to the api and refetches when it changes', () => {
+    aiManagementApi.listAiUsers.mockResolvedValue(MOCK_RESPONSE);
+
+    const { rerender } = renderHook(
+      ({ status }) => useAiUsers({ status }),
+      { initialProps: { status: 'all' } },
+    );
+
+    // Initial mount fires immediately (delay 0).
+    act(() => { vi.advanceTimersByTime(1); });
+    expect(aiManagementApi.listAiUsers).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'all' }));
+
+    rerender({ status: 'deactivated' });
+
+    // Status change must fire immediately (delay 0, not debounced) — 1ms is enough.
+    act(() => { vi.advanceTimersByTime(1); });
+    expect(aiManagementApi.listAiUsers).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'deactivated' }));
+  });
 });

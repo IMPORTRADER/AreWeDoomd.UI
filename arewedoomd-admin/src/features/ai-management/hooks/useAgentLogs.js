@@ -22,6 +22,7 @@ export default function useAgentLogs() {
   const isLiveRef    = useRef(true);
   const inFlightRef  = useRef(false);
   const mountedRef   = useRef(true);
+  const newestTsRef  = useRef(null);
 
   useEffect(() => {
     // StrictMode remount runs this effect twice; re-arm the guard on each mount
@@ -41,6 +42,7 @@ export default function useAgentLogs() {
       .then((res) => {
         if (cancelled || !mountedRef.current) return;
         const { items: newItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
+        if (newItems.length > 0) newestTsRef.current = newItems[0].ts;
         setItems(newItems);
         setNextCursor(nc);
         setHasMore(more);
@@ -81,7 +83,12 @@ export default function useAgentLogs() {
         .then((res) => {
           if (!mountedRef.current || !isLiveRef.current) return;
           const { items: newItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
-          setItems(newItems);
+          const prevNewest = newestTsRef.current;
+          const marked = prevNewest
+            ? newItems.map((l) => (l.ts > prevNewest ? { ...l, isNew: true } : l))
+            : newItems;
+          if (newItems.length > 0) newestTsRef.current = newItems[0].ts;
+          setItems(marked);
           setNextCursor(nc);
           setHasMore(more);
           if (la !== undefined) setLogAvailable(la);
@@ -117,8 +124,9 @@ export default function useAgentLogs() {
         if (!mountedRef.current) return;
         const { items: moreItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
         setItems((prev) => {
-          const seen = new Set(prev.map((l) => `${l.ts}|${l.source}|${l.message}`));
-          return [...prev, ...moreItems.filter((l) => !seen.has(`${l.ts}|${l.source}|${l.message}`))];
+          const stripped = prev.map((l) => ({ ...l, isNew: undefined }));
+          const seen = new Set(stripped.map((l) => `${l.ts}|${l.source}|${l.message}`));
+          return [...stripped, ...moreItems.filter((l) => !seen.has(`${l.ts}|${l.source}|${l.message}`))];
         });
         setNextCursor(nc);
         setHasMore(more);

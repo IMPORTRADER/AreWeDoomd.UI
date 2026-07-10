@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import useSessionLog from '../hooks/useSessionLog';
 
 function timeAgo(dateString) {
@@ -38,6 +38,16 @@ function OutcomeBadge({ outcome }) {
 export default function DecisionRow({ decision, users }) {
   const [expanded, setExpanded] = useState(false);
   const [sessionLogOpen, setSessionLogOpen] = useState(false);
+  const [highlight, setHighlight] = useState(Boolean(decision.isNew));
+  const rowRef = useRef(null);
+
+  useEffect(() => {
+    const el = rowRef.current;
+    if (!el || !highlight) return;
+    const handler = (e) => { if (e.animationName === 'row-highlight-new') setHighlight(false); };
+    el.addEventListener('animationend', handler);
+    return () => el.removeEventListener('animationend', handler);
+  }, [highlight]);
   const { content, loading, error, fetch: fetchLog, reset } = useSessionLog();
 
   const shortId = decision.aiUserId ? decision.aiUserId.slice(0, 8) : '—';
@@ -57,7 +67,8 @@ export default function DecisionRow({ decision, users }) {
 
   return (
     <div
-      className="animate-slide-in-right cursor-pointer border-b border-[var(--color-border)] last:border-b-0"
+      ref={rowRef}
+      className={`animate-slide-in-right cursor-pointer border-b border-[var(--color-border)] last:border-b-0 ${highlight ? 'row-highlight-new' : ''}`}
       onClick={() => setExpanded((e) => !e)}
     >
       <div className="px-4 py-3 hover:bg-[var(--color-surface)] transition-colors">

@@ -8,9 +8,22 @@ const SETTINGS = {
   thinkingEnabled: false,
   scoringTokensPerAccount: 512,
   compositionTokensPerPost: 800,
-  personaTokensPerPersona: 700,
   replyMaxTokens: 1024,
   updatedAt: '2026-07-06T12:00:00Z',
+};
+
+const settingsWithProviders = {
+  model: 'm',
+  scoringModel: '',
+  thinkingEnabled: false,
+  provider: 'openrouter',
+  scoringTokensPerAccount: 512,
+  compositionTokensPerPost: 800,
+  replyMaxTokens: 1024,
+  availableProviders: [
+    { name: 'gemini', isConfigured: false },
+    { name: 'openrouter', isConfigured: true },
+  ],
 };
 
 describe('LlmSettingsForm', () => {
@@ -35,5 +48,20 @@ describe('LlmSettingsForm', () => {
       scoringTokensPerAccount: 256,
       model: 'openai/gpt-oss-120b:free',
     }));
+  });
+
+  it('renders provider dropdown with unconfigured providers disabled', () => {
+    render(<LlmSettingsForm settings={settingsWithProviders} onSave={vi.fn()} saving={false} />);
+    const select = screen.getByLabelText(/provider/i);
+    expect(select).toHaveValue('openrouter');
+    expect(screen.getByRole('option', { name: /gemini/i })).toBeDisabled();
+  });
+
+  it('includes provider in the save payload', () => {
+    const onSave = vi.fn();
+    render(<LlmSettingsForm settings={settingsWithProviders} onSave={onSave} saving={false} />);
+    fireEvent.change(screen.getByLabelText(/provider/i), { target: { value: '' } });
+    fireEvent.submit(screen.getByRole('button', { name: /Kaydet/i }).closest('form'));
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ provider: '' }));
   });
 });

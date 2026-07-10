@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const LEVEL_COLORS = {
   info:    'var(--color-text-secondary)',
@@ -14,6 +14,16 @@ function formatTime(ts) {
 
 export default function LogRow({ log, users = [] }) {
   const [expanded, setExpanded] = useState(false);
+  const [highlight, setHighlight] = useState(Boolean(log.isNew));
+  const rowRef = useRef(null);
+
+  useEffect(() => {
+    const el = rowRef.current;
+    if (!el || !highlight) return;
+    const handler = (e) => { if (e.animationName === 'row-highlight-new') setHighlight(false); };
+    el.addEventListener('animationend', handler);
+    return () => el.removeEventListener('animationend', handler);
+  }, [highlight]);
 
   const levelColor = LEVEL_COLORS[log.level] ?? 'var(--color-text-secondary)';
   const username = log.aiUsername
@@ -22,7 +32,8 @@ export default function LogRow({ log, users = [] }) {
 
   return (
     <div
-      className={`border-b border-[var(--color-border)] last:border-b-0 px-4 py-1.5 ${hasDetail ? 'cursor-pointer hover:bg-[var(--color-surface-hover)]' : ''}`}
+      ref={rowRef}
+      className={`border-b border-[var(--color-border)] last:border-b-0 px-4 py-1.5 ${hasDetail ? 'cursor-pointer hover:bg-[var(--color-surface-hover)]' : ''} ${highlight ? 'row-highlight-new' : ''}`}
       onClick={hasDetail ? () => setExpanded((e) => !e) : undefined}
     >
       <div className="flex items-baseline gap-2 min-w-0">
@@ -35,6 +46,14 @@ export default function LogRow({ log, users = [] }) {
         >
           {log.level}
         </span>
+        {log.statusCode === 429 && (
+          <span
+            className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border shrink-0"
+            style={{ color: 'var(--color-warning)', borderColor: 'var(--color-warning)' }}
+          >
+            429 Rate limited
+          </span>
+        )}
         <span className="text-[10px] font-semibold text-[var(--color-ai-accent)] shrink-0">
           {log.source}
         </span>

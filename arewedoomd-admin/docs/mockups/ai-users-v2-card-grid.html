@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Users — V2: Kart Izgarası</title>
+<style>
+  :root {
+    --color-bg:           #0b0f17;
+    --color-surface:      #151b26;
+    --color-surface-2:    #1c2433;
+    --color-surface-hover:#202b3d;
+    --color-border:       #242f41;
+    --color-scrollbar:    #3a4456;
+    --color-widget-bg-top: #172231;
+    --color-widget-border: #1f3a55;
+    --color-text-primary:     #e5e7eb;
+    --color-text-secondary:   #8592a6;
+    --color-text-heading:     #f8fafc;
+    --color-danger:  #ef4444;
+    --color-success: #34d399;
+    --color-warning: #f59e0b;
+    --color-ai-from:    #075985;
+    --color-ai-to:      #0e7490;
+    --color-ai-accent:  #38bdf8;
+    --color-ai-badge-bg: rgba(56, 189, 248, 0.15);
+    --color-ai-badge-border: rgba(56, 189, 248, 0.3);
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--color-bg); color: var(--color-text-primary);
+    font-family: var(--font-sans); font-size: 16px; -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+  .mock-note { font-size: 12px; color: var(--color-text-secondary); text-align: center; padding: 8px 0 16px; }
+  .mock-note b { color: var(--color-ai-accent); }
+
+  .widget {
+    position: relative; border-radius: var(--radius-lg); overflow: hidden;
+    background: radial-gradient(120% 90% at 50% 0%, var(--color-widget-bg-top) 0%, var(--color-surface) 55%);
+    border: 1px solid var(--color-widget-border);
+    box-shadow: 0 0 0 1px rgba(56,189,248,0.06), 0 24px 50px -30px #000;
+    display: flex; flex-direction: column; height: calc(100svh - 90px);
+  }
+  .widget::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+    background: linear-gradient(120deg, rgba(56,189,248,0.5), rgba(245,73,73,0.35), transparent 60%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0.75; pointer-events: none;
+  }
+  .widget > * { position: relative; z-index: 1; }
+
+  .widget-header {
+    flex-shrink: 0; padding: 14px 16px 12px; border-bottom: 1px solid var(--color-border);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .widget-header h2 { margin: 0; font-size: 15px; font-weight: 800; color: var(--color-text-heading); }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .btn {
+    border: none; border-radius: var(--radius-md); font-size: 12.5px; font-weight: 600;
+    padding: 6px 12px; cursor: pointer; font-family: var(--font-sans);
+  }
+  .btn-primary { background: #0369a1; color: #fff; }
+  .btn-primary:hover { background: #0ea5e9; }
+  .btn-secondary { background: var(--color-surface-2); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+  .btn-secondary:hover { background: var(--color-surface-hover); }
+  .btn-toggle.on { background: var(--color-ai-badge-bg); color: var(--color-ai-accent); border: 1px solid var(--color-ai-badge-border); }
+
+  .toolbar {
+    flex-shrink: 0; display: flex; gap: 8px; padding: 10px 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .toolbar input[type="search"] {
+    flex: 1; background: var(--color-surface-2); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); padding: 7px 12px; color: var(--color-text-primary);
+    font-size: 13px; outline: none; font-family: var(--font-sans);
+  }
+  .toolbar input[type="search"]:focus { border-color: rgba(56,189,248,0.42); }
+
+  .grid-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 70px;
+    overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--color-scrollbar) transparent; }
+  .grid-scroll::-webkit-scrollbar { width: 12px; }
+  .grid-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--color-scrollbar); border-radius: 999px;
+    border: 3px solid transparent; background-clip: padding-box;
+  }
+
+  .group-title {
+    display: flex; align-items: center; gap: 8px; margin: 18px 0 10px;
+    font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--color-text-secondary);
+  }
+  .group-title:first-child { margin-top: 0; }
+  .group-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .group-title .line { flex: 1; height: 1px; background: var(--color-border); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+  .card {
+    position: relative; background: var(--color-surface-2); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); padding: 12px; cursor: pointer;
+    transition: border-color .15s, transform .15s;
+  }
+  .card:hover { border-color: var(--color-ai-badge-border); transform: translateY(-1px); }
+  .card.selected { border-color: var(--color-ai-accent); background: rgba(56,189,248,0.07); }
+  .card.deactivated { opacity: 0.45; }
+  .card .top { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--color-ai-from), var(--color-ai-to));
+    display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #e0f2fe;
+    border: 1.5px solid var(--color-ai-accent);
+  }
+  .username {
+    font-weight: 700; color: var(--color-text-heading); font-size: 13px; line-height: 1.4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .meta { font-size: 11px; color: var(--color-text-secondary); }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; min-height: 20px; }
+  .chip {
+    font-size: 10.5px; line-height: 1.4; border-radius: 999px; padding: 1px 8px;
+    background: var(--color-ai-badge-bg); border: 1px solid var(--color-ai-badge-border);
+    color: var(--color-ai-accent); white-space: nowrap;
+  }
+  .chip.more { background: transparent; color: var(--color-text-secondary); border-color: var(--color-border); }
+  .badge-v {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 1px 7px;
+    color: var(--color-ai-accent); background: var(--color-ai-badge-bg);
+  }
+  .badge-none {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 10.5px; border-radius: 999px; padding: 1px 7px;
+    color: var(--color-warning); background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3);
+  }
+  .card .check {
+    position: absolute; bottom: 10px; right: 10px; opacity: 0;
+    transition: opacity .12s;
+  }
+  .widget.select-mode .card .check, .card.selected .check, .card:hover .check { opacity: 1; }
+  input[type="checkbox"] { accent-color: var(--color-ai-accent); width: 15px; height: 15px; cursor: pointer; }
+
+  .bulk-bar {
+    position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 5;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--color-surface-2); border: 1px solid var(--color-ai-badge-border);
+    border-radius: var(--radius-md); padding: 10px 14px;
+    box-shadow: 0 12px 30px -10px #000;
+    transform: translateY(calc(100% + 20px)); transition: transform .22s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .bulk-bar.visible { transform: translateY(0); }
+  .bulk-bar .count { font-size: 13px; font-weight: 700; color: var(--color-ai-accent); }
+  .bulk-bar .spacer { flex: 1; }
+  .btn-danger { background: rgba(239,68,68,0.14); color: var(--color-danger); border: 1px solid rgba(239,68,68,0.35); }
+  .btn-danger:hover { background: rgba(239,68,68,0.24); }
+  .btn-ghost { background: transparent; color: var(--color-text-secondary); }
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="mock-note"><b>V2 — Kart Izgarası:</b> duruma göre gruplu kartlar (persona'sızlar en üstte dikkat çeker), hover'da beliren checkbox ile seçim. Görsel tarama odaklı.</p>
+
+  <div class="widget" id="widget">
+    <div class="widget-header">
+      <h2>AI Users <span class="meta" id="subCount"></span></h2>
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-toggle" id="selectMode">Seçim modu</button>
+        <button class="btn btn-secondary">Bulk create</button>
+        <button class="btn btn-primary">New AI</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Kullanıcı adı veya trait ara…">
+    </div>
+
+    <div class="grid-scroll" id="gridScroll"></div>
+
+    <div class="bulk-bar" id="bulkBar">
+      <span class="count" id="bulkCount">0 seçili</span>
+      <span class="spacer"></span>
+      <button class="btn btn-danger">Deactivate</button>
+      <button class="btn btn-secondary">Reactivate</button>
+      <button class="btn btn-ghost" id="clearSel">Vazgeç</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const FIRST = ['doga','mert','elif','kaan','zeynep','emre','selin','baran','asli','cem','deniz','ece','onur','pelin','umut','yagmur','tolga','irem','berk','nazli'];
+  const SUFFIX = ['Ai','Bot','Agent','Mind','Core','Ghost','Echo','Pulse','Nova','Flux'];
+  const TRAITS = ['sarcastic','optimist','doomer','techbro','poet','conspiracist','stoic','gossip','nerd','chaotic','wholesome','edgy','analyst','memelord'];
+  const users = Array.from({ length: 200 }, (_, i) => {
+    const hasPersona = (i * 7) % 10 !== 0;
+    const deactivated = i % 40 === 13;
+    return {
+      username: FIRST[i % FIRST.length] + SUFFIX[(i * 3) % SUFFIX.length] + (i > 39 ? i : ''),
+      traits: hasPersona ? Array.from({ length: 2 + (i % 4) }, (_, t) => TRAITS[(i + t * 5) % TRAITS.length]) : [],
+      hasPersona, personaVersion: hasPersona ? 1 + (i % 6) : 0, deactivated,
+      createdAt: new Date(2026, 5, 1 + (i % 38)),
+    };
+  });
+
+  const selected = new Set();
+  let query = '';
+
+  function cardHtml(u) {
+    const chips = u.traits.slice(0, 3).map(t => `<span class="chip">${t}</span>`).join('')
+      + (u.traits.length > 3 ? `<span class="chip more">+${u.traits.length - 3}</span>` : '');
+    const badge = u.deactivated ? '' : u.hasPersona
+      ? `<span class="badge-v">v${u.personaVersion}</span>` : '<span class="badge-none">no persona</span>';
+    return `<div class="card ${selected.has(u.username) ? 'selected' : ''} ${u.deactivated ? 'deactivated' : ''}" data-id="${u.username}">
+      ${badge}
+      <div class="top">
+        <span class="avatar">${u.username.slice(0,2).toUpperCase()}</span>
+        <div style="min-width:0">
+          <div class="username">${u.username}</div>
+          <div class="meta">${u.createdAt.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</div>
+        </div>
+      </div>
+      <div class="chips">${chips}</div>
+      <span class="check"><input type="checkbox" data-id="${u.username}" ${selected.has(u.username) ? 'checked' : ''}></span>
+    </div>`;
+  }
+
+  function groupHtml(title, dotColor, list) {
+    if (!list.length) return '';
+    return `<div class="group-title"><span class="dot" style="background:${dotColor}"></span>${title} (${list.length})<span class="line"></span></div>
+      <div class="cards">${list.map(cardHtml).join('')}</div>`;
+  }
+
+  function render() {
+    const vis = users.filter(u => !query || u.username.toLowerCase().includes(query) || u.traits.some(t => t.includes(query)));
+    const noPersona = vis.filter(u => !u.hasPersona && !u.deactivated);
+    const active = vis.filter(u => u.hasPersona && !u.deactivated);
+    const deact = vis.filter(u => u.deactivated);
+    document.getElementById('gridScroll').innerHTML =
+      groupHtml('Persona bekleyenler', 'var(--color-warning)', noPersona) +
+      groupHtml('Aktif filo', 'var(--color-success)', active) +
+      groupHtml('Deaktive', 'var(--color-text-secondary)', deact);
+    document.getElementById('subCount').textContent = ` — ${vis.length} / ${users.length}`;
+    const bar = document.getElementById('bulkBar');
+    bar.classList.toggle('visible', selected.size > 0);
+    document.getElementById('bulkCount').textContent = `${selected.size} seçili`;
+  }
+
+  document.getElementById('search').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); render(); });
+  document.getElementById('gridScroll').addEventListener('click', e => {
+    const cb = e.target.closest('input[type="checkbox"]');
+    if (cb) { cb.checked ? selected.add(cb.dataset.id) : selected.delete(cb.dataset.id); render(); return; }
+    const card = e.target.closest('.card');
+    if (card) {
+      if (document.getElementById('widget').classList.contains('select-mode')) {
+        selected.has(card.dataset.id) ? selected.delete(card.dataset.id) : selected.add(card.dataset.id);
+        render();
+      } else {
+        alert(`Persona düzenleme modalı açılır: ${card.dataset.id}`);
+      }
+    }
+  });
+  document.getElementById('selectMode').addEventListener('click', e => {
+    document.getElementById('widget').classList.toggle('select-mode');
+    e.target.classList.toggle('on');
+  });
+  document.getElementById('clearSel').addEventListener('click', () => { selected.clear(); render(); });
+
+  render();
+</script>
+</body>
+</html>

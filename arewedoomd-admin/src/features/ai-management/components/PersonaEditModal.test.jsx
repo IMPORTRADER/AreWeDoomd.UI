@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import PersonaEditModal from './PersonaEditModal';
 
-// Mock both hooks
+// Mock hooks
 vi.mock('../hooks/useAiUserDetail', () => ({
   default: vi.fn(),
 }));
@@ -11,8 +11,14 @@ vi.mock('../hooks/useEditPersonality', () => ({
   default: vi.fn(),
 }));
 
+vi.mock('../hooks/usePersonaCatalog', async (importOriginal) => {
+  const mod = await importOriginal();
+  return { ...mod, default: vi.fn() };
+});
+
 import useAiUserDetail from '../hooks/useAiUserDetail';
 import useEditPersonality from '../hooks/useEditPersonality';
+import usePersonaCatalog from '../hooks/usePersonaCatalog';
 
 const MOCK_DETAIL = {
   id: 'u1',
@@ -44,6 +50,13 @@ beforeEach(() => {
     save: mockSave,
     saving: false,
     error: null,
+  });
+
+  usePersonaCatalog.mockReturnValue({
+    catalog: null,
+    loading: false,
+    error: null,
+    retry: vi.fn(),
   });
 });
 
@@ -203,5 +216,22 @@ describe('PersonaEditModal', () => {
     expect(screen.getByText(/couldn't load|failed to load/i)).toBeInTheDocument();
     // Should NOT render form
     expect(screen.queryByPlaceholderText(/add a trait/i)).not.toBeInTheDocument();
+  });
+
+  it('shows typing style suggestions when catalog is available', async () => {
+    usePersonaCatalog.mockReturnValue({
+      catalog: {
+        archetypes: [], traitCategories: [],
+        typingStyleSuggestions: ['short sentences'],
+        usernameWordPools: {},
+      },
+      loading: false, error: null, retry: vi.fn(),
+    });
+
+    render(
+      <PersonaEditModal userId="u1" onClose={vi.fn()} onSaved={vi.fn()} />
+    );
+
+    expect(await screen.findByRole('button', { name: /short sentences/i })).toBeInTheDocument();
   });
 });

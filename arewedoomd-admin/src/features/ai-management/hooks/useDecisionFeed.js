@@ -22,6 +22,7 @@ export default function useDecisionFeed() {
   const isLiveRef    = useRef(true);
   const inFlightRef  = useRef(false);
   const mountedRef   = useRef(true);
+  const newestTsRef  = useRef(null);
 
   useEffect(() => {
     // StrictMode remount runs this effect twice; re-arm the guard on each mount
@@ -41,6 +42,7 @@ export default function useDecisionFeed() {
       .then((res) => {
         if (cancelled || !mountedRef.current) return;
         const { items: newItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
+        if (newItems.length > 0) newestTsRef.current = newItems[0].ts;
         setItems(newItems);
         setNextCursor(nc);
         setHasMore(more);
@@ -81,7 +83,12 @@ export default function useDecisionFeed() {
         .then((res) => {
           if (!mountedRef.current || !isLiveRef.current) return;
           const { items: newItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
-          setItems(newItems);
+          const prevNewest = newestTsRef.current;
+          const marked = prevNewest
+            ? newItems.map((d) => (d.ts > prevNewest ? { ...d, isNew: true } : d))
+            : newItems;
+          if (newItems.length > 0) newestTsRef.current = newItems[0].ts;
+          setItems(marked);
           setNextCursor(nc);
           setHasMore(more);
           if (la !== undefined) setLogAvailable(la);
@@ -117,8 +124,9 @@ export default function useDecisionFeed() {
         if (!mountedRef.current) return;
         const { items: moreItems, nextCursor: nc, hasMore: more, logAvailable: la } = res.data;
         setItems((prev) => {
-          const seen = new Set(prev.map((d) => d.activityId));
-          return [...prev, ...moreItems.filter((d) => !seen.has(d.activityId))];
+          const stripped = prev.map((d) => ({ ...d, isNew: undefined }));
+          const seen = new Set(stripped.map((d) => d.activityId));
+          return [...stripped, ...moreItems.filter((d) => !seen.has(d.activityId))];
         });
         setNextCursor(nc);
         setHasMore(more);

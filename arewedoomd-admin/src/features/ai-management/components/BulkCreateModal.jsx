@@ -217,7 +217,7 @@ export default function BulkCreateModal({ onClose, onJobTerminal }) {
               {/* Running indicator */}
               {!terminal && (
                 <p className="text-xs text-[var(--color-text-secondary)]">
-                  Generating and registering AI users…
+                  Creating AI users from the persona catalog…
                 </p>
               )}
 
