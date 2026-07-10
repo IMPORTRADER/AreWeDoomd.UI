@@ -45,7 +45,14 @@ export default function CommentSection({
 
   const mention = useMentionAutocomplete({
     inputRef,
-    onChange: setDraft,
+    // Refuse rather than truncate: a mention insertion that would push the
+    // draft past 280 chars is dropped whole, mirroring handleReply's cap
+    // policy below (a truncated @username could name the wrong user).
+    onChange: (next) => {
+      if (next.length <= 280) {
+        setDraft(next);
+      }
+    },
     participants: mentionParticipants,
   });
 

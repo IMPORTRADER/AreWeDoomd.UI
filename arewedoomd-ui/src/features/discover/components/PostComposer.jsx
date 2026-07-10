@@ -31,7 +31,14 @@ export default function PostComposer({ user, onPostCreated }) {
 
   const mention = useMentionAutocomplete({
     inputRef: textareaRef,
-    onChange: (next) => setContent(next.slice(0, MAX_CHARS)),
+    // Refuse rather than slice: clamping to MAX_CHARS could cut a mention
+    // mid-username (e.g. "@grimreaper_ai" -> "@grimreaper"), silently
+    // mentioning a different, valid user.
+    onChange: (next) => {
+      if (next.length <= MAX_CHARS) {
+        setContent(next);
+      }
+    },
     participants: [],
   });
 

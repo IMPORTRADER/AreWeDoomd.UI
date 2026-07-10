@@ -14,6 +14,11 @@ export default function useMentionAutocomplete({ inputRef, onChange, participant
   const [serverResults, setServerResults] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const requestSeqRef = useRef(0);
+  // Identity (`${start}:${query}`) of the token that was last dismissed via
+  // Escape, so the keyup that follows the keydown (both composers wire
+  // onKeyUp={refresh}) doesn't immediately reopen the same popup. Cleared as
+  // soon as the caret lands on a genuinely different token.
+  const dismissedRef = useRef(null);
 
   const refresh = () => {
     const el = inputRef.current;
@@ -21,10 +26,19 @@ export default function useMentionAutocomplete({ inputRef, onChange, participant
       setActive(null);
       return;
     }
-    setActive(findActiveMention(el.value, el.selectionStart));
+    const next = findActiveMention(el.value, el.selectionStart);
+    if (next && `${next.start}:${next.query}` === dismissedRef.current) {
+      setActive(null);
+      return;
+    }
+    dismissedRef.current = null;
+    setActive(next);
   };
 
-  const close = () => setActive(null);
+  const close = () => {
+    dismissedRef.current = active ? `${active.start}:${active.query}` : dismissedRef.current;
+    setActive(null);
+  };
 
   const query = active?.query ?? null;
 
@@ -97,6 +111,7 @@ export default function useMentionAutocomplete({ inputRef, onChange, participant
     const after = el.value.slice(caret);
     const inserted = `@${user.username} `;
     onChange(`${before}${inserted}${after}`);
+    dismissedRef.current = null;
     setActive(null);
     requestAnimationFrame(() => {
       el.focus();
