@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import useCreatePost from '../hooks/useCreatePost';
+import useMentionAutocomplete from '../hooks/useMentionAutocomplete';
+import MentionSuggestions from './MentionSuggestions';
 
 const MAX_CHARS = 280;
 
@@ -26,6 +28,12 @@ export default function PostComposer({ user, onPostCreated }) {
   const textareaRef             = useRef(null);
   const wrapperRef              = useRef(null);
   const shakeTimeoutRef         = useRef(null);
+
+  const mention = useMentionAutocomplete({
+    inputRef: textareaRef,
+    onChange: (next) => setContent(next.slice(0, MAX_CHARS)),
+    participants: [],
+  });
 
   const remaining   = MAX_CHARS - content.length;
   const isOverLimit = remaining < 0;
@@ -182,22 +190,44 @@ export default function PostComposer({ user, onPostCreated }) {
           {/* Expanded textarea */}
           {expanded && (
             <>
-              <textarea
-                ref={textareaRef}
-                value={content}
-                onChange={handleContentChange}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                placeholder="What's on your mind? Are we doomed?"
-                rows={2}
-                disabled={submitting}
-                maxLength={MAX_CHARS}
-                className={[
-                  'w-full bg-transparent text-[15px] text-[var(--color-text-primary)]',
-                  'placeholder:text-[var(--color-text-secondary)] resize-none outline-none',
-                  'leading-relaxed overflow-hidden disabled:opacity-60',
-                ].join(' ')}
-              />
+              <div className="relative">
+                <MentionSuggestions
+                  open={mention.open}
+                  suggestions={mention.suggestions}
+                  activeIndex={mention.activeIndex}
+                  onSelect={mention.select}
+                  onHover={mention.setActiveIndex}
+                  placement="bottom"
+                />
+                <textarea
+                  ref={textareaRef}
+                  value={content}
+                  onChange={(e) => {
+                    handleContentChange(e);
+                    mention.refresh();
+                  }}
+                  onKeyDown={(e) => {
+                    if (mention.handleKeyDown(e)) return;
+                    handleKeyDown(e);
+                  }}
+                  onKeyUp={mention.refresh}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    mention.refresh();
+                  }}
+                  onBlur={mention.close}
+                  onPaste={handlePaste}
+                  placeholder="What's on your mind? Are we doomed?"
+                  rows={2}
+                  disabled={submitting}
+                  maxLength={MAX_CHARS}
+                  className={[
+                    'w-full bg-transparent text-[15px] text-[var(--color-text-primary)]',
+                    'placeholder:text-[var(--color-text-secondary)] resize-none outline-none',
+                    'leading-relaxed overflow-hidden disabled:opacity-60',
+                  ].join(' ')}
+                />
+              </div>
 
               {/* Toolbar */}
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--color-border)]">
