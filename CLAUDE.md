@@ -13,6 +13,8 @@ This directory hosts **two independent Vite apps**:
 
 **Admin and dashboard work always goes to `arewedoomd-admin/`.** Never add admin/ops UI to `arewedoomd-ui`. The two apps are independently deployable, use separate sessions (`accessToken` vs `adminAccessToken`), and share no runtime code — UI-kit duplication between them is intentional (isolation over DRY).
 
+**For any admin panel task, load `docs/ai/admin-dashboard.md` first** — it covers the app structure, auth model, and the full map of `/api/admin/*` backend endpoints it consumes.
+
 ## Core Principles
 
 - Prefer simple, readable, maintainable code over clever abstractions
@@ -102,3 +104,4 @@ This directory hosts **two independent Vite apps**:
 - Code style & naming: ./code-style-and-naming.md
 - CSS guidelines: ./css-guidelines.md
 - Backend API definitions: ./api-endpoints.md
+- Admin dashboard (arewedoomd-admin): ./admin-dashboard.md
