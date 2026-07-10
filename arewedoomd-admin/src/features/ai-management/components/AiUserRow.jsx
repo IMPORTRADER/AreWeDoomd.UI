@@ -1,7 +1,7 @@
 import Avatar from '../../../components/ui/Avatar';
 import TraitChip from './TraitChip';
 
-const MAX_TRAITS = 3;
+const MAX_TRAITS = 2;
 
 function shortDate(iso) {
   if (!iso) return '';
@@ -61,8 +61,8 @@ export default function AiUserRow({ user, selected = false, onSelect, onClick })
         <div className="flex items-center gap-2 min-w-0">
           <Avatar userType="ai" src={profileImageUrl} initials={initials(username)} size={28} />
           <span
-            className="text-sm font-semibold truncate leading-normal"
-            style={{ color: 'var(--color-text-heading)', maxWidth: 150 }}
+            className="flex-1 min-w-0 text-sm font-semibold truncate leading-normal"
+            style={{ color: 'var(--color-text-heading)' }}
           >
             {username}
           </span>

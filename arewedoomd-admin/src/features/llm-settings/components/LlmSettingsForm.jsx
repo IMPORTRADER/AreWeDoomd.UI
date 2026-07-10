@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Widget from '../../../components/ui/Widget';
 import Button from '../../../components/ui/Button';
 
@@ -11,16 +11,52 @@ const NUMERIC_FIELDS = [
   { key: 'replyMaxTokens',           label: 'Cevap bütçesi (token / cevap)' },
 ];
 
+// ── Skeleton: mirrors the real form's field rows so the widget's height
+// doesn't change once settings finish loading (avoids a layout jump).
+function SkeletonForm() {
+  return (
+    <div className="flex flex-col gap-4">
+      {Array.from({ length: 3 + NUMERIC_FIELDS.length }).map((_, i) => (
+        <div key={i} className="flex flex-col gap-1.5">
+          <div className="skeleton h-3 w-32 rounded" />
+          <div className="skeleton h-[42px] w-full rounded-[var(--radius-md)]" />
+        </div>
+      ))}
+      <div className="flex justify-end pt-1">
+        <div className="skeleton h-9 w-20 rounded-[var(--radius-md)]" />
+      </div>
+    </div>
+  );
+}
+
 export default function LlmSettingsForm({ settings, onSave, saving }) {
   const [form, setForm] = useState({
-    model:                    settings?.model ?? '',
-    scoringModel:             settings?.scoringModel ?? '',
-    thinkingEnabled:          settings?.thinkingEnabled ?? false,
-    provider:                 settings?.provider ?? '',
-    scoringTokensPerAccount:  settings?.scoringTokensPerAccount ?? 512,
-    compositionTokensPerPost: settings?.compositionTokensPerPost ?? 800,
-    replyMaxTokens:           settings?.replyMaxTokens ?? 1024,
+    model:                    '',
+    scoringModel:             '',
+    thinkingEnabled:          false,
+    provider:                 '',
+    scoringTokensPerAccount:  512,
+    compositionTokensPerPost: 800,
+    replyMaxTokens:           1024,
   });
+
+  // Seed the form once settings arrive — the widget is mounted immediately
+  // (with a skeleton) rather than waiting on the parent to gate rendering.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (settings && !seededRef.current) {
+      seededRef.current = true;
+      setForm({
+        model:                    settings.model ?? '',
+        scoringModel:             settings.scoringModel ?? '',
+        thinkingEnabled:          settings.thinkingEnabled ?? false,
+        provider:                 settings.provider ?? '',
+        scoringTokensPerAccount:  settings.scoringTokensPerAccount ?? 512,
+        compositionTokensPerPost: settings.compositionTokensPerPost ?? 800,
+        replyMaxTokens:           settings.replyMaxTokens ?? 1024,
+      });
+    }
+  }, [settings]);
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -35,7 +71,15 @@ export default function LlmSettingsForm({ settings, onSave, saving }) {
     });
   };
 
-  const providers = settings?.availableProviders ?? [];
+  if (!settings) {
+    return (
+      <Widget title="LLM Ayarları">
+        <SkeletonForm />
+      </Widget>
+    );
+  }
+
+  const providers = settings.availableProviders ?? [];
 
   return (
     <Widget title="LLM Ayarları">

@@ -180,13 +180,13 @@ export default function AiUserTable({ onRowClick, refreshRef, onCreateClick, onB
       >
         <Input
           name="ai-search"
-          placeholder="Kullanıcı adı ara…"
+          label="Kullanıcı adı ara"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <Input
           name="ai-trait-filter"
-          placeholder="Trait filtrele…"
+          label="Trait filtrele"
           value={trait}
           onChange={(e) => setTrait(e.target.value)}
         />
@@ -204,7 +204,7 @@ export default function AiUserTable({ onRowClick, refreshRef, onCreateClick, onB
         className="sidebar-scroll flex-1 min-h-0 overflow-y-auto"
         style={{ position: 'relative' }}
       >
-        <table className="w-full border-collapse text-[13px]">
+        <table className="w-full border-collapse text-[13px]" style={{ tableLayout: 'fixed' }}>
           <thead
             className="sticky top-0 z-[2]"
             style={{ background: 'var(--color-surface-2)' }}
@@ -223,16 +223,16 @@ export default function AiUserTable({ onRowClick, refreshRef, onCreateClick, onB
                   title="Görünenlerin tümünü seç"
                 />
               </th>
-              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap" style={{ color: 'var(--color-text-secondary)' }}>
+              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '32%' }}>
                 Kullanıcı
               </th>
-              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap" style={{ color: 'var(--color-text-secondary)' }}>
+              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '26%' }}>
                 Trait&apos;ler
               </th>
-              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap" style={{ color: 'var(--color-text-secondary)' }}>
+              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '16%' }}>
                 Persona
               </th>
-              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap" style={{ color: 'var(--color-text-secondary)' }}>
+              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '26%' }}>
                 Oluşturulma
               </th>
             </tr>

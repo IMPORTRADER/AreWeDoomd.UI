@@ -14,7 +14,7 @@ function extractApiError(err) {
 }
 
 export default function LlmSettingsPage() {
-  const { settings, loading, error, save, saving } = useLlmSettings();
+  const { settings, error, save, saving } = useLlmSettings();
   const apiError = extractApiError(error);
 
   return (
@@ -31,9 +31,7 @@ export default function LlmSettingsPage() {
         </div>
       )}
 
-      {!loading && settings && (
-        <LlmSettingsForm settings={settings} onSave={save} saving={saving} />
-      )}
+      <LlmSettingsForm settings={settings} onSave={save} saving={saving} />
     </div>
   );
 }

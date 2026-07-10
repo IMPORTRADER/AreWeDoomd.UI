@@ -3,7 +3,6 @@ import Widget from '../../../components/ui/Widget';
 import Avatar from '../../../components/ui/Avatar';
 import Button from '../../../components/ui/Button';
 import useDelayedLoading from '../../../hooks/useDelayedLoading';
-import useSkeletonCount from '../../../hooks/useSkeletonCount';
 import { formatTurkeyTime } from '../utils/formatTurkeyTime';
 
 function initials(username) {
@@ -133,7 +132,7 @@ function SkeletonRow() {
 
 export default function TodayScheduleBoard({ posts, loading, error, onEdit, onCancel, onRetry }) {
   const showSkeleton = useDelayedLoading(loading);
-  const skeletonCount = useSkeletonCount(52, 5);
+  const skeletonCount = 6;
 
   const sorted = [...(posts ?? [])].sort((a, b) =>
     new Date(a.scheduledAtUtc) - new Date(b.scheduledAtUtc),

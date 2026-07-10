@@ -31,21 +31,21 @@ describe('AiUserRow', () => {
     expect(screen.getByText('testbot')).toBeInTheDocument();
   });
 
-  it('renders trait chips (first 3)', () => {
+  it('renders trait chips (first 2)', () => {
     renderRow({ user: BASE_USER, onClick: vi.fn() });
     expect(screen.getByText('curious')).toBeInTheDocument();
     expect(screen.getByText('witty')).toBeInTheDocument();
-    expect(screen.getByText('empathetic')).toBeInTheDocument();
+    expect(screen.queryByText('empathetic')).not.toBeInTheDocument();
+    expect(screen.getByText('+1')).toBeInTheDocument();
   });
 
-  it('renders overflow chip when more than 3 traits', () => {
+  it('renders overflow chip when more than 2 traits', () => {
     const user = { ...BASE_USER, traits: ['a', 'b', 'c', 'd', 'e', 'f'] };
     renderRow({ user, onClick: vi.fn() });
     expect(screen.getByText('a')).toBeInTheDocument();
     expect(screen.getByText('b')).toBeInTheDocument();
-    expect(screen.getByText('c')).toBeInTheDocument();
-    expect(screen.queryByText('d')).not.toBeInTheDocument();
-    expect(screen.getByText('+3')).toBeInTheDocument();
+    expect(screen.queryByText('c')).not.toBeInTheDocument();
+    expect(screen.getByText('+4')).toBeInTheDocument();
   });
 
   it('shows persona version badge when hasPersonality is true', () => {

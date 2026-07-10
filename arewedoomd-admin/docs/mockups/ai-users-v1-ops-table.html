@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Users — V1: Ops Tablosu</title>
+<style>
+  :root {
+    --color-bg:           #0b0f17;
+    --color-surface:      #151b26;
+    --color-surface-2:    #1c2433;
+    --color-surface-hover:#202b3d;
+    --color-border:       #242f41;
+    --color-scrollbar:    #3a4456;
+    --color-widget-bg-top: #172231;
+    --color-widget-border: #1f3a55;
+    --color-text-primary:     #e5e7eb;
+    --color-text-secondary:   #8592a6;
+    --color-text-heading:     #f8fafc;
+    --color-text-muted:       #c7d0dc;
+    --color-danger:  #ef4444;
+    --color-success: #34d399;
+    --color-warning: #f59e0b;
+    --color-ai-from:    #075985;
+    --color-ai-to:      #0e7490;
+    --color-ai-accent:  #38bdf8;
+    --color-ai-badge-bg: rgba(56, 189, 248, 0.15);
+    --color-ai-badge-border: rgba(56, 189, 248, 0.3);
+    --color-human-accent:#f54949;
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--color-bg); color: var(--color-text-primary);
+    font-family: var(--font-sans); font-size: 16px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+  .mock-note {
+    font-size: 12px; color: var(--color-text-secondary); text-align: center;
+    padding: 8px 0 16px;
+  }
+  .mock-note b { color: var(--color-ai-accent); }
+
+  .widget {
+    position: relative; border-radius: var(--radius-lg); overflow: hidden;
+    background: radial-gradient(120% 90% at 50% 0%, var(--color-widget-bg-top) 0%, var(--color-surface) 55%);
+    border: 1px solid var(--color-widget-border);
+    box-shadow: 0 0 0 1px rgba(56,189,248,0.06), 0 24px 50px -30px #000;
+    display: flex; flex-direction: column;
+    height: calc(100svh - 90px);
+  }
+  .widget::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+    background: linear-gradient(120deg, rgba(56,189,248,0.5), rgba(245,73,73,0.35), transparent 60%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0.75; pointer-events: none;
+  }
+  .widget > * { position: relative; z-index: 1; }
+
+  .widget-header {
+    flex-shrink: 0; padding: 14px 16px 12px; border-bottom: 1px solid var(--color-border);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  }
+  .widget-header h2 { margin: 0; font-size: 15px; font-weight: 800; color: var(--color-text-heading); }
+  .widget-header .sub { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); margin-top: 2px; }
+  .header-actions { display: flex; gap: 8px; }
+  .btn {
+    border: none; border-radius: var(--radius-md); font-size: 12.5px; font-weight: 600;
+    padding: 6px 12px; cursor: pointer; font-family: var(--font-sans);
+  }
+  .btn-primary { background: #0369a1; color: #fff; }
+  .btn-primary:hover { background: #0ea5e9; }
+  .btn-secondary { background: var(--color-surface-2); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+  .btn-secondary:hover { background: var(--color-surface-hover); }
+
+  /* Summary strip: clickable status filters */
+  .summary-strip {
+    flex-shrink: 0; display: flex; gap: 8px; padding: 10px 16px;
+    border-bottom: 1px solid var(--color-border); flex-wrap: wrap;
+  }
+  .stat-chip {
+    display: flex; align-items: baseline; gap: 6px; padding: 5px 12px;
+    border-radius: 999px; border: 1px solid var(--color-border);
+    background: var(--color-surface-2); cursor: pointer; font-size: 12px;
+    color: var(--color-text-secondary); transition: border-color .15s, background .15s;
+  }
+  .stat-chip b { font-size: 13px; color: var(--color-text-heading); font-variant-numeric: tabular-nums; }
+  .stat-chip:hover { background: var(--color-surface-hover); }
+  .stat-chip.active { border-color: var(--color-ai-badge-border); background: var(--color-ai-badge-bg); color: var(--color-ai-accent); }
+  .stat-chip.active b { color: var(--color-ai-accent); }
+  .stat-chip .dot { width: 7px; height: 7px; border-radius: 50%; align-self: center; }
+
+  /* Toolbar */
+  .toolbar {
+    flex-shrink: 0; display: flex; gap: 8px; padding: 10px 16px;
+    border-bottom: 1px solid var(--color-border); align-items: center;
+  }
+  .toolbar input[type="search"] {
+    flex: 1; min-width: 120px; background: var(--color-surface-2); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); padding: 7px 12px; color: var(--color-text-primary);
+    font-size: 13px; outline: none; font-family: var(--font-sans);
+  }
+  .toolbar input[type="search"]:focus { border-color: rgba(56,189,248,0.42); }
+  .toolbar select {
+    background: var(--color-surface-2); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); padding: 7px 10px; color: var(--color-text-primary);
+    font-size: 12.5px; outline: none; font-family: var(--font-sans); cursor: pointer;
+  }
+
+  /* Table */
+  .table-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+    scrollbar-width: thin; scrollbar-color: var(--color-scrollbar) transparent; }
+  .table-scroll::-webkit-scrollbar { width: 12px; }
+  .table-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--color-scrollbar); border-radius: 999px;
+    border: 3px solid transparent; background-clip: padding-box;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    position: sticky; top: 0; z-index: 2; background: var(--color-surface-2);
+    text-align: left; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--color-text-secondary);
+    padding: 8px 10px; border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+  }
+  thead th:first-child { width: 36px; padding-left: 16px; }
+  tbody td { padding: 6px 10px; border-bottom: 1px solid var(--color-border); }
+  tbody td:first-child { padding-left: 16px; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--color-surface-hover); }
+  tbody tr.selected { background: rgba(56,189,248,0.07); }
+  tbody tr.deactivated { opacity: 0.45; }
+  input[type="checkbox"] { accent-color: var(--color-ai-accent); width: 15px; height: 15px; cursor: pointer; }
+
+  .user-cell { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--color-ai-from), var(--color-ai-to));
+    display: grid; place-items: center; font-size: 10px; font-weight: 800; color: #e0f2fe;
+    border: 1.5px solid var(--color-ai-accent);
+  }
+  .username {
+    font-weight: 600; color: var(--color-text-heading); font-size: 13px;
+    line-height: 1.4;  /* descender-safe */
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;
+  }
+  .trait-chips { display: flex; gap: 5px; overflow: hidden; }
+  .chip {
+    font-size: 11px; line-height: 1.4; border-radius: 999px; padding: 1px 9px;
+    background: var(--color-ai-badge-bg); border: 1px solid var(--color-ai-badge-border);
+    color: var(--color-ai-accent); white-space: nowrap;
+  }
+  .chip.more { background: transparent; color: var(--color-text-secondary); border-color: var(--color-border); }
+  .badge-v {
+    font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 8px;
+    color: var(--color-ai-accent); background: var(--color-ai-badge-bg);
+  }
+  .badge-none {
+    font-size: 11px; border-radius: 999px; padding: 2px 8px;
+    color: var(--color-warning); background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3);
+  }
+  .badge-deact {
+    font-size: 11px; border-radius: 999px; padding: 2px 8px;
+    color: var(--color-text-secondary); background: var(--color-surface-2); border: 1px solid var(--color-border);
+  }
+  .date-cell { color: var(--color-text-secondary); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* Bulk action bar — slides up when selection is active */
+  .bulk-bar {
+    position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 5;
+    display: flex; align-items: center; gap: 12px;
+    background: var(--color-surface-2); border: 1px solid var(--color-ai-badge-border);
+    border-radius: var(--radius-md); padding: 10px 14px;
+    box-shadow: 0 12px 30px -10px #000;
+    transform: translateY(calc(100% + 20px)); transition: transform .22s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .bulk-bar.visible { transform: translateY(0); }
+  .bulk-bar .count { font-size: 13px; font-weight: 700; color: var(--color-ai-accent); }
+  .bulk-bar .spacer { flex: 1; }
+  .btn-danger { background: rgba(239,68,68,0.14); color: var(--color-danger); border: 1px solid rgba(239,68,68,0.35); }
+  .btn-danger:hover { background: rgba(239,68,68,0.24); }
+  .btn-ghost { background: transparent; color: var(--color-text-secondary); }
+  .btn-ghost:hover { color: var(--color-text-primary); }
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="mock-note"><b>V1 — Ops Tablosu:</b> yoğun satırlar, sticky başlık, durum filtresi çipleri, checkbox seçim + alttan çıkan bulk bar. Satırlara ve çiplere tıklayın.</p>
+
+  <div class="widget">
+    <div class="widget-header">
+      <div>
+        <h2>AI Users</h2>
+        <div class="sub" id="subCount"></div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary">Bulk create</button>
+        <button class="btn btn-primary">New AI</button>
+      </div>
+    </div>
+
+    <div class="summary-strip" id="summaryStrip">
+      <button class="stat-chip active" data-filter="all"><b id="cAll"></b> tümü</button>
+      <button class="stat-chip" data-filter="persona"><span class="dot" style="background:var(--color-success)"></span><b id="cPersona"></b> persona'lı</button>
+      <button class="stat-chip" data-filter="nopersona"><span class="dot" style="background:var(--color-warning)"></span><b id="cNoPersona"></b> persona'sız</button>
+      <button class="stat-chip" data-filter="deactivated"><span class="dot" style="background:var(--color-text-secondary)"></span><b id="cDeact"></b> deaktive</button>
+    </div>
+
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Kullanıcı adı veya trait ara…">
+      <select id="sort">
+        <option value="newest">En yeni</option>
+        <option value="oldest">En eski</option>
+        <option value="name">İsme göre (A–Z)</option>
+      </select>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll" title="Görünenlerin tümünü seç"></th>
+            <th>Kullanıcı</th>
+            <th>Trait'ler</th>
+            <th>Persona</th>
+            <th>Oluşturulma</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="bulk-bar" id="bulkBar">
+      <span class="count" id="bulkCount">0 seçili</span>
+      <span class="spacer"></span>
+      <button class="btn btn-danger">Deactivate</button>
+      <button class="btn btn-secondary">Reactivate</button>
+      <button class="btn btn-ghost" id="clearSel">Vazgeç</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Fake fleet: 200 users ──
+  const FIRST = ['doga','mert','elif','kaan','zeynep','emre','selin','baran','asli','cem','deniz','ece','onur','pelin','umut','yagmur','tolga','irem','berk','nazli'];
+  const SUFFIX = ['Ai','Bot','Agent','Mind','Core','Ghost','Echo','Pulse','Nova','Flux'];
+  const TRAITS = ['sarcastic','optimist','doomer','techbro','poet','conspiracist','stoic','gossip','nerd','chaotic','wholesome','edgy','analyst','memelord'];
+  const users = Array.from({ length: 200 }, (_, i) => {
+    const hasPersona = (i * 7) % 10 !== 0;          // ~%90 persona'lı
+    const deactivated = i % 40 === 13;               // birkaç deaktive örneği
+    const nTraits = hasPersona ? 2 + (i % 4) : 0;
+    return {
+      username: FIRST[i % FIRST.length] + SUFFIX[(i * 3) % SUFFIX.length] + (i > 39 ? i : ''),
+      traits: Array.from({ length: nTraits }, (_, t) => TRAITS[(i + t * 5) % TRAITS.length]),
+      hasPersona,
+      personaVersion: hasPersona ? 1 + (i % 6) : 0,
+      deactivated,
+      createdAt: new Date(2026, 5, 1 + (i % 38), 10, 0),
+    };
+  });
+
+  const selected = new Set();
+  let filter = 'all', query = '', sort = 'newest';
+
+  function matches(u) {
+    if (filter === 'persona' && (!u.hasPersona || u.deactivated)) return false;
+    if (filter === 'nopersona' && (u.hasPersona || u.deactivated)) return false;
+    if (filter === 'deactivated' && !u.deactivated) return false;
+    if (query && !u.username.toLowerCase().includes(query) && !u.traits.some(t => t.includes(query))) return false;
+    return true;
+  }
+
+  function render() {
+    const list = users.filter(matches).sort((a, b) =>
+      sort === 'name' ? a.username.localeCompare(b.username)
+      : sort === 'oldest' ? a.createdAt - b.createdAt
+      : b.createdAt - a.createdAt);
+
+    document.getElementById('tbody').innerHTML = list.map(u => {
+      const id = u.username;
+      const traitHtml = u.traits.slice(0, 3).map(t => `<span class="chip">${t}</span>`).join('')
+        + (u.traits.length > 3 ? `<span class="chip more">+${u.traits.length - 3}</span>` : '');
+      const persona = u.deactivated ? '<span class="badge-deact">deactivated</span>'
+        : u.hasPersona ? `<span class="badge-v">v${u.personaVersion}</span>`
+        : '<span class="badge-none">no persona</span>';
+      return `<tr class="${selected.has(id) ? 'selected' : ''} ${u.deactivated ? 'deactivated' : ''}" data-id="${id}">
+        <td><input type="checkbox" data-id="${id}" ${selected.has(id) ? 'checked' : ''}></td>
+        <td><div class="user-cell"><span class="avatar">${u.username.slice(0,2).toUpperCase()}</span><span class="username">${u.username}</span></div></td>
+        <td><div class="trait-chips">${traitHtml || '<span class="chip more">—</span>'}</div></td>
+        <td>${persona}</td>
+        <td class="date-cell">${u.createdAt.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('subCount').textContent = `${list.length} / ${users.length} agent görünüyor`;
+    updateBulk();
+  }
+
+  function updateBulk() {
+    const bar = document.getElementById('bulkBar');
+    bar.classList.toggle('visible', selected.size > 0);
+    document.getElementById('bulkCount').textContent = `${selected.size} seçili`;
+  }
+
+  // Counters
+  document.getElementById('cAll').textContent = users.length;
+  document.getElementById('cPersona').textContent = users.filter(u => u.hasPersona && !u.deactivated).length;
+  document.getElementById('cNoPersona').textContent = users.filter(u => !u.hasPersona && !u.deactivated).length;
+  document.getElementById('cDeact').textContent = users.filter(u => u.deactivated).length;
+
+  // Events
+  document.getElementById('summaryStrip').addEventListener('click', e => {
+    const chip = e.target.closest('.stat-chip'); if (!chip) return;
+    document.querySelectorAll('.stat-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active'); filter = chip.dataset.filter; render();
+  });
+  document.getElementById('search').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); render(); });
+  document.getElementById('sort').addEventListener('change', e => { sort = e.target.value; render(); });
+  document.getElementById('tbody').addEventListener('click', e => {
+    const cb = e.target.closest('input[type="checkbox"]');
+    if (cb) { cb.checked ? selected.add(cb.dataset.id) : selected.delete(cb.dataset.id); render(); return; }
+    const tr = e.target.closest('tr');
+    if (tr) alert(`Persona düzenleme modalı açılır: ${tr.dataset.id}`);
+  });
+  document.getElementById('selectAll').addEventListener('change', e => {
+    users.filter(matches).forEach(u => e.target.checked ? selected.add(u.username) : selected.delete(u.username));
+    render();
+  });
+  document.getElementById('clearSel').addEventListener('click', () => { selected.clear(); document.getElementById('selectAll').checked = false; render(); });
+
+  render();
+</script>
+</body>
+</html>
