@@ -1,6 +1,6 @@
 export default function TraitChip({ label, onClick }) {
   const chipClass = [
-    'inline-flex items-center text-xs leading-none rounded-full px-2 py-0.5 animate-pop-in',
+    'inline-flex items-center min-w-0 shrink text-xs leading-none rounded-full px-2 py-0.5 animate-pop-in',
     'border',
   ].join(' ');
 
@@ -12,15 +12,15 @@ export default function TraitChip({ label, onClick }) {
 
   if (onClick) {
     return (
-      <button type="button" className={chipClass} style={style} onClick={onClick}>
-        {label}
+      <button type="button" className={chipClass} style={style} onClick={onClick} title={label}>
+        <span className="block truncate">{label}</span>
       </button>
     );
   }
 
   return (
-    <span className={chipClass} style={style}>
-      {label}
+    <span className={chipClass} style={style} title={label}>
+      <span className="block truncate">{label}</span>
     </span>
   );
 }

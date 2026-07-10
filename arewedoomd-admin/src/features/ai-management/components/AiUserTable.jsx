@@ -223,16 +223,16 @@ export default function AiUserTable({ onRowClick, refreshRef, onCreateClick, onB
                   title="Görünenlerin tümünü seç"
                 />
               </th>
-              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '32%' }}>
+              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '30%' }}>
                 Kullanıcı
               </th>
-              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '26%' }}>
+              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '32%' }}>
                 Trait&apos;ler
               </th>
               <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '16%' }}>
                 Persona
               </th>
-              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '26%' }}>
+              <th className="py-2 px-2.5 border-b border-[var(--color-border)] text-left text-[10.5px] font-bold uppercase tracking-[0.06em] whitespace-nowrap overflow-hidden text-ellipsis" style={{ color: 'var(--color-text-secondary)', width: '22%' }}>
                 Oluşturulma
               </th>
             </tr>

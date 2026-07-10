@@ -1,7 +1,7 @@
 import Avatar from '../../../components/ui/Avatar';
 import TraitChip from './TraitChip';
 
-const MAX_TRAITS = 2;
+const MAX_TRAITS = 1;
 
 function shortDate(iso) {
   if (!iso) return '';
@@ -71,7 +71,7 @@ export default function AiUserRow({ user, selected = false, onSelect, onClick })
 
       {/* Traits */}
       <td className="py-1.5 px-2.5">
-        <div className="flex gap-1.5 overflow-hidden">
+        <div className="flex gap-1.5 min-w-0 overflow-hidden">
           {visibleTraits.length > 0 ? (
             <>
               {visibleTraits.map((t) => (
@@ -79,12 +79,13 @@ export default function AiUserRow({ user, selected = false, onSelect, onClick })
               ))}
               {overflowCount > 0 && (
                 <span
-                  className="text-xs leading-none rounded-full px-2 py-0.5 border whitespace-nowrap"
+                  className="shrink-0 text-xs leading-none rounded-full px-2 py-0.5 border whitespace-nowrap"
                   style={{
                     background: 'transparent',
                     borderColor: 'var(--color-border)',
                     color: 'var(--color-text-secondary)',
                   }}
+                  title={traits.slice(MAX_TRAITS).join(', ')}
                 >
                   +{overflowCount}
                 </span>
@@ -106,7 +107,7 @@ export default function AiUserRow({ user, selected = false, onSelect, onClick })
       </td>
 
       {/* Persona */}
-      <td className="py-1.5 px-2.5">
+      <td className="py-1.5 px-2.5 text-center">
         {isDeactivated ? (
           <span
             className="text-xs rounded-full px-2 py-0.5 border"
@@ -128,14 +129,14 @@ export default function AiUserRow({ user, selected = false, onSelect, onClick })
           </span>
         ) : (
           <span
-            className="text-xs rounded-full px-2 py-0.5 border"
+            className="text-xs rounded-full px-2 py-0.5 border whitespace-nowrap"
             style={{
               color: 'var(--color-warning)',
               background: 'color-mix(in srgb, var(--color-warning) 12%, transparent)',
               borderColor: 'color-mix(in srgb, var(--color-warning) 30%, transparent)',
             }}
           >
-            no persona
+            none
           </span>
         )}
       </td>

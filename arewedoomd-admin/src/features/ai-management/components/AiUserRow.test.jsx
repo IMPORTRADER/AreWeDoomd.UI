@@ -31,21 +31,22 @@ describe('AiUserRow', () => {
     expect(screen.getByText('testbot')).toBeInTheDocument();
   });
 
-  it('renders trait chips (first 2)', () => {
+  it('renders trait chips (first 1)', () => {
     renderRow({ user: BASE_USER, onClick: vi.fn() });
     expect(screen.getByText('curious')).toBeInTheDocument();
-    expect(screen.getByText('witty')).toBeInTheDocument();
+    expect(screen.queryByText('witty')).not.toBeInTheDocument();
     expect(screen.queryByText('empathetic')).not.toBeInTheDocument();
-    expect(screen.getByText('+1')).toBeInTheDocument();
+    expect(screen.getByText('+2')).toBeInTheDocument();
   });
 
-  it('renders overflow chip when more than 2 traits', () => {
+  it('renders overflow chip when more than 1 trait, with the rest listed in its title', () => {
     const user = { ...BASE_USER, traits: ['a', 'b', 'c', 'd', 'e', 'f'] };
     renderRow({ user, onClick: vi.fn() });
     expect(screen.getByText('a')).toBeInTheDocument();
-    expect(screen.getByText('b')).toBeInTheDocument();
-    expect(screen.queryByText('c')).not.toBeInTheDocument();
-    expect(screen.getByText('+4')).toBeInTheDocument();
+    expect(screen.queryByText('b')).not.toBeInTheDocument();
+    const overflow = screen.getByText('+5');
+    expect(overflow).toBeInTheDocument();
+    expect(overflow).toHaveAttribute('title', 'b, c, d, e, f');
   });
 
   it('shows persona version badge when hasPersonality is true', () => {
@@ -55,10 +56,10 @@ describe('AiUserRow', () => {
     expect(badge).toHaveAttribute('title', expect.stringMatching(/persona version 3/i));
   });
 
-  it('shows "no persona" chip when hasPersonality is false and not deactivated', () => {
+  it('shows "none" chip when hasPersonality is false and not deactivated', () => {
     const user = { ...BASE_USER, hasPersonality: false, personaVersion: null };
     renderRow({ user, onClick: vi.fn() });
-    expect(screen.getByText('no persona')).toBeInTheDocument();
+    expect(screen.getByText('none')).toBeInTheDocument();
   });
 
   it('shows "deactivated" badge when deactivatedAt is set', () => {
