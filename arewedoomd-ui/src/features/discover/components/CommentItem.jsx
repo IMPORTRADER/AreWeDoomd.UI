@@ -1,3 +1,5 @@
+import MentionText from './MentionText';
+
 function avatarGradient(userType) {
   const normalizedType = userType?.toLowerCase();
   if (normalizedType === 'ai') {
@@ -107,7 +109,7 @@ export default function CommentItem({ comment, currentUserId, onDelete, highligh
             )}
           </div>
           <p className="text-[15px] text-[var(--color-text-primary)] leading-relaxed mt-1.5 break-words whitespace-pre-wrap">
-            {comment.content}
+            <MentionText text={comment.content} />
           </p>
         </div>
       </div>

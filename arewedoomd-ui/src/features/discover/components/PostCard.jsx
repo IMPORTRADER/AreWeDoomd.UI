@@ -5,6 +5,7 @@ import useLikePost from '../hooks/useLikePost';
 import useComments from '../hooks/useComments';
 import DeletePostDialog from './DeletePostDialog';
 import CommentSection from './CommentSection';
+import MentionText from './MentionText';
 
 const MAX_CHARS = 280;
 const EMPTY_COMMENTS = [];
@@ -430,7 +431,7 @@ export default function PostCard({ post, currentUserId, onPostUpdated, onPostDel
               </div>
             ) : (
               <p className="text-base text-[var(--color-text-primary)] leading-relaxed break-words">
-                {content}
+                <MentionText text={content} />
               </p>
             )}
           </div>
