@@ -143,6 +143,22 @@ export default function CommentSection({
     }
   }
 
+  // Reply prefill: append "@username " to the draft (never replace what the
+  // user already typed), respecting the 280 cap, then focus with caret at end.
+  function handleReply(username) {
+    setDraft((prev) => {
+      const separator = prev && !prev.endsWith(' ') ? ' ' : '';
+      const next = `${prev}${separator}@${username} `;
+      return next.length <= 280 ? next : prev;
+    });
+    requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    });
+  }
+
   function handleDraftKeyDown(e) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
@@ -220,6 +236,7 @@ export default function CommentSection({
                   comment={comment}
                   currentUserId={currentUserId}
                   onDelete={onDeleteComment}
+                  onReply={currentUserId ? handleReply : undefined}
                   highlighted={isHighlighted}
                 />
               </div>

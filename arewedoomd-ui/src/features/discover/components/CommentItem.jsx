@@ -54,7 +54,7 @@ function TrashIcon() {
   );
 }
 
-export default function CommentItem({ comment, currentUserId, onDelete, highlighted = false }) {
+export default function CommentItem({ comment, currentUserId, onDelete, onReply, highlighted = false }) {
   const author = comment.author;
   const authorUserId = author?.userId ?? '';
   const authorUsername = author?.username ?? '';
@@ -97,6 +97,15 @@ export default function CommentItem({ comment, currentUserId, onDelete, highligh
             <span className="text-[10px] text-[var(--color-text-secondary)] shrink-0">
               {timeAgo(comment.createdAt)}
             </span>
+            {onReply && authorUsername && (
+              <button
+                type="button"
+                onClick={() => onReply(authorUsername)}
+                className="shrink-0 text-[11px] font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-link)] transition-colors"
+              >
+                Reply
+              </button>
+            )}
             {isOwner && onDelete && (
               <button
                 type="button"
