@@ -31,8 +31,12 @@
   --color-success: #34d399;
 
   /* Transient attention highlight for the comment focused from a notification.
-     Soft bluish-white — subtle, low opacity so it reads as a gentle glow. */
-  --color-highlight-glow: rgba(170, 205, 255, 0.22);
+     Built from the app's own cool accent (sky) so it blends cleanly with the
+     navy surface — warm tints (amber/gold) alpha-blend into a muddy olive on
+     this background and read as a "warning". A brief brighter flash catches
+     the eye, then a calmer hold tint that fades out. */
+  --color-highlight-flash: color-mix(in srgb, var(--color-ai-accent) 20%, transparent);
+  --color-highlight-hold:  color-mix(in srgb, var(--color-ai-accent) 8%, transparent);
 
   /* User type gradients */
   --color-ai-from:    #075985;
@@ -123,6 +127,13 @@ button {
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--color-scrollbar) transparent;
+}
+
+/* Left nav rail opt-out: keep the sidebar-scroll scrollbar styling but let
+   wheel scrolling chain to the page, so the feed scrolls wherever the mouse
+   is over the column (once the rail itself hits its own scroll end). */
+.sidebar-scroll-chain {
+  overscroll-behavior: auto;
 }
 
 .sidebar-scroll::-webkit-scrollbar {
@@ -270,40 +281,34 @@ button {
   .skeleton::after { animation: none; }
 }
 
-/* Highlight the comment focused from a notification for ~2.5s: quick appear,
-   brief hold, smooth fade. Applied to the comment's own surface via an INSET
-   glow — an outset glow would be clipped by the post card's overflow-hidden,
-   and a backdrop tint would sit behind the comment's opaque background.
-   Removed on animationend. */
+/* Highlight the comment focused from a notification for ~3s: a quick sky
+   flash that settles into a softer hold tint, then fades to transparent.
+   Animates the comment's own background (the row is transparent by default),
+   so nothing is clipped by the post card's overflow-hidden and there is no
+   border/ring. While running, the animation also wins over the row's
+   hover:bg — the highlight can't be interrupted mid-flash by the cursor.
+   Removed on animationend (CommentSection matches the keyframe name). */
 @keyframes comment-highlight {
-  0% {
-    box-shadow: inset 0 0 0 0 transparent;
-  }
-  8% {
-    box-shadow: inset 0 0 0 2px var(--color-highlight-glow), inset 0 0 30px -4px var(--color-highlight-glow);
-  }
-  60% {
-    box-shadow: inset 0 0 0 2px var(--color-highlight-glow), inset 0 0 30px -4px var(--color-highlight-glow);
-  }
-  100% {
-    box-shadow: inset 0 0 0 0 transparent;
-  }
+  0%   { background-color: transparent; }
+  6%   { background-color: var(--color-highlight-flash); }
+  30%, 70% { background-color: var(--color-highlight-hold); }
+  100% { background-color: transparent; }
 }
 
 .comment-highlight {
-  animation: comment-highlight 2500ms ease-out;
+  animation: comment-highlight 3000ms ease-out;
 }
 
-/* Reduced motion: hold a steady inset ring, then fade it out — no pulsing glow. */
+/* Reduced motion: no flash — hold the steady tint, then fade it out. */
 @media (prefers-reduced-motion: reduce) {
   .comment-highlight {
-    animation: comment-highlight-reduced 2500ms ease-out;
+    animation: comment-highlight-reduced 3000ms ease-out;
   }
 }
 
 @keyframes comment-highlight-reduced {
-  0%, 70% { box-shadow: inset 0 0 0 2px var(--color-highlight-glow); }
-  100%    { box-shadow: inset 0 0 0 0 transparent; }
+  0%, 70% { background-color: var(--color-highlight-hold); }
+  100%    { background-color: transparent; }
 }
 
 /* ── Central widget chrome ──────────────────────────────────────────────

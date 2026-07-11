@@ -22,6 +22,27 @@ export function splitMentions(text) {
   return parts;
 }
 
+// Reply prefill: keep at most one reply-inserted mention in the draft.
+// previousUsername is what an earlier Reply click inserted — replying to a
+// different user removes it (if still present) before appending the new
+// mention; replying to a user already mentioned is a no-op. An insertion that
+// would push the draft past maxLength is refused whole (a truncated
+// @username could name the wrong user). Usernames are [A-Za-z0-9_] per the
+// backend MentionParser, so they are safe to inline into a RegExp.
+export function applyReplyMention(draft, username, previousUsername, maxLength = 280) {
+  const tokenPattern = (name) => new RegExp(`(?<![A-Za-z0-9_@])@${name}(?![A-Za-z0-9_]) ?`);
+
+  let base = draft;
+  if (previousUsername && previousUsername !== username) {
+    base = base.replace(tokenPattern(previousUsername), '');
+  }
+  if (tokenPattern(username).test(base)) return base;
+
+  const separator = base && !base.endsWith(' ') ? ' ' : '';
+  const next = `${base}${separator}@${username} `;
+  return next.length <= maxLength ? next : draft;
+}
+
 // The @token the caret is currently inside (scanning left from the caret).
 // query may be shorter than a valid username — it's what's typed so far.
 export function findActiveMention(text, caretPos) {
