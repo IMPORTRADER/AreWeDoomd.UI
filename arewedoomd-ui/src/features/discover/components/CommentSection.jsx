@@ -188,7 +188,7 @@ export default function CommentSection({
         <div
           ref={listRef}
           className={[
-            'flex flex-col gap-3.5 mb-4',
+            'flex flex-col gap-1.5 mb-4',
             expanded ? '' : 'pr-1',
           ].join(' ')}
         >
