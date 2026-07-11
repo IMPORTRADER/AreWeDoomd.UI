@@ -1,13 +1,27 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import CommentItem from './CommentItem';
+import useMentionAutocomplete from '../hooks/useMentionAutocomplete';
+import MentionSuggestions from './MentionSuggestions';
+import { applyReplyMention } from '../utils/mentions';
 
 // Composer grows from 1 line up to this many lines, then scrolls internally.
 const MAX_COMPOSER_ROWS = 5;
 
+// Up arrow ("publish"), not a paper plane — the plane reads as a DM action.
 function SendIcon() {
   return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+    <svg
+      width="19"
+      height="19"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 20V4" />
+      <path d="M5 11l7-7 7 7" />
     </svg>
   );
 }
@@ -31,6 +45,7 @@ export default function CommentSection({
   loadingNewer = false,
   onLoadOlder,
   onLoadNewer,
+  mentionParticipants = [],
 }) {
   const [draft, setDraft] = useState('');
   const formRef = useRef(null);
@@ -38,7 +53,23 @@ export default function CommentSection({
   const listRef = useRef(null);
   const sentinelRef = useRef(null);
   const anchorAppliedRef = useRef(false);
+  // Username the last Reply click inserted into the draft — lets a reply to a
+  // different user swap the mention instead of stacking a second one.
+  const replyMentionRef = useRef(null);
   const [clearedAnchor, setClearedAnchor] = useState(null);
+
+  const mention = useMentionAutocomplete({
+    inputRef,
+    // Refuse rather than truncate: a mention insertion that would push the
+    // draft past 280 chars is dropped whole, mirroring handleReply's cap
+    // policy below (a truncated @username could name the wrong user).
+    onChange: (next) => {
+      if (next.length <= 280) {
+        setDraft(next);
+      }
+    },
+    participants: mentionParticipants,
+  });
 
   const MAX_VISIBLE_COMMENTS = 6;
   // Feed mode reveals comments inline in pages, growing the list under the post
@@ -130,8 +161,31 @@ export default function CommentSection({
     const result = await onAddComment(draft);
     if (result) {
       setDraft('');
+      // The reply mention left with the sent comment — a stale ref here could
+      // delete an identical mention the user types by hand later.
+      replyMentionRef.current = null;
       inputRef.current?.focus();
     }
+  }
+
+  // Reply prefill: keep exactly one reply mention in the draft — repeat clicks
+  // on the same user are no-ops, a reply to a different user swaps the mention.
+  // User-typed text is never touched; the 280 cap refuses the insertion whole.
+  // Then focus with caret at end.
+  function handleReply(username) {
+    const next = applyReplyMention(draft, username, replyMentionRef.current);
+    // Only track the mention as "reply-inserted" when it actually made it into
+    // the draft (an over-cap refusal leaves the old tracking in place).
+    if (next !== draft || draft.includes(`@${username}`)) {
+      replyMentionRef.current = username;
+    }
+    setDraft(next);
+    requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    });
   }
 
   function handleDraftKeyDown(e) {
@@ -156,7 +210,7 @@ export default function CommentSection({
         <div
           ref={listRef}
           className={[
-            'flex flex-col gap-3.5 mb-4',
+            'flex flex-col gap-1.5 mb-4',
             expanded ? '' : 'pr-1',
           ].join(' ')}
         >
@@ -211,6 +265,7 @@ export default function CommentSection({
                   comment={comment}
                   currentUserId={currentUserId}
                   onDelete={onDeleteComment}
+                  onReply={currentUserId ? handleReply : undefined}
                   highlighted={isHighlighted}
                 />
               </div>
@@ -242,22 +297,42 @@ export default function CommentSection({
           onSubmit={handleSubmit}
           className={['flex flex-col gap-1.5', hasComments ? 'pt-3 border-t border-[var(--color-border)]' : ''].join(' ')}
         >
-          <div className="flex items-end gap-2">
+          {/* The send button lives inside the input frame, anchored to the
+              bottom-right: centered on a single line (46px input, 34px button,
+              6px offsets), staying put as the composer grows. */}
+          <div className="relative">
+            <MentionSuggestions
+              open={mention.open}
+              suggestions={mention.suggestions}
+              activeIndex={mention.activeIndex}
+              onSelect={mention.select}
+              onHover={mention.setActiveIndex}
+              placement="top"
+            />
             <textarea
               ref={inputRef}
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={handleDraftKeyDown}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                mention.refresh();
+              }}
+              onKeyDown={(e) => {
+                if (mention.handleKeyDown(e)) return;
+                handleDraftKeyDown(e);
+              }}
+              onKeyUp={mention.refresh}
+              onClick={mention.refresh}
+              onBlur={mention.close}
               placeholder="Write a comment..."
               rows={1}
               disabled={submitting}
               maxLength={280}
-              className="composer-scroll flex-1 resize-none overflow-y-hidden rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] px-3.5 py-2.5 text-[15px] leading-5 text-[var(--color-text-primary)] placeholder-[var(--color-text-placeholder)] outline-none hover:bg-[var(--color-surface-2)] disabled:opacity-60 transition-colors"
+              className="composer-scroll block w-full resize-none overflow-y-hidden rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] pl-3.5 pr-16 py-3 text-[15px] leading-5 text-[var(--color-text-primary)] placeholder-[var(--color-text-placeholder)] outline-none hover:bg-[var(--color-surface-2)] disabled:opacity-60 transition-colors"
             />
             <button
               type="submit"
               disabled={!draft.trim() || submitting}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+              className="absolute right-1.5 bottom-1.5 w-13 h-[34px] flex items-center justify-center rounded-2xl bg-[var(--color-btn-primary)] text-white hover:bg-[var(--color-btn-primary-hover)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />

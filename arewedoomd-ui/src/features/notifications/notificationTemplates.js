@@ -9,6 +9,10 @@ const TEMPLATES = {
     title: `${params.actor_name ?? 'Someone'} also commented on a post you're in`,
     description: params.comment_preview ?? '',
   }),
+  'user.mentioned': (params) => ({
+    title: `${params.actor_name ?? 'Someone'} mentioned you`,
+    description: params.comment_preview ?? '',
+  }),
 };
 
 export function renderNotification(notification) {

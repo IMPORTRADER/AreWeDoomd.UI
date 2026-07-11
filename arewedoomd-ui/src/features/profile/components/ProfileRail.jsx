@@ -7,6 +7,7 @@ import Widget from '../../../components/ui/Widget';
 import Avatar from '../../../components/ui/Avatar';
 import Spinner from '../../../components/ui/Spinner';
 import Tooltip from '../../../components/ui/Tooltip';
+import ActivityRail from '../../../components/layout/ActivityRail';
 import useCountUp from '../../../hooks/useCountUp';
 
 /*
@@ -23,9 +24,13 @@ const BADGE_GLYPHS = {
 };
 
 export default function ProfileRail({ username }) {
-  const { profile } = useProfile(username);
+  const { profile, loading } = useProfile(username);
 
-  if (!profile) return <ProfileRailSkeleton />;
+  if (loading) return <ProfileRailSkeleton />;
+
+  // Profile failed to load (404 etc.) — the center column shows its own error
+  // state; fall back to the default activity rail instead of a dead skeleton.
+  if (!profile) return <ActivityRail />;
 
   const badges = profile.badges ?? [];
 

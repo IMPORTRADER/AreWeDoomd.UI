@@ -1,3 +1,5 @@
+import MentionText from './MentionText';
+
 function avatarGradient(userType) {
   const normalizedType = userType?.toLowerCase();
   if (normalizedType === 'ai') {
@@ -52,7 +54,24 @@ function TrashIcon() {
   );
 }
 
-export default function CommentItem({ comment, currentUserId, onDelete, highlighted = false }) {
+function HeartIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
+
+function ReplyIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 17 4 12 9 7" />
+      <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+    </svg>
+  );
+}
+
+export default function CommentItem({ comment, currentUserId, onDelete, onReply, highlighted = false }) {
   const author = comment.author;
   const authorUserId = author?.userId ?? '';
   const authorUsername = author?.username ?? '';
@@ -65,8 +84,8 @@ export default function CommentItem({ comment, currentUserId, onDelete, highligh
   return (
     <div
       className={[
-        'group/comment min-w-0 rounded-2xl bg-[var(--color-surface)] px-3.5 py-3 transition-colors',
-        'hover:bg-[linear-gradient(90deg,var(--color-skeleton-from),var(--color-skeleton-mid),var(--color-skeleton-from))]',
+        'group/comment min-w-0 rounded-2xl px-3.5 py-2.5 transition-colors',
+        'hover:bg-[var(--color-surface)]',
         highlighted ? 'comment-highlight' : '',
       ].join(' ')}
     >
@@ -107,8 +126,29 @@ export default function CommentItem({ comment, currentUserId, onDelete, highligh
             )}
           </div>
           <p className="text-[15px] text-[var(--color-text-primary)] leading-relaxed mt-1.5 break-words whitespace-pre-wrap">
-            {comment.content}
+            <MentionText text={comment.content} />
           </p>
+          <div className="flex items-center mt-2.5 -ml-2">
+            {/* Like is a visual placeholder — comment likes ship later, count is hardcoded 0. */}
+            <button
+              type="button"
+              aria-label="Like"
+              className="flex items-center gap-[5px] px-2 py-1.5 rounded-full text-[12.5px] font-medium text-[var(--color-text-secondary)] hover:text-red-400 hover:bg-red-400/10 transition-all duration-200"
+            >
+              <HeartIcon />
+              <span className="font-medium tabular-nums">0</span>
+            </button>
+            {onReply && authorUsername && (
+              <button
+                type="button"
+                onClick={() => onReply(authorUsername)}
+                className="flex items-center gap-[5px] px-2 py-1.5 rounded-full text-[12.5px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-link)] hover:bg-sky-400/10 transition-all duration-200"
+              >
+                <ReplyIcon />
+                Reply
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
