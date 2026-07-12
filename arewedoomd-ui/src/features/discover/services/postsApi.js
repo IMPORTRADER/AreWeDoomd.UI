@@ -9,6 +9,8 @@ export const postsApi = {
 
   like: (postId) => client.post(`/api/posts/${postId}/likes`),
   unlike: (postId) => client.delete(`/api/posts/${postId}/likes`),
+  likeComment: (postId, commentId) => client.post(`/api/posts/${postId}/comments/${commentId}/likes`),
+  unlikeComment: (postId, commentId) => client.delete(`/api/posts/${postId}/comments/${commentId}/likes`),
 
   getComments: (postId, { sort, limit, anchor, around, before, after } = {}) =>
     client.get(`/api/posts/${postId}/comments`, {

@@ -1,4 +1,5 @@
 import MentionText from './MentionText';
+import useLikeComment from '../hooks/useLikeComment';
 
 function avatarGradient(userType) {
   const normalizedType = userType?.toLowerCase();
@@ -54,9 +55,9 @@ function TrashIcon() {
   );
 }
 
-function HeartIcon() {
+function HeartIcon({ filled }) {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
     </svg>
   );
@@ -80,6 +81,12 @@ export default function CommentItem({ comment, currentUserId, onDelete, onReply,
   const initials = avatarInitials(authorUsername);
   const handle = authorUsername || (authorUserId ? authorUserId.slice(0, 8) : 'Unknown');
   const authorBadge = userTypeBadge(author?.userType);
+  const isAuthenticated = Boolean(currentUserId);
+  const { liked, likeCount, toggle, busy } = useLikeComment({
+    postId: comment.postId,
+    commentId: comment.id,
+    initialLikeCount: comment.likeCount,
+  });
 
   return (
     <div
@@ -129,14 +136,20 @@ export default function CommentItem({ comment, currentUserId, onDelete, onReply,
             <MentionText text={comment.content} />
           </p>
           <div className="flex items-center mt-2.5 -ml-2">
-            {/* Like is a visual placeholder — comment likes ship later, count is hardcoded 0. */}
             <button
               type="button"
-              aria-label="Like"
-              className="flex items-center gap-[5px] px-2 py-1.5 rounded-full text-[12.5px] font-medium text-[var(--color-text-secondary)] hover:text-red-400 hover:bg-red-400/10 transition-all duration-200"
+              onClick={toggle}
+              aria-label={liked ? 'Unlike' : 'Like'}
+              aria-pressed={liked}
+              disabled={!isAuthenticated || busy}
+              className={`flex items-center gap-[5px] px-2 py-1.5 rounded-full text-[12.5px] font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 ${
+                liked
+                  ? 'text-red-400 bg-red-400/10'
+                  : 'text-[var(--color-text-secondary)] hover:text-red-400 hover:bg-red-400/10'
+              }`}
             >
-              <HeartIcon />
-              <span className="font-medium tabular-nums">0</span>
+              <HeartIcon filled={liked} />
+              <span className="font-medium tabular-nums">{likeCount}</span>
             </button>
             {onReply && authorUsername && (
               <button

@@ -13,6 +13,10 @@ const TEMPLATES = {
     title: `${params.actor_name ?? 'Someone'} mentioned you`,
     description: params.comment_preview ?? '',
   }),
+  'comment.liked': (params) => ({
+    title: `${params.actor_name ?? 'Someone'} liked your comment`,
+    description: '',
+  }),
 };
 
 export function renderNotification(notification) {
